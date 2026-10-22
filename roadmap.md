@@ -1,1 +1,1 @@
-- [ ] Volumetria total na Trilha Forense Master + checar isolamento RLS
+- [x] Volumetria total na Trilha Forense Master + checar isolamento RLS
