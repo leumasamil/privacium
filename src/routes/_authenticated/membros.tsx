@@ -1,0 +1,67 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { ROLE_LABEL, type Role } from "@/lib/priva/data";
+import { usePriva } from "@/lib/priva/store";
+import { PageHeader, Panel, Tag } from "@/components/priva/ui";
+import { Checkbox } from "@/components/ui/checkbox";
+
+export const Route = createFileRoute("/_authenticated/membros")({
+  head: () => ({
+    meta: [
+      { title: "Membros e cargos — PRIVA 2EC" },
+      { name: "description", content: "Atribuição de cargos com privilégio mínimo (RBAC)." },
+      { property: "og:title", content: "Membros e cargos — PRIVA 2EC" },
+      { property: "og:description", content: "Atribuição de cargos com privilégio mínimo (RBAC)." },
+    ],
+  }),
+  component: Membros,
+});
+
+type Member = { id: string; email: string | null; display_name: string | null; roles: Role[] };
+const ALL: Role[] = ["admin", "dpo", "csuite"];
+
+function Membros() {
+  const { userId, log } = usePriva();
+  const [members, setMembers] = useState<Member[]>([]);
+  const load = useCallback(async () => {
+    const { data } = await supabase.rpc("list_members");
+    setMembers((data ?? []) as Member[]);
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+
+  const toggle = async (m: Member, r: Role, on: boolean) => {
+    if (m.id === userId && r === "admin" && !on) return;
+    const res = on
+      ? await supabase.from("user_roles").insert({ user_id: m.id, role: r })
+      : await supabase.from("user_roles").delete().eq("user_id", m.id).eq("role", r);
+    if (!res.error) {
+      log(on ? "INSERT" : "DELETE", "user_roles", `${m.email}: ${on ? "concedido" : "revogado"} ${r}`);
+      void load();
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <PageHeader eyebrow="Painel do Administrador" title="Membros e cargos">
+        Novas contas entram sem acesso. Conceda apenas os cargos necessários (need-to-know). Toda concessão é registrada na trilha de auditoria.
+      </PageHeader>
+      <Panel title={`${members.length} membros`}>
+        <table className="w-full text-sm">
+          <thead><tr className="border-b text-left font-mono text-xs uppercase text-muted-foreground"><th className="py-2">Membro</th>{ALL.map((r) => <th key={r}>{ROLE_LABEL[r]}</th>)}<th>Status</th></tr></thead>
+          <tbody>
+            {members.map((m) => (
+              <tr key={m.id} className="border-b">
+                <td className="py-2"><p className="font-medium">{m.display_name}</p><p className="text-xs text-muted-foreground">{m.email}</p></td>
+                {ALL.map((r) => (
+                  <td key={r}><Checkbox checked={m.roles.includes(r)} disabled={m.id === userId && r === "admin"} onCheckedChange={(v) => toggle(m, r, !!v)} /></td>
+                ))}
+                <td>{m.roles.length ? <Tag tone="success">Ativo</Tag> : <Tag tone="warning">Aguardando</Tag>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Panel>
+    </div>
+  );
+}

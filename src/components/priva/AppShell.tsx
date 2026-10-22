@@ -19,6 +19,7 @@ export function canAccess(role: Role, path: string) {
 export function AppShell({ children }: { children: ReactNode }) {
   const { role, roles, setRole, set, enterprise, signatures, reset, ready, email } = usePriva();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const signOut = async () => { await supabase.auth.signOut(); navigate({ to: "/auth" }); };
 
   if (!ready) return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Carregando…</div>;
@@ -32,7 +33,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
     </div>
   );
-  const { pathname } = useLocation();
   const allowed = canAccess(role, pathname);
 
   const item = (to: string, label: ReactNode, icon: ReactNode, extra?: ReactNode, locked = false) => {
