@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/bloco-2")({
 const COLS: { key: keyof InventoryRow; label: string }[] = [
   { key: "id", label: "ID Processo" }, { key: "verbo", label: "Gênero Verbo" }, { key: "titulares", label: "Categoria Titulares" },
   { key: "dados", label: "Dados Pessoais" }, { key: "sensiveis", label: "Dados Sensíveis" }, { key: "finalidade", label: "Finalidade" },
-  { key: "hipotese", label: "Hipótese Legal" }, { key: "retencao", label: "Tempo Retenção" }, { key: "basePrazo", label: "Base do Prazo" },
+  { key: "hipotese", label: "Hipótese de Tratamento" }, { key: "retencao", label: "Tempo Retenção" }, { key: "basePrazo", label: "Base do Prazo" },
   { key: "compartilhamento", label: "Compartilhamento" }, { key: "salvaguardas", label: "Salvaguardas" }, { key: "infra", label: "Infraestrutura/Mídia" },
 ];
 
@@ -38,7 +38,7 @@ function Bloco2() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 2 · (R) Plan" title="Registrar as Operações de Tratamento">
-        Inventário verbo-operacional. A coluna "Hipótese Legal" aceita apenas os incisos dos artigos 7º e 11 da LGPD. Dados sensíveis ou de menores exigem salvaguardas reforçadas (criptografia, MFA, segregação ou anonimização).
+        Inventário verbo-operacional. A coluna "Hipótese de Tratamento" aceita apenas os incisos dos artigos 7º e 11 da LGPD. Dados sensíveis ou de menores exigem salvaguardas reforçadas (criptografia, MFA, segregação ou anonimização).
       </PageHeader>
       <Panel title={`Inventário · ${inventory.length} processos`} action={
         <Button size="sm" onClick={() => set({ inventory: [...inventory, { id: `PRC-${String(inventory.length + 1).padStart(3, "0")}`, verbo: "Coletar", titulares: "", dados: "", sensiveis: "", menores: false, finalidade: "", hipotese: "", retencao: "", basePrazo: "", compartilhamento: "", salvaguardas: "", infra: "" }] }, { op: "INSERT", target: "inventario", detail: "Novo processo" })}>
