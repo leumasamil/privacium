@@ -67,6 +67,9 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(initial);
   const loaded = useRef(false);
   const chain = useRef<Promise<void>>(Promise.resolve());
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const lastAudit = useRef<AuditEntry | null>(null);
 
   useEffect(() => {
     try {
@@ -81,15 +84,15 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
 
   const log = useCallback((op: AuditEntry["op"], target: string, detail: string) => {
     chain.current = chain.current.then(async () => {
-      let snapshot!: State;
-      setState((s) => (snapshot = s));
-      await Promise.resolve();
-      const prev = snapshot.audit[snapshot.audit.length - 1];
+      const snapshot = stateRef.current;
+      const prev = lastAudit.current ?? snapshot.audit[snapshot.audit.length - 1];
       const prevHash = prev?.hash ?? "0".repeat(64);
       const seq = (prev?.seq ?? 0) + 1;
       const ts = new Date().toISOString();
       const hash = await sha256(`${seq}|${ts}|${snapshot.role}|${op}|${target}|${detail}|${prevHash}`);
-      setState((s) => ({ ...s, audit: [...s.audit, { seq, ts, role: s.role, op, target, detail, prevHash, hash }] }));
+      const entry: AuditEntry = { seq, ts, role: snapshot.role, op, target, detail, prevHash, hash };
+      lastAudit.current = entry;
+      setState((s) => ({ ...s, audit: [...s.audit, entry] }));
     });
   }, []);
 
@@ -105,7 +108,10 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
     log("INSERT", "signatures", `${pi} chancelado`);
   };
 
-  const reset = () => setState({ ...initial, audit: [] });
+  const reset = () => {
+    lastAudit.current = null;
+    setState({ ...initial, audit: [] });
+  };
 
   return <C.Provider value={{ ...state, set, log, sign, reset }}>{children}</C.Provider>;
 }
