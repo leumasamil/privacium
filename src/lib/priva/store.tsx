@@ -7,6 +7,7 @@ export type AuditEntry = {
   seq: number;
   ts: string;
   role: Role;
+  cnpj: string | null;
   user_email: string | null;
   op: "SELECT" | "INSERT" | "UPDATE" | "DELETE";
   target: string;
@@ -14,6 +15,7 @@ export type AuditEntry = {
   prev_hash: string;
   hash: string;
 };
+export type Empresa = { cnpj: string; razao_social: string };
 export type Signature = { by: string; ts: string; hash: string };
 
 /** Dados compartilhados por toda a equipe (salvos no backend). */
@@ -60,6 +62,10 @@ type Ctx = Shared & {
   roles: Role[];
   role: Role;
   audit: AuditEntry[];
+  cnpj: string | null;
+  empresas: Empresa[];
+  selectEmpresa: (cnpj: string) => void;
+  createEmpresa: (cnpj: string, razao: string) => Promise<string | null>;
   setRole: (r: Role) => void;
   set: (patch: Partial<Shared>, log?: { op: AuditEntry["op"]; target: string; detail: string }) => void;
   log: (op: AuditEntry["op"], target: string, detail: string) => void;
@@ -73,6 +79,7 @@ type Ctx = Shared & {
 const g = globalThis as unknown as { __privaCtx?: React.Context<Ctx | null> };
 const C = (g.__privaCtx ??= createContext<Ctx | null>(null));
 const ROLE_PREF = "priva2ec-active-role";
+const CNPJ_PREF = "priva2ec-active-cnpj";
 const ORDER: Role[] = ["DPO_OPERACIONAL", "ADMIN_SISTEMA", "C_SUITE"];
 
 export function PrivaProvider({ children }: { children: ReactNode }) {
@@ -83,6 +90,10 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [role, setRoleState] = useState<Role>("DPO_OPERACIONAL");
   const [audit, setAudit] = useState<AuditEntry[]>([]);
+  const [cnpj, setCnpj] = useState<string | null>(null);
+  const [empresas, setEmpresas] = useState<Empresa[]>([]);
+  const cnpjRef = useRef<string | null>(null);
+  cnpjRef.current = cnpj;
   const roleRef = useRef(role);
   roleRef.current = role;
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -91,9 +102,18 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
   const canReadAudit = roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL");
 
   const refreshAudit = useCallback(async () => {
-    const { data } = await supabase.from("audit_log").select("*").order("seq", { ascending: false }).limit(500);
+    const { data } = await supabase.from("trilha_auditoria_sistema").select("*").order("seq", { ascending: false }).limit(500);
     if (data) setAudit(data.reverse() as AuditEntry[]);
   }, []);
+
+  const loadEmpresa = async (c: string) => {
+    const { data: ws } = await supabase.from("workspace_empresa").select("data").eq("cnpj", c).maybeSingle();
+    pending.current = null;
+    setShared({ ...initialShared, ...((ws?.data ?? {}) as Partial<Shared>) });
+    setCnpj(c);
+    cnpjRef.current = c;
+    localStorage.setItem(CNPJ_PREF, c);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -108,8 +128,11 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
       const pref = localStorage.getItem(ROLE_PREF) as Role | null;
       if (granted.length) setRoleState(pref && granted.includes(pref) ? pref : granted[0]!);
       if (granted.length) {
-        const { data: ws } = await supabase.from("workspace_state").select("data").eq("id", 1).maybeSingle();
-        if (ws?.data && typeof ws.data === "object") setShared({ ...initialShared, ...(ws.data as Partial<Shared>) });
+        const { data: list } = await supabase.from("workspace_empresa").select("cnpj, razao_social").order("created_at");
+        setEmpresas(list ?? []);
+        const prefC = localStorage.getItem(CNPJ_PREF);
+        const pick = list?.find((e) => e.cnpj === prefC)?.cnpj ?? list?.[0]?.cnpj ?? null;
+        if (pick) await loadEmpresa(pick);
       }
       setReady(true);
     })();
@@ -122,31 +145,33 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
 
   // Atualizações em tempo real feitas por outros membros
   useEffect(() => {
-    if (!ready || !roles.length) return;
+    if (!ready || !roles.length || !cnpj) return;
     const ch = supabase
-      .channel("workspace_state")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "workspace_state" }, (payload) => {
+      .channel(`workspace_empresa_${cnpj}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "workspace_empresa", filter: `cnpj=eq.${cnpj}` }, (payload) => {
         const row = payload.new as { data: Partial<Shared>; updated_by: string | null };
         if (row.updated_by && row.updated_by !== userId && !pending.current) setShared({ ...initialShared, ...row.data });
       })
       .subscribe();
     return () => { void supabase.removeChannel(ch); };
-  }, [ready, roles.length, userId]);
+  }, [ready, roles.length, userId, cnpj]);
 
   const persist = (next: Shared) => {
     pending.current = next;
     if (saveTimer.current) clearTimeout(saveTimer.current);
+    const target = cnpjRef.current;
+    if (!target) return;
     saveTimer.current = setTimeout(async () => {
       const data = pending.current;
       if (!data) return;
-      await supabase.from("workspace_state").update({ data: data as never, updated_at: new Date().toISOString(), updated_by: userId }).eq("id", 1);
+      await supabase.from("workspace_empresa").update({ data: data as never, updated_at: new Date().toISOString(), updated_by: userId }).eq("cnpj", target);
       if (pending.current === data) pending.current = null;
     }, 600);
   };
 
   const log = useCallback((op: AuditEntry["op"], target: string, detail: string) => {
     void (async () => {
-      const { data, error } = await supabase.rpc("append_audit", { _role: roleRef.current, _op: op, _target: target, _detail: detail });
+      const { data, error } = await supabase.rpc("registrar_trilha", { _role: roleRef.current, _op: op, _target: target, _detail: detail, _cnpj: cnpjRef.current ?? "" });
       if (!error && data && (roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL"))) setAudit((a) => [...a, data as AuditEntry]);
     })();
   }, [roles]);
@@ -174,10 +199,25 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
     set({ signatures: { ...shared.signatures, [pi]: { by: `${email} · Gov.br (simulado)`, ts, hash } } }, { op: "INSERT", target: "signatures", detail: `${pi} chancelado` });
   };
 
+  const selectEmpresa = (c: string) => {
+    if (c === cnpjRef.current) return;
+    void loadEmpresa(c).then(() => log("SELECT", "workspace_empresa", `Abertura da esteira do CNPJ ${c}`));
+  };
+
+  const createEmpresa = async (raw: string, razao: string) => {
+    const c = raw.replace(/\D/g, "");
+    const { error } = await supabase.from("workspace_empresa").insert({ cnpj: c, razao_social: razao.trim(), data: initialShared as never, updated_by: userId });
+    if (error) return error.code === "23505" ? "CNPJ já cadastrado." : "Não foi possível cadastrar (verifique seu cargo).";
+    setEmpresas((e) => [...e, { cnpj: c, razao_social: razao.trim() }]);
+    await loadEmpresa(c);
+    log("INSERT", "workspace_empresa", `Cadastro do CNPJ ${c}`);
+    return null;
+  };
+
   const reset = () => set({ ...initialShared }, { op: "DELETE", target: "workspace", detail: "Reinício da esteira" });
 
   return (
-    <C.Provider value={{ ...shared, ready, userId, email, roles, role, audit, setRole, set, log, sign, reset, refreshAudit }}>
+    <C.Provider value={{ ...shared, ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit }}>
       {children}
     </C.Provider>
   );
