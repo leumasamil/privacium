@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Lock, CheckCircle2, LayoutDashboard, KanbanSquare, ScrollText, Building2, RotateCcw, LogOut, Users } from "lucide-react";
+import { Lock, CheckCircle2, LayoutDashboard, KanbanSquare, ScrollText, Building2, RotateCcw, LogOut, Users, Presentation, X } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { BLOCKS, ROLE_LABEL, isValidCNPJ, maskCNPJ, type Role } from "@/lib/priva/data";
 import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { Switch } from "@/components/ui/switch";
@@ -22,7 +23,9 @@ export function canAccess(role: Role, path: string) {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { role, roles, setRole, set, enterprise, signatures, reset, ready, email, cnpj, empresas, selectEmpresa, createEmpresa, log } = usePriva();
+  const { role, roles, setRole, set, enterprise, signatures, reset, ready, email, cnpj, empresas, selectEmpresa, createEmpresa, log, demo, setDemo } = usePriva();
+  const [demoAsk, setDemoAsk] = useState(false);
+  const podeDemo = roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL");
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [novo, setNovo] = useState({ cnpj: "", razao: "", err: "" });
@@ -37,7 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (!ready || !cnpj || !roles.length) return;
     const sensitive = SENSITIVE.find((p) => pathname.startsWith(p.path));
     const key = `${cnpj}|${pathname}|${role}`;
-    if (sensitive && lastRead.current !== key && canAccess(role, pathname)) {
+    if (sensitive && lastRead.current !== key && (demo || canAccess(role, pathname))) {
       lastRead.current = key;
       log("SELECT", sensitive.target, `Leitura da tela ${pathname}`);
     }
@@ -80,10 +83,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
     </div>
   );
-  const allowed = canAccess(role, pathname);
+  const allowed = (demo || canAccess(role, pathname));
 
   const item = (to: string, label: ReactNode, icon: ReactNode, extra?: ReactNode, locked = false) => {
-    if (!canAccess(role, to)) return null;
+    if (!(demo || canAccess(role, to))) return null;
     const active = pathname.startsWith(to);
     return (
       <Link
@@ -131,9 +134,17 @@ export function AppShell({ children }: { children: ReactNode }) {
             <details className="mt-2 text-xs"><summary className="cursor-pointer opacity-70">+ Nova empresa</summary><div className="mt-2">{empresaForm}</div></details>
           )}
         </div>
+        {podeDemo && (
+          <div className="border-b border-sidebar-border px-5 py-3">
+            <button onClick={() => (demo ? setDemo(false) : setDemoAsk(true))}
+              className={cn("flex w-full items-center gap-2 rounded-sm border px-3 py-2 text-sm font-medium", demo ? "border-warning bg-warning text-warning-foreground" : "border-sidebar-primary text-sidebar-accent-foreground hover:bg-sidebar-accent")}>
+              <Presentation className="h-4 w-4" /> {demo ? "Encerrar Demonstração" : "Modo Demonstração Comercial"}
+            </button>
+          </div>
+        )}
         <nav className="flex-1 space-y-1 overflow-auto px-3 py-4">
           {item("/painel", "Esteira BLLOCO", <LayoutDashboard className="h-4 w-4" />)}
-          {canAccess(role, "/bloco") && <p className="px-3 pb-1 pt-4 font-mono text-[10px] uppercase tracking-widest">Ciclo PRIVA</p>}
+          {(demo || canAccess(role, "/bloco")) && <p className="px-3 pb-1 pt-4 font-mono text-[10px] uppercase tracking-widest">Ciclo PRIVA</p>}
           {BLOCKS.map((b) => {
             const unlocked = isUnlocked(signatures, b.n);
             const done = !!signatures[`PI-0${b.n}`];
@@ -171,6 +182,24 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <main className="min-w-0 flex-1 px-10 py-8">
+        {demo && (
+          <div className="-mx-10 -mt-8 mb-6 flex items-center justify-between gap-3 border-b border-warning bg-warning/15 px-10 py-2 text-sm">
+            <span className="flex items-center gap-2 font-medium text-primary"><Presentation className="h-4 w-4" /> Modo Demonstração Ativo - Dados Cenográficos</span>
+            <button onClick={() => setDemo(false)} className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"><X className="h-3 w-3" /> Encerrar Demonstração</button>
+          </div>
+        )}
+        <AlertDialog open={demoAsk} onOpenChange={setDemoAsk}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2"><Presentation className="h-5 w-5" /> Modo Demonstração Comercial</AlertDialogTitle>
+              <AlertDialogDescription>Deseja ativar o ambiente de simulação comercial? O sistema injetará dados fictícios realistas em todos os blocos para apresentação ao vivo a potenciais clientes, sem alterar os dados reais de produção.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={() => { setDemo(true); if (role !== "DPO_OPERACIONAL" && roles.includes("DPO_OPERACIONAL")) setRole("DPO_OPERACIONAL"); navigate({ to: "/painel" }); }}>Ativar demonstração</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         {suspensa ? (
           <div className="rounded-md border border-destructive bg-card p-16 text-center">
             <Lock className="mx-auto h-8 w-8 text-destructive" />

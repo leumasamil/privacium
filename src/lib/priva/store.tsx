@@ -1,3 +1,4 @@
+import { DEMO_CNPJ, DEMO_RAZAO, DEMO_SIGNATURES } from "./demo";
 import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -72,6 +73,8 @@ type Ctx = Shared & {
   sign: (pi: string) => Promise<void>;
   reset: () => void;
   refreshAudit: () => Promise<void>;
+  demo: boolean;
+  setDemo: (on: boolean) => void;
 };
 
 // Contexto estável entre recargas de módulo (HMR): evita que o provedor e as páginas
@@ -92,6 +95,8 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
   const [audit, setAudit] = useState<AuditEntry[]>([]);
   const [cnpj, setCnpj] = useState<string | null>(null);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
+  const [demo, setDemoState] = useState(false);
+  const [demoShared, setDemoShared] = useState<Shared>(initialShared);
   const cnpjRef = useRef<string | null>(null);
   cnpjRef.current = cnpj;
   const roleRef = useRef(role);
@@ -216,12 +221,34 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
 
   const reset = () => set({ ...initialShared }, { op: "DELETE", target: "workspace", detail: "Reinício da esteira" });
 
+  const setDemo = (on: boolean) => {
+    if (on && !(roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL"))) return;
+    if (on) log("SELECT", "modo_demonstracao", "Modo Demonstração Comercial ativado");
+    setDemoShared({ ...initialShared, signatures: DEMO_SIGNATURES });
+    setDemoState(on);
+    if (!on) log("SELECT", "modo_demonstracao", "Modo Demonstração Comercial encerrado");
+  };
+  const noop = () => undefined;
+  // Em demonstração nada é persistido nem registrado: o estado vive só na memória do navegador.
+  const value: Ctx = demo
+    ? {
+        ...demoShared, ready, userId, email, roles, role, audit: [], cnpj: DEMO_CNPJ,
+        empresas: [{ cnpj: DEMO_CNPJ, razao_social: DEMO_RAZAO }], selectEmpresa: noop,
+        createEmpresa: async () => "Indisponível no Modo Demonstração.", setRole,
+        set: (patch) => setDemoShared((s) => ({ ...s, ...patch })), log: noop, sign: async () => undefined,
+        reset: noop, refreshAudit: async () => undefined, demo, setDemo,
+      }
+    : { ...shared, ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, setDemo };
+
   return (
-    <C.Provider value={{ ...shared, ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit }}>
+    <C.Provider value={value}>
       {children}
     </C.Provider>
   );
 }
+
+/** Indica se o Modo Demonstração Comercial está ativo. */
+export const useDemo = () => useContext(C)?.demo ?? false;
 
 export function usePriva() {
   const c = useContext(C);

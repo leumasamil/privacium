@@ -2,6 +2,8 @@ import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Question } from "./data";
+import { DEMO_CPF, demoAnswers } from "./demo";
+import { useDemo } from "./store";
 
 export const questionsQuery = queryOptions({
   queryKey: ["perguntas_diagnostico"],
@@ -25,9 +27,11 @@ const respostasKey = (cnpj: string | null) => ["respostas_diagnostico", cnpj] as
 /** Respostas do diagnóstico do CNPJ ativo, com atualização em tempo real. Retorna id da pergunta → SIM (true) / NÃO (false). */
 export function useRespostas(cnpj: string | null) {
   const qc = useQueryClient();
+  const demo = useDemo();
+  const questions = useQuestions();
   const q = useQuery({
     queryKey: respostasKey(cnpj),
-    enabled: !!cnpj,
+    enabled: !!cnpj && !demo,
     queryFn: async (): Promise<Record<string, boolean>> => {
       const { data, error } = await supabase.from("respostas_diagnostico").select("pergunta_id, resposta_binaria").eq("empresa_cnpj", cnpj ?? "");
       if (error) throw error;
@@ -35,7 +39,7 @@ export function useRespostas(cnpj: string | null) {
     },
   });
   useEffect(() => {
-    if (!cnpj) return;
+    if (!cnpj || demo) return;
     const ch = supabase
       .channel(`respostas_${cnpj}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "respostas_diagnostico", filter: `empresa_cnpj=eq.${cnpj}` }, () => {
@@ -43,14 +47,17 @@ export function useRespostas(cnpj: string | null) {
       })
       .subscribe();
     return () => { void supabase.removeChannel(ch); };
-  }, [cnpj, qc]);
+  }, [cnpj, qc, demo]);
+  if (demo) return demoAnswers(questions);
   return q.data ?? {};
 }
 
 /** Grava respostas no backend amarradas ao CNPJ ativo e ao CPF do auditor. */
 export function useResponder(cnpj: string | null, cpf: string | null) {
   const qc = useQueryClient();
+  const demo = useDemo();
   return async (items: { pergunta_id: string; resposta: Resposta }[]) => {
+    if (demo) return "Modo Demonstração: respostas não são gravadas.";
     if (!cnpj || !cpf) return "Informe o CNPJ e o CPF do auditor.";
     qc.setQueryData<Record<string, boolean>>(respostasKey(cnpj), (old) => {
       const next = { ...(old ?? {}) };
@@ -87,5 +94,7 @@ export function useMeuCpf(userId: string | null) {
     qc.setQueryData(["meu_cpf", userId], d);
     return null;
   };
+  const demo = useDemo();
+  if (demo) return { cpf: DEMO_CPF, loading: false, salvar: async () => "Indisponível no Modo Demonstração." };
   return { cpf: q.data ?? null, loading: q.isLoading, salvar };
 }
