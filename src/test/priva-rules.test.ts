@@ -61,3 +61,22 @@ describe("Teto real 1414", () => {
     expect(riskZone(r.gm).tone).toBe("success");
   });
 });
+
+import { isRisky, validateRot, type RotInput } from "@/lib/priva/rot";
+describe("ROT · travas de risco", () => {
+  const base: RotInput = { empresa_cnpj: "11222333000181", setor: "RH", genero_verbo: "Coletar", categoria_titulares: ["Colaboradores"], dados_pessoais: ["Nome"],
+    dados_sensiveis: ["N/A"], finalidade_especifica: "Folha", hipotese_tratamento: "Art. 7º, II – Obrigação legal/regulatória", tempo_retencao: "5 anos",
+    base_prazo: "Art. 12 da CLT", compartilhamento: "Não Compartilhado", salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null };
+  it("menores de idade ou dado sensível acionam a tarja vermelha", () => {
+    expect(isRisky(base)).toBe(false);
+    expect(isRisky({ ...base, categoria_titulares: ["Menores de Idade"] })).toBe(true);
+    expect(isRisky({ ...base, dados_sensiveis: ["Biometria"] })).toBe(true);
+  });
+  it("linha de risco exige justificativa", () => {
+    expect(validateRot({ ...base, categoria_titulares: ["Menores de Idade"] })).toMatch(/justifique/);
+    expect(validateRot({ ...base, categoria_titulares: ["Menores de Idade"], justificativa_mitigacao: "Acesso restrito RBAC e criptografia AES-256" })).toBeNull();
+  });
+  it("proíbe jargões europeus", () => {
+    expect(validateRot({ ...base, finalidade_especifica: "conforme a base legal" })).toMatch(/proibido/);
+  });
+});
