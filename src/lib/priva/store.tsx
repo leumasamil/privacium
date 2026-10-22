@@ -1,33 +1,33 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { sha256, type InventoryRow, type KanbanCard, type Role } from "./data";
 
 export type AuditEntry = {
   seq: number;
   ts: string;
   role: Role;
+  user_email: string | null;
   op: "SELECT" | "INSERT" | "UPDATE" | "DELETE";
   target: string;
   detail: string;
-  prevHash: string;
+  prev_hash: string;
   hash: string;
 };
 export type Signature = { by: string; ts: string; hash: string };
 
-type State = {
-  role: Role;
+/** Dados compartilhados por toda a equipe (salvos no backend). */
+type Shared = {
   enterprise: boolean;
   answers: Record<number, boolean>;
-  signatures: Record<string, Signature>; // "PI-01".."PI-06"
+  signatures: Record<string, Signature>;
   inventory: InventoryRow[];
   kanban: KanbanCard[];
   assets: { id: string; host: string; bitlocker: boolean; vault: boolean }[];
   incidentStart: string | null;
   incidentSteps: boolean[];
-  audit: AuditEntry[];
 };
 
-const initial: State = {
-  role: "dpo",
+const initialShared: Shared = {
   enterprise: false,
   answers: {},
   signatures: {},
@@ -50,70 +50,133 @@ const initial: State = {
   ],
   incidentStart: null,
   incidentSteps: [false, false, false, false, false, false],
-  audit: [],
 };
 
-type Ctx = State & {
-  set: (patch: Partial<State>, log?: { op: AuditEntry["op"]; target: string; detail: string }) => void;
+type Ctx = Shared & {
+  ready: boolean;
+  userId: string | null;
+  email: string | null;
+  roles: Role[];
+  role: Role;
+  audit: AuditEntry[];
+  setRole: (r: Role) => void;
+  set: (patch: Partial<Shared>, log?: { op: AuditEntry["op"]; target: string; detail: string }) => void;
   log: (op: AuditEntry["op"], target: string, detail: string) => void;
   sign: (pi: string) => Promise<void>;
   reset: () => void;
+  refreshAudit: () => Promise<void>;
 };
 
 const C = createContext<Ctx | null>(null);
-const KEY = "priva2ec-state-v1";
+const ROLE_PREF = "priva2ec-active-role";
+const ORDER: Role[] = ["dpo", "admin", "csuite"];
 
 export function PrivaProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<State>(initial);
-  const loaded = useRef(false);
-  const chain = useRef<Promise<void>>(Promise.resolve());
-  const stateRef = useRef(state);
-  stateRef.current = state;
-  const lastAudit = useRef<AuditEntry | null>(null);
+  const [shared, setShared] = useState<Shared>(initialShared);
+  const [ready, setReady] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [role, setRoleState] = useState<Role>("dpo");
+  const [audit, setAudit] = useState<AuditEntry[]>([]);
+  const roleRef = useRef(role);
+  roleRef.current = role;
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pending = useRef<Shared | null>(null);
+
+  const canReadAudit = roles.includes("admin") || roles.includes("dpo");
+
+  const refreshAudit = useCallback(async () => {
+    const { data } = await supabase.from("audit_log").select("*").order("seq", { ascending: false }).limit(500);
+    if (data) setAudit(data.reverse() as AuditEntry[]);
+  }, []);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setState({ ...initial, ...JSON.parse(raw) });
-    } catch {}
-    loaded.current = true;
+    let cancelled = false;
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user || cancelled) return;
+      setUserId(u.user.id);
+      setEmail(u.user.email ?? null);
+      const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id);
+      const granted = (r ?? []).map((x) => x.role as Role).sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
+      setRoles(granted);
+      const pref = localStorage.getItem(ROLE_PREF) as Role | null;
+      if (granted.length) setRoleState(pref && granted.includes(pref) ? pref : granted[0]!);
+      if (granted.length) {
+        const { data: ws } = await supabase.from("workspace_state").select("data").eq("id", 1).maybeSingle();
+        if (ws?.data && typeof ws.data === "object") setShared({ ...initialShared, ...(ws.data as Partial<Shared>) });
+      }
+      setReady(true);
+    })();
+    return () => { cancelled = true; };
   }, []);
+
   useEffect(() => {
-    if (loaded.current) localStorage.setItem(KEY, JSON.stringify(state));
-  }, [state]);
+    if (ready && canReadAudit) void refreshAudit();
+  }, [ready, canReadAudit, refreshAudit]);
+
+  // Atualizações em tempo real feitas por outros membros
+  useEffect(() => {
+    if (!ready || !roles.length) return;
+    const ch = supabase
+      .channel("workspace_state")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "workspace_state" }, (payload) => {
+        const row = payload.new as { data: Partial<Shared>; updated_by: string | null };
+        if (row.updated_by && row.updated_by !== userId && !pending.current) setShared({ ...initialShared, ...row.data });
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [ready, roles.length, userId]);
+
+  const persist = (next: Shared) => {
+    pending.current = next;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      const data = pending.current;
+      if (!data) return;
+      await supabase.from("workspace_state").update({ data: data as never, updated_at: new Date().toISOString(), updated_by: userId }).eq("id", 1);
+      if (pending.current === data) pending.current = null;
+    }, 600);
+  };
 
   const log = useCallback((op: AuditEntry["op"], target: string, detail: string) => {
-    chain.current = chain.current.then(async () => {
-      const snapshot = stateRef.current;
-      const prev = lastAudit.current ?? snapshot.audit[snapshot.audit.length - 1];
-      const prevHash = prev?.hash ?? "0".repeat(64);
-      const seq = (prev?.seq ?? 0) + 1;
-      const ts = new Date().toISOString();
-      const hash = await sha256(`${seq}|${ts}|${snapshot.role}|${op}|${target}|${detail}|${prevHash}`);
-      const entry: AuditEntry = { seq, ts, role: snapshot.role, op, target, detail, prevHash, hash };
-      lastAudit.current = entry;
-      setState((s) => ({ ...s, audit: [...s.audit, entry] }));
-    });
-  }, []);
+    void (async () => {
+      const { data, error } = await supabase.rpc("append_audit", { _role: roleRef.current, _op: op, _target: target, _detail: detail });
+      if (!error && data && (roles.includes("admin") || roles.includes("dpo"))) setAudit((a) => [...a, data as AuditEntry]);
+    })();
+  }, [roles]);
 
   const set: Ctx["set"] = (patch, l) => {
-    setState((s) => ({ ...s, ...patch }));
+    setShared((s) => {
+      const next = { ...s, ...patch };
+      if (Object.keys(patch).length) persist(next);
+      return next;
+    });
     if (l) log(l.op, l.target, l.detail);
+  };
+
+  const setRole = (r: Role) => {
+    if (!roles.includes(r)) return;
+    localStorage.setItem(ROLE_PREF, r);
+    setRoleState(r);
+    roleRef.current = r;
+    log("SELECT", "session", `Troca de painel para ${r}`);
   };
 
   const sign = async (pi: string) => {
     const ts = new Date().toISOString();
-    const hash = await sha256(`${pi}|${ts}|gov.br`);
-    setState((s) => ({ ...s, signatures: { ...s.signatures, [pi]: { by: "Assinatura Gov.br (simulada)", ts, hash } } }));
-    log("INSERT", "signatures", `${pi} chancelado`);
+    const hash = await sha256(`${pi}|${ts}|${email}|gov.br`);
+    set({ signatures: { ...shared.signatures, [pi]: { by: `${email} · Gov.br (simulado)`, ts, hash } } }, { op: "INSERT", target: "signatures", detail: `${pi} chancelado` });
   };
 
-  const reset = () => {
-    lastAudit.current = null;
-    setState({ ...initial, audit: [] });
-  };
+  const reset = () => set({ ...initialShared }, { op: "DELETE", target: "workspace", detail: "Reinício da esteira" });
 
-  return <C.Provider value={{ ...state, set, log, sign, reset }}>{children}</C.Provider>;
+  return (
+    <C.Provider value={{ ...shared, ready, userId, email, roles, role, audit, setRole, set, log, sign, reset, refreshAudit }}>
+      {children}
+    </C.Provider>
+  );
 }
 
 export function usePriva() {
