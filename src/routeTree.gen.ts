@@ -10,33 +10,91 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as Bloco1RouteImport } from './routes/bloco-1'
+import { Route as Bloco2RouteImport } from './routes/bloco-2'
+import { Route as Bloco3RouteImport } from './routes/bloco-3'
+import { Route as Bloco4RouteImport } from './routes/bloco-4'
+import { Route as Bloco5RouteImport } from './routes/bloco-5'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Bloco1Route = Bloco1RouteImport.update({
+  id: '/bloco-1',
+  path: '/bloco-1',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Bloco2Route = Bloco2RouteImport.update({
+  id: '/bloco-2',
+  path: '/bloco-2',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Bloco3Route = Bloco3RouteImport.update({
+  id: '/bloco-3',
+  path: '/bloco-3',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Bloco4Route = Bloco4RouteImport.update({
+  id: '/bloco-4',
+  path: '/bloco-4',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Bloco5Route = Bloco5RouteImport.update({
+  id: '/bloco-5',
+  path: '/bloco-5',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bloco-1': typeof Bloco1Route
+  '/bloco-2': typeof Bloco2Route
+  '/bloco-3': typeof Bloco3Route
+  '/bloco-4': typeof Bloco4Route
+  '/bloco-5': typeof Bloco5Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bloco-1': typeof Bloco1Route
+  '/bloco-2': typeof Bloco2Route
+  '/bloco-3': typeof Bloco3Route
+  '/bloco-4': typeof Bloco4Route
+  '/bloco-5': typeof Bloco5Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bloco-1': typeof Bloco1Route
+  '/bloco-2': typeof Bloco2Route
+  '/bloco-3': typeof Bloco3Route
+  '/bloco-4': typeof Bloco4Route
+  '/bloco-5': typeof Bloco5Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    '/' | '/bloco-1' | '/bloco-2' | '/bloco-3' | '/bloco-4' | '/bloco-5'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/bloco-1' | '/bloco-2' | '/bloco-3' | '/bloco-4' | '/bloco-5'
+  id:
+    | '__root__'
+    | '/'
+    | '/bloco-1'
+    | '/bloco-2'
+    | '/bloco-3'
+    | '/bloco-4'
+    | '/bloco-5'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  Bloco1Route: typeof Bloco1Route
+  Bloco2Route: typeof Bloco2Route
+  Bloco3Route: typeof Bloco3Route
+  Bloco4Route: typeof Bloco4Route
+  Bloco5Route: typeof Bloco5Route
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +106,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bloco-1': {
+      id: '/bloco-1'
+      path: '/bloco-1'
+      fullPath: '/bloco-1'
+      preLoaderRoute: typeof Bloco1RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bloco-2': {
+      id: '/bloco-2'
+      path: '/bloco-2'
+      fullPath: '/bloco-2'
+      preLoaderRoute: typeof Bloco2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bloco-3': {
+      id: '/bloco-3'
+      path: '/bloco-3'
+      fullPath: '/bloco-3'
+      preLoaderRoute: typeof Bloco3RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bloco-4': {
+      id: '/bloco-4'
+      path: '/bloco-4'
+      fullPath: '/bloco-4'
+      preLoaderRoute: typeof Bloco4RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bloco-5': {
+      id: '/bloco-5'
+      path: '/bloco-5'
+      fullPath: '/bloco-5'
+      preLoaderRoute: typeof Bloco5RouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  Bloco1Route: Bloco1Route,
+  Bloco2Route: Bloco2Route,
+  Bloco3Route: Bloco3Route,
+  Bloco4Route: Bloco4Route,
+  Bloco5Route: Bloco5Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
