@@ -61,7 +61,7 @@ function Auditoria() {
   useEffect(() => { void load(); }, [load]);
 
   const razao = useMemo(() => Object.fromEntries(empresas.map((e) => [e.cnpj, e.razao_social])), [empresas]);
-  const usuario = (l: Linha) => (l.usuario_id && cpfs[l.usuario_id] ? maskCPF(cpfs[l.usuario_id]) : l.user_email ? maskEmail(l.user_email) : "—");
+  const usuario = (l: Linha) => { const c = l.usuario_id ? cpfs[l.usuario_id] : undefined; return c ? maskCPF(c) : l.user_email ? maskEmail(l.user_email) : "—"; };
   const hash = (l: Linha) => (l.hash_integridade_sha256 ?? l.hash);
 
   const verify = async () => { await load(); const { data } = await supabase.rpc("verificar_trilha"); setVerified(!!data?.[0]?.ok); };
