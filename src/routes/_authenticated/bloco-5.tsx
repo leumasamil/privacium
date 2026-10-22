@@ -4,7 +4,7 @@ import { CheckCircle2, Circle, PartyPopper, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import { DOSIMETRIA, TETO_REDUCAO, multaComAtenuantes, reducaoDosimetria } from "@/lib/priva/dosimetria";
+import { DOSIMETRIA, TETO_REDUCAO, fatorAtivo, multaComAtenuantes, reducaoDosimetria } from "@/lib/priva/dosimetria";
 import { usePriva } from "@/lib/priva/store";
 import { useCnpjRows } from "@/lib/priva/useCnpjRows";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
@@ -126,12 +126,12 @@ function Bloco5() {
         <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
           <div className="space-y-3">
             {DOSIMETRIA.map((d) => {
-              const ok = !!signatures[d.pi];
+              const ok = fatorAtivo(d.pis, signatures);
               return (
-                <div key={d.pi}>
+                <div key={d.id}>
                   <div className="flex items-center gap-2 text-sm">
                     {ok ? <CheckCircle2 className="h-4 w-4 text-success" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
-                    <span className="w-12 font-mono text-xs">{d.pi}</span>
+                    <span className="w-24 font-mono text-xs">{d.pis.join(" + ")}</span>
                     <span className="flex-1 text-xs">{d.rule}</span>
                     <span className="font-mono text-xs">−{d.pct}%</span>
                   </div>
