@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DEPARTMENTS, computeGM, riskZone } from "@/lib/priva/data";
-import { useQuestions } from "@/lib/priva/questions";
+import { useQuestions, useRespostas } from "@/lib/priva/questions";
 import { usePriva } from "@/lib/priva/store";
 import { Masked, PageHeader, Panel, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
@@ -90,7 +90,8 @@ export function AdminDashboard() {
 const IMPACTO: Record<string, number> = { RH: 4, TI: 5, Marketing: 3, Compras: 2, "Recepção": 2, "Jurídico": 4, Financeiro: 5 };
 
 export function CSuiteDashboard() {
-  const { answers, signatures, log } = usePriva();
+  const { cnpj, signatures, log } = usePriva();
+  const answers = useRespostas(cnpj);
   const questions = useQuestions();
   const { gm, score } = computeGM(answers, questions);
   const zone = riskZone(gm);
