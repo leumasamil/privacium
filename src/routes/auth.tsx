@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 type Search = { redirect?: string };
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>): Search => (typeof s.redirect === "string" ? { redirect: s.redirect } : {}),
+  validateSearch: (s: Record<string, unknown>): Search => (typeof s["redirect"] === "string" ? { redirect: s["redirect"] } : {}),
   head: () => ({
     meta: [
       { title: "Entrar — PRIVA 2EC" },
