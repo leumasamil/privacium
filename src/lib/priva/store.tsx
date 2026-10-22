@@ -1,3 +1,4 @@
+import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { sha256, type InventoryRow, type KanbanCard, type Role } from "./data";
@@ -67,7 +68,10 @@ type Ctx = Shared & {
   refreshAudit: () => Promise<void>;
 };
 
-const C = createContext<Ctx | null>(null);
+// Contexto estável entre recargas de módulo (HMR): evita que o provedor e as páginas
+// usem instâncias diferentes do mesmo contexto.
+const g = globalThis as unknown as { __privaCtx?: React.Context<Ctx | null> };
+const C = (g.__privaCtx ??= createContext<Ctx | null>(null));
 const ROLE_PREF = "priva2ec-active-role";
 const ORDER: Role[] = ["dpo", "admin", "csuite"];
 
