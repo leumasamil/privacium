@@ -1,3 +1,4 @@
+import { respostaHerdada } from "@/lib/priva/ciclo";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -97,4 +98,20 @@ export function useMeuCpf(userId: string | null) {
   const demo = useDemo();
   if (demo) return { cpf: DEMO_CPF, loading: false, salvar: async () => "Indisponível no Modo Demonstração." };
   return { cpf: q.data ?? null, loading: q.isLoading, salvar };
+}
+
+/** IDs das perguntas cujas respostas foram herdadas do ciclo anterior (Delta de Riscos). */
+export function useHerdadas(cnpj: string | null) {
+  const demo = useDemo();
+  const q = useQuery({
+    queryKey: ["herdadas", cnpj],
+    enabled: !!cnpj && !demo,
+    queryFn: async (): Promise<Set<string>> => {
+      const { data, error } = await supabase.from("respostas_diagnostico").select("pergunta_id, timestamp_resposta").eq("empresa_cnpj", cnpj ?? "");
+      if (error) throw error;
+      const now = new Date();
+      return new Set(data.filter((r) => respostaHerdada(r.timestamp_resposta, now)).map((r) => r.pergunta_id));
+    },
+  });
+  return q.data ?? new Set<string>();
 }

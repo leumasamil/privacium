@@ -1,3 +1,4 @@
+import { assinaturasVigentes } from "@/lib/priva/ciclo";
 import { DEMO_CNPJ, DEMO_RAZAO, DEMO_SIGNATURES } from "./demo";
 import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
@@ -238,7 +239,7 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
         set: (patch) => setDemoShared((s) => ({ ...s, ...patch })), log: noop, sign: async () => undefined,
         reset: noop, refreshAudit: async () => undefined, demo, setDemo,
       }
-    : { ...shared, ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, setDemo };
+    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, setDemo };
 
   return (
     <C.Provider value={value}>

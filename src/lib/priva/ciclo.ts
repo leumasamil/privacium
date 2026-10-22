@@ -13,3 +13,14 @@ export function cicloSemestral(now: Date) {
   const fase: FaseCiclo = diaDoCiclo === 1 ? "dia1" : diasRestantes <= 7 ? "urgente7" : diasRestantes <= 30 ? "alerta30" : "normal";
   return { inicio, fim, congelamento, diasRestantes, diaDoCiclo, fase, rotulo: `${s1 ? "1º" : "2º"} semestre ${y}` };
 }
+
+/** Resposta herdada do ciclo anterior (Delta de Riscos): salva antes do início do ciclo vigente. */
+export function respostaHerdada(timestamp: string, now: Date) {
+  return new Date(timestamp).getTime() < cicloSemestral(now).inicio.getTime();
+}
+
+/** Só valem as assinaturas coletadas no ciclo vigente: um novo semestre exige novo PI-01..PI-05. */
+export function assinaturasVigentes<T extends { ts: string }>(sigs: Record<string, T>, now: Date): Record<string, T> {
+  const ini = cicloSemestral(now).inicio.getTime();
+  return Object.fromEntries(Object.entries(sigs).filter(([, s]) => new Date(s.ts).getTime() >= ini));
+}

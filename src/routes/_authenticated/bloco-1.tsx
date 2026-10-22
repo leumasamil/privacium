@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { DEPARTMENTS, computeGM, riskZone } from "@/lib/priva/data";
-import { useMeuCpf, useQuestions, useResponder, useRespostas } from "@/lib/priva/questions";
+import { useHerdadas, useMeuCpf, useQuestions, useResponder, useRespostas } from "@/lib/priva/questions";
+import { useQueryClient } from "@tanstack/react-query";
+import { History } from "lucide-react";
 import { isValidCPF, maskCNPJ } from "@/lib/priva/data";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -44,6 +46,8 @@ function Bloco1() {
   const { cnpj, empresas, userId, email, log } = usePriva();
   const questions = useQuestions();
   const answers = useRespostas(cnpj);
+  const herdadas = useHerdadas(cnpj);
+  const qc = useQueryClient();
   const { cpf, loading, salvar } = useMeuCpf(userId);
   const responder = useResponder(cnpj, cpf);
   const [dept, setDept] = useState<string>(DEPARTMENTS[0]);
@@ -58,7 +62,8 @@ function Bloco1() {
   const answer = async (id: string, v: boolean) => {
     const err = await responder([{ pergunta_id: id, resposta: v ? "SIM" : "NÃO" }]);
     if (err) toast.error(err);
-    else log("UPDATE", "respostas_diagnostico", `Pergunta ${id.slice(0, 8)}=${v ? "SIM" : "NÃO"}`);
+    else void qc.invalidateQueries({ queryKey: ["herdadas", cnpj] });
+    if (!err) log("UPDATE", "respostas_diagnostico", `Pergunta ${id.slice(0, 8)}=${v ? "SIM" : "NÃO"}`);
   };
 
   if (!cnpj) return <Panel title="Diagnóstico de entrada"><p className="text-sm text-muted-foreground">Cadastre ou selecione um CNPJ no menu lateral para iniciar o diagnóstico.</p></Panel>;
@@ -151,6 +156,7 @@ function Bloco1() {
                   <div className="flex-1">
                     <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{q.principle} · peso de criticidade {q.weight}</p>
                     <p className="mt-1 text-sm">{q.text}</p>
+                    {herdadas.has(q.id) && <span title="Resposta herdada do ciclo anterior. Confirme ou altere." className="mt-1 inline-flex items-center gap-1 rounded-sm border border-dashed px-1.5 py-0.5 font-mono text-[10px] uppercase text-muted-foreground"><History className="h-3 w-3" /> Histórico</span>}
                   </div>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2">
@@ -163,6 +169,7 @@ function Bloco1() {
         </Panel>
       </div>
 
+      {herdadas.size > 0 && <p className="rounded-sm border border-dashed bg-card p-3 text-sm"><History className="mr-1 inline h-4 w-4" /><b>Delta de Riscos:</b> {herdadas.size} respostas vieram do ciclo anterior. Revise e altere só o que mudou no negócio; depois finalize e colete as duas assinaturas do novo PI-01.</p>}
       <PIOutput pi="PI-01: Dossiê Legal de Alinhamento de Privacidade" ready={questions.length > 0 && answered === questions.length} readyHint={`Responda todas as perguntas (${answered}/${questions.length}).`}>
         <h3 className="font-semibold">1. Resultado do diagnóstico</h3>
         <p>Empresa: {razao} · CNPJ {maskCNPJ(cnpj)} · Auditor: {email}</p>
