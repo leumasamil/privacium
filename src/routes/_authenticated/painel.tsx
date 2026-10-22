@@ -20,8 +20,8 @@ export const Route = createFileRoute("/_authenticated/painel")({
 });
 
 function Painel() {
-  const { role } = usePriva();
-  if (role === "ADMIN_SISTEMA") return <AdminDashboard />;
+  const { role, demo } = usePriva();
+  if (role === "ADMIN_SISTEMA" && !demo) return <AdminDashboard />;
   if (role === "C_SUITE") return <CSuiteDashboard />;
   return <Index />;
 }

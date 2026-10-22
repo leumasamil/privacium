@@ -40,7 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (!ready || !cnpj || !roles.length) return;
     const sensitive = SENSITIVE.find((p) => pathname.startsWith(p.path));
     const key = `${cnpj}|${pathname}|${role}`;
-    if (sensitive && lastRead.current !== key && canAccess(role, pathname)) {
+    if (sensitive && lastRead.current !== key && (demo || canAccess(role, pathname))) {
       lastRead.current = key;
       log("SELECT", sensitive.target, `Leitura da tela ${pathname}`);
     }
@@ -83,10 +83,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
     </div>
   );
-  const allowed = canAccess(role, pathname);
+  const allowed = (demo || canAccess(role, pathname));
 
   const item = (to: string, label: ReactNode, icon: ReactNode, extra?: ReactNode, locked = false) => {
-    if (!canAccess(role, to)) return null;
+    if (!(demo || canAccess(role, to))) return null;
     const active = pathname.startsWith(to);
     return (
       <Link
@@ -144,7 +144,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
         <nav className="flex-1 space-y-1 overflow-auto px-3 py-4">
           {item("/painel", "Esteira BLLOCO", <LayoutDashboard className="h-4 w-4" />)}
-          {canAccess(role, "/bloco") && <p className="px-3 pb-1 pt-4 font-mono text-[10px] uppercase tracking-widest">Ciclo PRIVA</p>}
+          {(demo || canAccess(role, "/bloco")) && <p className="px-3 pb-1 pt-4 font-mono text-[10px] uppercase tracking-widest">Ciclo PRIVA</p>}
           {BLOCKS.map((b) => {
             const unlocked = isUnlocked(signatures, b.n);
             const done = !!signatures[`PI-0${b.n}`];

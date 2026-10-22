@@ -55,6 +55,7 @@ function Bloco5() {
     setRipd((salvo?.riscos ?? {}) as Record<string, R>);
     setEscudo(salvo?.escudo_digital || ESCUDO_PADRAO);
   }, [salvo?.atualizado_em]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setBase(demo ? DEMO_MULTA_BASE : 1_000_000); }, [demo]);
   useEffect(() => { if (cnpj) log("SELECT", "ripd_ia", "Abertura do RIPD algorítmico do Bloco 5"); }, [cnpj, log]);
 
   if (!cnpj) return <Panel title="Auditoria"><p className="text-sm text-muted-foreground">Selecione um CNPJ no menu lateral.</p></Panel>;
