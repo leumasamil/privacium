@@ -67,6 +67,13 @@ export function AdminDashboard() {
       <PageHeader eyebrow="ADMIN_SISTEMA · Super Administrador" title="Operação comercial do Privacium">
         Visão consolidada dos clientes multi-tenant. Acesso exclusivo do dono do ecossistema.
       </PageHeader>
+      <div className="mb-6 rounded-md border bg-secondary p-4 text-sm">
+        <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Infraestrutura · DNS</p>
+        <p className="mt-1 text-foreground">
+          Plataforma pronta para operar e receber apontamentos de DNS no subdomínio seguro corporativo{" "}
+          <span className="font-mono font-semibold">plataforma.privacium.com.br</span> (HTTPS automático).
+        </p>
+      </div>
       <div className="mb-8 grid gap-4 md:grid-cols-3">
         <Stat label="Faturamento mensal recorrente (MRR)" value={brl(mrr)} sub={`${ativos.length} empresas ativas`} />
         <div className="rounded-md border bg-card p-5">

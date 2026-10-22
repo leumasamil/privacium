@@ -1,3 +1,4 @@
+import { PrivaciumLogo } from "@/components/priva/Logo";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ShieldCheck } from "lucide-react";
@@ -70,7 +71,7 @@ function AuthPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="hidden flex-col justify-between bg-sidebar p-12 text-sidebar-foreground lg:flex">
-        <p className="text-2xl font-semibold text-sidebar-accent-foreground">PRIVA <span className="text-sidebar-primary">2EC</span></p>
+        <PrivaciumLogo size="lg" className="text-sidebar-accent-foreground" />
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em]">Privacy by Design · ISO/IEC 27701 · 27037</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight text-sidebar-accent-foreground">Governança de privacidade como ciclo contínuo.</h1>
@@ -80,6 +81,7 @@ function AuthPage() {
       </div>
       <div className="flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
+          <PrivaciumLogo size="sm" className="mb-6 text-primary lg:hidden" />
           <h2 className="text-2xl font-semibold text-primary">{mode === "in" ? "Entrar" : "Criar conta"}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "in" ? "Acesse o painel do seu cargo." : "Novas contas aguardam liberação de um administrador."}
