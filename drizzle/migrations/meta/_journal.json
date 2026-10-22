@@ -106,6 +106,13 @@
       "when": 1792699966192,
       "tag": "0014_trilha_aceita_login_falha",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1792702618246,
+      "tag": "0015_revogar_execucao_publica",
+      "breakpoints": true
     }
   ]
 }

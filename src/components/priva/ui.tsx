@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from "react";
-import { Eye, EyeOff, Lock, ShieldCheck, FileSignature } from "lucide-react";
+import { useRef, useState, type ReactNode } from "react";
+import { Eye, EyeOff, Lock, ShieldCheck, FileSignature, Download } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -98,10 +99,11 @@ export function Masked({ value, kind }: { value: string; kind: "cpf" | "cnpj" | 
 }
 
 export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string; ready: boolean; readyHint: string; children: ReactNode; dual?: boolean }) {
-  const { signatures, sign, set, email, cnpj } = usePriva();
+  const { signatures, sign, set, email, cnpj, log } = usePriva();
   const code = pi.slice(0, 5).replace(" ", "");
   const sig = signatures[code];
   const [open, setOpen] = useState(false);
+  const docRef = useRef<HTMLDivElement>(null);
   return (
     <Panel title="Saída obrigatória" className="border-primary/40">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -123,10 +125,18 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
             <DialogTitle>{pi}</DialogTitle>
             <DialogDescription>Emitido pelo Ecossistema de Governança Privacium · ISO/IEC 27701</DialogDescription>
           </DialogHeader>
-          <div className="max-h-[50vh] overflow-auto rounded-sm border bg-background p-6 text-sm leading-relaxed">{children}</div>
+          <div ref={docRef} className="max-h-[50vh] overflow-auto rounded-sm border bg-background p-6 text-sm leading-relaxed">{children}</div>
           <DialogFooter>
             {sig ? (
-              <span className="font-mono text-xs text-muted-foreground">SHA-256 {sig.hash}</span>
+              <div className="flex w-full flex-wrap items-center justify-between gap-2">
+                <span className="break-all font-mono text-xs text-muted-foreground">SHA-256 {sig.hash}</span>
+                <Button variant="outline" onClick={async () => {
+                  const { gerarPdfPI } = await import("@/lib/priva/pdf");
+                  const { data: cpf } = await supabase.rpc("meu_cpf");
+                  gerarPdfPI(pi, docRef.current?.innerText ?? "", { hash: sig.hash, ts: sig.ts, assinante: sig.by, cnpj: maskCNPJ(cnpj ?? ""), cpf: cpf ? maskCPF(String(cpf)) : "não cadastrado" }).save(`${code}-${cnpj ?? ""}.pdf`);
+                  log("SELECT", "pi_pdf", `Exportação PDF ${code}`);
+                }}><Download className="h-4 w-4" /> Baixar PDF</Button>
+              </div>
             ) : (
               dual ? (
                 <div className="flex flex-wrap items-center gap-2">

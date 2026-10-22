@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role), public.has_any_role(uuid), public.vincular_criador_empresa(), public.preparar_conta_empresa(), public.sync_mensalidade() FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role), public.has_any_role(uuid) TO authenticated;
