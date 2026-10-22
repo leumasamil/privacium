@@ -7,20 +7,18 @@ export const ROLE_LABEL: Record<Role, string> = {
 
 export const DEPARTMENTS = ["RH", "TI", "Marketing", "Compras", "Recepção", "Jurídico", "Financeiro"] as const;
 
-export type Question = { id: number; department: string; principle: string; text: string; weight: number };
+export type Question = { id: string; department: string; principle: string; text: string; weight: number };
 
 export const PERFECT_SCORE = 1660;
 
 /**
  * SA = soma dos pesos das respostas SIM. GM = (SA / 1660) * 100.
- * O Score Perfeito do manual é 1660; quando a soma dos pesos do banco difere, o SA é
- * reescalado proporcionalmente para a régua de 1660 pontos.
+ * Régua fixa de 1660 pontos (fórmula literal do manual).
  */
-export function computeGM(answers: Record<number, boolean>, questions: Question[]) {
-  const bankMax = questions.reduce((a, q) => a + q.weight, 0) || 1;
-  const raw = questions.reduce((a, q) => a + (answers[q.id] ? q.weight : 0), 0);
-  const score = Math.round((raw / bankMax) * PERFECT_SCORE);
-  return { raw, bankMax, score, gm: (score / PERFECT_SCORE) * 100 };
+export function computeGM(answers: Record<string, boolean>, questions: Question[]) {
+  const bankMax = questions.reduce((a, q) => a + q.weight, 0);
+  const score = questions.reduce((a, q) => a + (answers[q.id] ? q.weight : 0), 0);
+  return { raw: score, bankMax, score, gm: (score / PERFECT_SCORE) * 100 };
 }
 
 export function riskZone(gm: number) {
@@ -143,4 +141,16 @@ export function tokenizePrompt(text: string) {
   // NER simplificado: sequência de 2+ palavras capitalizadas
   out = out.replace(/\b([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\s+(?:d[aeo]s?\s+)?[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+)+)\b/g, repl("TITULAR"));
   return { out, map };
+}
+
+export function isValidCPF(v: string) {
+  const d = v.replace(/\D/g, "");
+  if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
+  const dv = (len: number) => {
+    let s = 0;
+    for (let i = 0; i < len; i++) s += Number(d[i]) * (len + 1 - i);
+    const r = (s * 10) % 11;
+    return r === 10 ? 0 : r;
+  };
+  return dv(9) === Number(d[9]) && dv(10) === Number(d[10]);
 }

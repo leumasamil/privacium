@@ -43,6 +43,13 @@
       "when": 1792694742776,
       "tag": "0005_revoke_public_definer_exec",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792695059142,
+      "tag": "0006_diagnostico_bloco1",
+      "breakpoints": true
     }
   ]
 }

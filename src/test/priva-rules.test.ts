@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { computeGM, riskZone, type Question } from "@/lib/priva/data";
 import { sanitize } from "@/components/priva/AIShield";
 
-const q = (id: number, weight: number): Question => ({ id, department: "TI", principle: "x", text: "x", weight });
+const q = (id: string, weight: number): Question => ({ id, department: "TI", principle: "x", text: "x", weight });
 
 describe("GM", () => {
   it("SIM soma o peso, NÃO soma zero, na régua de 1660", () => {
-    const bank = [q(1, 10), q(2, 6)];
-    const r = computeGM({ 1: true, 2: false }, bank);
-    expect(r.raw).toBe(10);
-    expect(r.score).toBe(Math.round((10 / 16) * 1660));
+    const bank = [q("a", 10), q("b", 6)];
+    const r = computeGM({ a: true, b: false }, bank);
+    expect(r.score).toBe(10);
+    expect(r.gm).toBeCloseTo((10 / 1660) * 100);
   });
   it("faixas de risco", () => {
     expect(riskZone(40).tone).toBe("destructive");
@@ -41,5 +41,13 @@ describe("Privacy by Default (blueprint)", () => {
   it("valida dígitos do CNPJ", () => {
     expect(_vj("11.222.333/0001-81")).toBe(true);
     expect(_vj("11.222.333/0001-82")).toBe(false);
+  });
+});
+
+import { isValidCPF as _vc } from "@/lib/priva/data";
+describe("CPF do auditor", () => {
+  it("valida dígitos do CPF", () => {
+    expect(_vc("529.982.247-25")).toBe(true);
+    expect(_vc("529.982.247-24")).toBe(false);
   });
 });

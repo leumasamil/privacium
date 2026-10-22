@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2, Lock, RefreshCw } from "lucide-react";
 import { BLOCKS, computeGM, riskZone } from "@/lib/priva/data";
-import { useQuestions } from "@/lib/priva/questions";
+import { useQuestions, useRespostas } from "@/lib/priva/questions";
 import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { PageHeader, Panel, Tag } from "@/components/priva/ui";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,8 @@ function Painel() {
 }
 
 function Index() {
-  const { signatures, answers, enterprise, audit, kanban } = usePriva();
+  const { signatures, cnpj, enterprise, audit, kanban } = usePriva();
+  const answers = useRespostas(cnpj);
   const questions = useQuestions();
   const { gm, score } = computeGM(answers, questions);
   const zone = riskZone(gm);

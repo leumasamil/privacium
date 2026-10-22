@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { DEPARTMENTS, PERFECT_SCORE, computeGM, riskZone } from "@/lib/priva/data";
-import { useQuestions } from "@/lib/priva/questions";
+import { useMeuCpf, useQuestions, useResponder, useRespostas } from "@/lib/priva/questions";
+import { isValidCPF, maskCNPJ } from "@/lib/priva/data";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { usePriva } from "@/lib/priva/store";
-import { PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
+import { Masked, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -38,22 +41,64 @@ function Gauge({ gm, tone }: { gm: number; tone: keyof typeof ZONE_BG }) {
 }
 
 function Bloco1() {
-  const { answers, set } = usePriva();
+  const { cnpj, empresas, userId, email, log } = usePriva();
   const questions = useQuestions();
+  const answers = useRespostas(cnpj);
+  const { cpf, loading, salvar } = useMeuCpf(userId);
+  const responder = useResponder(cnpj, cpf);
   const [dept, setDept] = useState<string>(DEPARTMENTS[0]);
-  const { gm, score, raw, bankMax } = computeGM(answers, questions);
+  const [cpfInput, setCpfInput] = useState("");
+  const [cpfErr, setCpfErr] = useState("");
+  const { gm, score, bankMax } = computeGM(answers, questions);
   const zone = riskZone(gm);
   const answered = questions.filter((q) => q.id in answers).length;
   const qs = questions.filter((q) => q.department === dept);
+  const razao = empresas.find((e) => e.cnpj === cnpj)?.razao_social ?? "";
 
-  const answer = (id: number, v: boolean) =>
-    set({ answers: { ...answers, [id]: v } }, { op: "UPDATE", target: "diagnostico", detail: `Q${id}=${v ? "SIM" : "NÃO"}` });
+  const answer = async (id: string, v: boolean) => {
+    const err = await responder([{ pergunta_id: id, resposta: v ? "SIM" : "NÃO" }]);
+    if (err) toast.error(err);
+    else log("UPDATE", "respostas_diagnostico", `Pergunta ${id.slice(0, 8)}=${v ? "SIM" : "NÃO"}`);
+  };
+
+  if (!cnpj) return <Panel title="Diagnóstico de entrada"><p className="text-sm text-muted-foreground">Cadastre ou selecione um CNPJ no menu lateral para iniciar o diagnóstico.</p></Panel>;
+  if (!loading && !cpf) {
+    return (
+      <Panel title="Identificação do auditor responsável" className="max-w-md">
+        <p className="mb-3 text-sm text-muted-foreground">Cada resposta é amarrada ao CNPJ auditado e ao CPF do auditor. Informe seu CPF para continuar.</p>
+        <form className="flex gap-2" onSubmit={async (e) => {
+          e.preventDefault();
+          if (!isValidCPF(cpfInput)) return setCpfErr("CPF inválido.");
+          const err = await salvar(cpfInput);
+          setCpfErr(err ?? "");
+          if (!err) log("UPDATE", "usuarios", "Cadastro do CPF do auditor", "cpf");
+        }}>
+          <Input value={cpfInput} onChange={(e) => setCpfInput(e.target.value)} placeholder="000.000.000-00" />
+          <Button type="submit">Salvar</Button>
+        </form>
+        {cpfErr && <p className="mt-2 text-sm text-destructive">{cpfErr}</p>}
+      </Panel>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 1 · (P) Plan" title="Preparar a Privacidade">
-        Questionário Mestre ponderado. SIM soma o peso da pergunta ao Score Alcançado (SA); NÃO soma zero.
+        Diagnóstico de Entrada pela LGPD. SIM soma o peso de criticidade da pergunta; NÃO soma zero.
       </PageHeader>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-md border-l-4 border-primary bg-card p-4">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Empresa sob auditoria</p>
+          <p className="mt-1 text-lg font-semibold text-primary">{razao || "—"}</p>
+          <p className="mt-1">CNPJ <Masked kind="cnpj" value={cnpj} /></p>
+        </div>
+        <div className="rounded-md border-l-4 border-primary bg-card p-4">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Auditor responsável</p>
+          <p className="mt-1 text-lg font-semibold text-primary">{email}</p>
+          <p className="mt-1">CPF {cpf ? <Masked kind="cpf" value={cpf} /> : "…"}</p>
+        </div>
+      </div>
 
       {/* Card flutuante de resultado */}
       <div className="sticky top-0 z-10 -mx-2 rounded-md border bg-card/95 p-4 shadow-sm backdrop-blur">
@@ -67,15 +112,15 @@ function Bloco1() {
           <div className="font-mono text-xs text-muted-foreground">
             <p>GM = (SA / {PERFECT_SCORE}) × 100</p>
             <p className="mt-1 text-foreground">GM = ({score} / {PERFECT_SCORE}) × 100 = {gm.toFixed(1)}%</p>
-            <p className="mt-1">SA bruto {raw} de {bankMax} pts, reescalado para {PERFECT_SCORE}</p>
+            <p className="mt-1">Teto alcançável deste banco: {bankMax} pts</p>
           </div>
           <div className="ml-auto min-w-48 flex-1">
             <div className="flex justify-between text-xs text-muted-foreground"><span>Progresso</span><span className="font-mono">{answered}/{questions.length}</span></div>
             <div className="mt-1 h-2 rounded-sm bg-muted"><div className={cn("h-2 rounded-sm transition-all", ZONE_BG[zone.tone])} style={{ width: `${questions.length ? (answered / questions.length) * 100 : 0}%` }} /></div>
-            <Button variant="link" size="sm" className="h-auto px-0" onClick={() => {
-              const all: Record<number, boolean> = {};
-              questions.forEach((q) => (all[q.id] = (q.id * 13) % 10 < 6));
-              set({ answers: all }, { op: "INSERT", target: "diagnostico", detail: "Preenchimento de demonstração" });
+            <Button variant="link" size="sm" className="h-auto px-0" onClick={async () => {
+              const err = await responder(questions.map((q, i) => ({ pergunta_id: q.id, resposta: (i * 13) % 10 < 6 ? "SIM" : "NÃO" })));
+              if (err) toast.error(err);
+              else log("INSERT", "respostas_diagnostico", "Preenchimento de demonstração");
             }}>Preencher demonstração</Button>
           </div>
         </div>
@@ -103,15 +148,15 @@ function Bloco1() {
             {qs.map((q) => (
               <li key={q.id} className="rounded-sm border bg-background p-4">
                 <div className="flex items-start gap-3">
-                  <span className="font-mono text-xs text-muted-foreground">Q{q.id}</span>
+                  <span className="font-mono text-xs text-muted-foreground">Q{questions.indexOf(q) + 1}</span>
                   <div className="flex-1">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{q.principle} · peso {q.weight}</p>
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{q.principle} · peso de criticidade {q.weight}</p>
                     <p className="mt-1 text-sm">{q.text}</p>
                   </div>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2">
-                  <Button size="lg" variant={answers[q.id] === true ? "default" : "outline"} onClick={() => answer(q.id, true)}>SIM {answers[q.id] === true && `+${q.weight}`}</Button>
-                  <Button size="lg" variant={answers[q.id] === false ? "default" : "outline"} onClick={() => answer(q.id, false)}>NÃO</Button>
+                  <Button size="lg" variant={answers[q.id] === true ? "default" : "outline"} onClick={() => void answer(q.id, true)}>SIM {answers[q.id] === true && `+${q.weight}`}</Button>
+                  <Button size="lg" variant={answers[q.id] === false ? "default" : "outline"} onClick={() => void answer(q.id, false)}>NÃO</Button>
                 </div>
               </li>
             ))}
@@ -121,6 +166,7 @@ function Bloco1() {
 
       <PIOutput pi="PI-01: Dossiê Legal de Alinhamento de Privacidade" ready={questions.length > 0 && answered === questions.length} readyHint={`Responda todas as perguntas (${answered}/${questions.length}).`}>
         <h3 className="font-semibold">1. Resultado do diagnóstico</h3>
+        <p>Empresa: {razao} · CNPJ {maskCNPJ(cnpj)} · Auditor: {email}</p>
         <p>Grau de Maturidade: <b>{gm.toFixed(1)}%</b> ({score}/{PERFECT_SCORE}) — {zone.label}.</p>
         <h3 className="mt-4 font-semibold">2. Aderência por departamento</h3>
         <ul className="list-disc pl-5">

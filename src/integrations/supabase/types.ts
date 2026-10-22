@@ -80,6 +80,33 @@ export type Database = {
         }
         Relationships: []
       }
+      perguntas_diagnostico: {
+        Row: {
+          enunciado: string
+          id: string
+          ordem: number
+          peso_criticidade: number
+          questao_critica: string
+          setor: string
+        }
+        Insert: {
+          enunciado: string
+          id?: string
+          ordem: number
+          peso_criticidade: number
+          questao_critica: string
+          setor: string
+        }
+        Update: {
+          enunciado?: string
+          id?: string
+          ordem?: number
+          peso_criticidade?: number
+          questao_critica?: string
+          setor?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -124,6 +151,58 @@ export type Database = {
           weight?: number
         }
         Relationships: []
+      }
+      respostas_diagnostico: {
+        Row: {
+          empresa_cnpj: string
+          id: string
+          pergunta_id: string
+          pontuacao_obtida: number
+          resposta_binaria: string
+          timestamp_resposta: string
+          usuario_cpf: string
+        }
+        Insert: {
+          empresa_cnpj: string
+          id?: string
+          pergunta_id: string
+          pontuacao_obtida?: number
+          resposta_binaria: string
+          timestamp_resposta?: string
+          usuario_cpf: string
+        }
+        Update: {
+          empresa_cnpj?: string
+          id?: string
+          pergunta_id?: string
+          pontuacao_obtida?: number
+          resposta_binaria?: string
+          timestamp_resposta?: string
+          usuario_cpf?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "respostas_diagnostico_empresa_cnpj_fkey"
+            columns: ["empresa_cnpj"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["cnpj"]
+          },
+          {
+            foreignKeyName: "respostas_diagnostico_pergunta_id_fkey"
+            columns: ["pergunta_id"]
+            isOneToOne: false
+            referencedRelation: "perguntas_diagnostico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "respostas_diagnostico_usuario_cpf_fkey"
+            columns: ["usuario_cpf"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["cpf"]
+          },
+        ]
       }
       trilha_auditoria_sistema: {
         Row: {
@@ -363,6 +442,7 @@ export type Database = {
           roles: Database["public"]["Enums"]["app_role"][]
         }[]
       }
+      meu_cpf: { Args: never; Returns: string }
       registrar_acesso: {
         Args: {
           _campo: string
