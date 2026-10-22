@@ -7,7 +7,7 @@ export const ROLE_LABEL: Record<Role, string> = {
 
 export const DEPARTMENTS = ["RH", "TI", "Marketing", "Compras", "Recepção", "Jurídico", "Financeiro"] as const;
 
-export type Question = { id: number; department: string; principle: string; text: string; weight: number };
+export type Question = { id: string; department: string; principle: string; text: string; weight: number };
 
 export const PERFECT_SCORE = 1660;
 
@@ -16,11 +16,10 @@ export const PERFECT_SCORE = 1660;
  * O Score Perfeito do manual é 1660; quando a soma dos pesos do banco difere, o SA é
  * reescalado proporcionalmente para a régua de 1660 pontos.
  */
-export function computeGM(answers: Record<number, boolean>, questions: Question[]) {
-  const bankMax = questions.reduce((a, q) => a + q.weight, 0) || 1;
-  const raw = questions.reduce((a, q) => a + (answers[q.id] ? q.weight : 0), 0);
-  const score = Math.round((raw / bankMax) * PERFECT_SCORE);
-  return { raw, bankMax, score, gm: (score / PERFECT_SCORE) * 100 };
+export function computeGM(answers: Record<string, boolean>, questions: Question[]) {
+  const bankMax = questions.reduce((a, q) => a + q.weight, 0);
+  const score = questions.reduce((a, q) => a + (answers[q.id] ? q.weight : 0), 0);
+  return { raw: score, bankMax, score, gm: (score / PERFECT_SCORE) * 100 };
 }
 
 export function riskZone(gm: number) {
