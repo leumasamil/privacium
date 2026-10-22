@@ -129,3 +129,16 @@ function Auditoria() {
     </div>
   );
 }
+
+function Volumetria() {
+  const [v, setV] = useState<{ empresas: number; ativas: number; usuarios: number; registros_trilha: number } | null>(null);
+  useEffect(() => { void supabase.rpc("volumetria").then(({ data }) => { const r = data?.[0]; if (r) setV({ empresas: Number(r.empresas), ativas: Number(r.ativas), usuarios: Number(r.usuarios), registros_trilha: Number(r.registros_trilha) }); }); }, []);
+  const items = [["Empresas", v?.empresas], ["Empresas ativas", v?.ativas], ["Usuários", v?.usuarios], ["Eventos na trilha", v?.registros_trilha]] as const;
+  return (
+    <div className="grid gap-3 md:grid-cols-4">
+      {items.map(([k, n]) => (
+        <div key={k} className="rounded-md border bg-card p-4"><p className="font-mono text-[10px] uppercase text-muted-foreground">{k}</p><p className="mt-1 text-2xl font-semibold text-primary">{n ?? "—"}</p></div>
+      ))}
+    </div>
+  );
+}
