@@ -7,7 +7,7 @@ import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
-export const Route = createFileRoute("/bloco-3")({
+export const Route = createFileRoute("/_authenticated/bloco-3")({
   head: () => ({
     meta: [
       { title: "Bloco 3 · Implementar Salvaguardas — PRIVA 2EC" },

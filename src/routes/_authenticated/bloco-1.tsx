@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/bloco-1")({
+export const Route = createFileRoute("/_authenticated/bloco-1")({
   head: () => ({
     meta: [
       { title: "Bloco 1 · Preparar a Privacidade — PRIVA 2EC" },

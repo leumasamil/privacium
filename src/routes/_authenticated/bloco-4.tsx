@@ -7,7 +7,7 @@ import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 
-export const Route = createFileRoute("/bloco-4")({
+export const Route = createFileRoute("/_authenticated/bloco-4")({
   head: () => ({
     meta: [
       { title: "Bloco 4 · Vigiar e Responder — PRIVA 2EC" },

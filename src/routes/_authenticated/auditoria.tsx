@@ -6,7 +6,7 @@ import { usePriva } from "@/lib/priva/store";
 import { Masked, PageHeader, Panel, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/auditoria")({
+export const Route = createFileRoute("/_authenticated/auditoria")({
   head: () => ({
     meta: [
       { title: "Trilha de Auditoria — PRIVA 2EC" },

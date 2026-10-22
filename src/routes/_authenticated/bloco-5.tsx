@@ -5,7 +5,7 @@ import { usePriva } from "@/lib/priva/store";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Textarea } from "@/components/ui/textarea";
 
-export const Route = createFileRoute("/bloco-5")({
+export const Route = createFileRoute("/_authenticated/bloco-5")({
   head: () => ({
     meta: [
       { title: "Bloco 5 · Auditar e Mitigar — PRIVA 2EC" },
