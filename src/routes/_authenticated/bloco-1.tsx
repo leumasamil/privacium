@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { DEPARTMENTS, PERFECT_SCORE, computeGM, riskZone } from "@/lib/priva/data";
+import { DEPARTMENTS, computeGM, riskZone } from "@/lib/priva/data";
 import { useMeuCpf, useQuestions, useResponder, useRespostas } from "@/lib/priva/questions";
 import { isValidCPF, maskCNPJ } from "@/lib/priva/data";
 import { Input } from "@/components/ui/input";
@@ -110,9 +110,8 @@ function Bloco1() {
             <Tag tone={zone.tone}>{zone.label}</Tag>
           </div>
           <div className="font-mono text-xs text-muted-foreground">
-            <p>GM = (SA / {PERFECT_SCORE}) × 100</p>
-            <p className="mt-1 text-foreground">GM = ({score} / {PERFECT_SCORE}) × 100 = {gm.toFixed(1)}%</p>
-            <p className="mt-1">Teto alcançável deste banco: {bankMax} pts</p>
+            <p>GM = (SA / Score Perfeito Real) × 100</p>
+            <p className="mt-1 text-foreground">GM = ({score} / {bankMax}) × 100 = {gm.toFixed(1)}%</p>
           </div>
           <div className="ml-auto min-w-48 flex-1">
             <div className="flex justify-between text-xs text-muted-foreground"><span>Progresso</span><span className="font-mono">{answered}/{questions.length}</span></div>
@@ -167,7 +166,7 @@ function Bloco1() {
       <PIOutput pi="PI-01: Dossiê Legal de Alinhamento de Privacidade" ready={questions.length > 0 && answered === questions.length} readyHint={`Responda todas as perguntas (${answered}/${questions.length}).`}>
         <h3 className="font-semibold">1. Resultado do diagnóstico</h3>
         <p>Empresa: {razao} · CNPJ {maskCNPJ(cnpj)} · Auditor: {email}</p>
-        <p>Grau de Maturidade: <b>{gm.toFixed(1)}%</b> ({score}/{PERFECT_SCORE}) — {zone.label}.</p>
+        <p>Grau de Maturidade: <b>{gm.toFixed(1)}%</b> ({score}/{bankMax}) — {zone.label}.</p>
         <h3 className="mt-4 font-semibold">2. Aderência por departamento</h3>
         <ul className="list-disc pl-5">
           {DEPARTMENTS.map((d) => {

@@ -5,16 +5,17 @@ import { sanitize } from "@/components/priva/AIShield";
 const q = (id: string, weight: number): Question => ({ id, department: "TI", principle: "x", text: "x", weight });
 
 describe("GM", () => {
-  it("SIM soma o peso, NÃO soma zero, na régua de 1660", () => {
+  it("SIM soma o peso, NÃO soma zero, sobre o teto real do banco", () => {
     const bank = [q("a", 10), q("b", 6)];
     const r = computeGM({ a: true, b: false }, bank);
     expect(r.score).toBe(10);
-    expect(r.gm).toBeCloseTo((10 / 1660) * 100);
+    expect(r.gm).toBeCloseTo((10 / 16) * 100);
   });
   it("faixas de risco", () => {
     expect(riskZone(40).tone).toBe("destructive");
     expect(riskZone(41).tone).toBe("warning");
     expect(riskZone(75).tone).toBe("warning");
+    expect(riskZone(75.9).tone).toBe("warning");
     expect(riskZone(76).tone).toBe("success");
   });
 });
@@ -49,5 +50,14 @@ describe("CPF do auditor", () => {
   it("valida dígitos do CPF", () => {
     expect(_vc("529.982.247-25")).toBe(true);
     expect(_vc("529.982.247-24")).toBe(false);
+  });
+});
+
+describe("Teto real 1414", () => {
+  it("76% de 1414 entra na Zona Verde", () => {
+    const bank = [q("a", 1075), q("b", 339)];
+    const r = computeGM({ a: true }, bank);
+    expect(r.bankMax).toBe(1414);
+    expect(riskZone(r.gm).tone).toBe("success");
   });
 });

@@ -9,21 +9,20 @@ export const DEPARTMENTS = ["RH", "TI", "Marketing", "Compras", "Recepção", "J
 
 export type Question = { id: string; department: string; principle: string; text: string; weight: number };
 
-export const PERFECT_SCORE = 1660;
 
 /**
- * SA = soma dos pesos das respostas SIM. GM = (SA / 1660) * 100.
- * Régua fixa de 1660 pontos (fórmula literal do manual).
+ * SA = soma dos pesos das respostas SIM. GM = (SA / soma dos pesos do banco) * 100.
+ * Divisor = soma real dos pesos de todas as perguntas cadastradas (Score Perfeito Real).
  */
 export function computeGM(answers: Record<string, boolean>, questions: Question[]) {
   const bankMax = questions.reduce((a, q) => a + q.weight, 0);
   const score = questions.reduce((a, q) => a + (answers[q.id] ? q.weight : 0), 0);
-  return { raw: score, bankMax, score, gm: (score / PERFECT_SCORE) * 100 };
+  return { raw: score, bankMax, score, gm: bankMax ? (score / bankMax) * 100 : 0 };
 }
 
 export function riskZone(gm: number) {
   if (gm <= 40) return { label: "Zona de Vulnerabilidade Crítica", tone: "destructive" as const };
-  if (gm <= 75) return { label: "Zona de Conformidade Tática", tone: "warning" as const };
+  if (gm < 76) return { label: "Zona de Conformidade Tática", tone: "warning" as const };
   return { label: "Zona de Blindagem Sistêmica", tone: "success" as const };
 }
 
