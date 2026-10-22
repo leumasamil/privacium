@@ -15,6 +15,13 @@
       "when": 1792691470957,
       "tag": "0001_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792691785387,
+      "tag": "0002_question_bank",
+      "breakpoints": true
     }
   ]
 }

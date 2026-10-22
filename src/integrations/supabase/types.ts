@@ -74,6 +74,30 @@ export type Database = {
         }
         Relationships: []
       }
+      question_bank: {
+        Row: {
+          department: string
+          id: number
+          principle: string
+          text: string
+          weight: number
+        }
+        Insert: {
+          department: string
+          id: number
+          principle: string
+          text: string
+          weight: number
+        }
+        Update: {
+          department?: string
+          id?: number
+          principle?: string
+          text?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
