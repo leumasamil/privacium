@@ -62,7 +62,7 @@ function AuthPage() {
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em]">Privacy by Design · ISO/IEC 27701 · 27037</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight text-sidebar-accent-foreground">Governança de privacidade como ciclo contínuo.</h1>
-          <p className="mt-4 max-w-md text-sm">Método BLLOCO sob a lógica PDCA: preparar, registrar, implementar, vigiar e auditar.</p>
+          <p className="mt-4 max-w-md text-sm">Método BLLOCO sob a lógica do Ciclo PRIVA: preparar, registrar, implementar, vigiar e auditar.</p>
         </div>
         <p className="flex items-center gap-2 text-xs"><ShieldCheck className="h-4 w-4 text-sidebar-primary" /> Toda ação é registrada em trilha de auditoria imutável.</p>
       </div>

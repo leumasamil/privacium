@@ -60,7 +60,7 @@ function Bloco4() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Bloco 4 · (V) Check" title="Vigiar a Privacidade e Processar Incidentes" />
+      <PageHeader eyebrow="Bloco 4 · (V) Ciclo PRIVA" title="Vigiar a Privacidade e Processar Incidentes" />
 
       <Panel title="Console de extração de logs · pgAudit" action={<Button size="sm" onClick={run}><Play className="h-4 w-4" /> Executar rotina mensal</Button>}>
         <div className="grid gap-4 lg:grid-cols-2">

@@ -11,9 +11,9 @@ export const Route = createFileRoute("/_authenticated/painel")({
   head: () => ({
     meta: [
       { title: "Esteira BLLOCO — PRIVA 2EC" },
-      { name: "description", content: "Linha de montagem da conformidade: 5 blocos sequenciais sob o ciclo PDCA." },
+      { name: "description", content: "Linha de montagem da conformidade: 5 blocos sequenciais sob o Ciclo PRIVA." },
       { property: "og:title", content: "Esteira BLLOCO — PRIVA 2EC" },
-      { property: "og:description", content: "Linha de montagem da conformidade: 5 blocos sequenciais sob o ciclo PDCA." },
+      { property: "og:description", content: "Linha de montagem da conformidade: 5 blocos sequenciais sob o Ciclo PRIVA." },
     ],
   }),
   component: Painel,
@@ -79,7 +79,7 @@ function Index() {
           </ol>
         </div>
         <p className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <RefreshCw className="h-3 w-3" /> Plan → Do → Check → Act → novo diagnóstico: a privacidade é um ciclo contínuo.
+          <RefreshCw className="h-3 w-3" /> Preparar → Registrar → Implementar → Vigiar → Auditar → novo diagnóstico: a privacidade é um ciclo contínuo.
         </p>
       </Panel>
     </div>
