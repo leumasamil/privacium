@@ -14,7 +14,8 @@ export function useCnpjRows<K extends T>(table: K, cnpj: string | null, order: s
     queryKey: key,
     enabled: !!cnpj,
     queryFn: async (): Promise<Row<K>[]> => {
-      const { data, error } = await supabase.from(table as "ripd_ia").select("*").eq("empresa_cnpj", cnpj ?? "").order(order as "atualizado_em", { ascending: false });
+      const t = table as string as "ripd_ia";
+      const { data, error } = await supabase.from(t).select("*").eq("empresa_cnpj", cnpj ?? "").order(order, { ascending: false });
       if (error) throw error;
       return data as unknown as Row<K>[];
     },
