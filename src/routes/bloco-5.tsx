@@ -31,14 +31,17 @@ const DOSIMETRIA = [
   { pi: "PI-04", rule: "Art. 13, II/III – Cessação da infração e medidas para reverter efeitos do dano", pct: 20 },
 ];
 
+type R = { prob: number; imp: number; mitig: string };
+const DEF: R = { prob: 3, imp: 3, mitig: "" };
+
 function Bloco5() {
   const { signatures } = usePriva();
-  const [ripd, setRipd] = useState<Record<string, { prob: number; imp: number; mitig: string }>>(
+  const [ripd, setRipd] = useState<Record<string, R>>(
     Object.fromEntries(RISKS.map((r) => [r.id, { prob: 3, imp: 3, mitig: "" }])),
   );
   const reduction = DOSIMETRIA.reduce((a, d) => a + (signatures[d.pi] ? d.pct : 0), 0);
-  const ready = RISKS.every((r) => ripd[r.id].mitig.trim().length > 10);
-  const tone = (n: number) => (n >= 15 ? "destructive" : n >= 8 ? "warning" : "success") as const;
+  const ready = RISKS.every((r) => (ripd[r.id] ?? DEF).mitig.trim().length > 10);
+  const tone = (n: number): "destructive" | "warning" | "success" => (n >= 15 ? "destructive" : n >= 8 ? "warning" : "success");
 
   return (
     <div className="space-y-6">
@@ -47,7 +50,7 @@ function Bloco5() {
       <Panel title="RIPD · IA generativa corporativa">
         <div className="space-y-4">
           {RISKS.map((r) => {
-            const v = ripd[r.id]; const score = v.prob * v.imp;
+            const v = ripd[r.id] ?? DEF; const score = v.prob * v.imp;
             return (
               <div key={r.id} className="grid gap-3 rounded-sm border bg-background p-4 md:grid-cols-[200px_120px_120px_1fr_80px] md:items-center">
                 <p className="font-semibold text-primary">{r.label}</p>
@@ -86,7 +89,7 @@ function Bloco5() {
 
       <PIOutput pi="PI-05: Escudo Jurídico de Dosimetria (PREG/RIPD)" ready={ready} readyHint="Descreva a mitigação de cada risco de IA.">
         <h3 className="font-semibold">RIPD – IA generativa</h3>
-        <ul className="list-disc pl-5">{RISKS.map((r) => <li key={r.id}>{r.label}: risco {ripd[r.id].prob * ripd[r.id].imp}. Mitigação: {ripd[r.id].mitig}</li>)}</ul>
+        <ul className="list-disc pl-5">{RISKS.map((r) => <li key={r.id}>{r.label}: risco {(ripd[r.id] ?? DEF).prob * (ripd[r.id] ?? DEF).imp}. Mitigação: {ripd[r.id]?.mitig}</li>)}</ul>
         <h3 className="mt-4 font-semibold">Dosimetria</h3>
         <p>Atenuantes comprovadas: redução estimada de {reduction}% conforme art. 13 da Res. CD/ANPD nº 4/2023.</p>
         <p className="mt-3 text-muted-foreground">Ao concluir, o ciclo PDCA retorna ao Bloco 1 para novo diagnóstico.</p>

@@ -55,7 +55,7 @@ export type Question = { id: number; domain: string; text: string; weight: numbe
 // 166 perguntas binárias, pesos determinísticos de 1 a 10
 export const QUESTIONS: Question[] = Array.from({ length: 166 }, (_, i) => ({
   id: i + 1,
-  domain: DOMAINS[i % DOMAINS.length],
+  domain: DOMAINS[i % DOMAINS.length]!,
   text: `${STEMS[i % STEMS.length]} ${TOPICS[(i * 7) % TOPICS.length]}?`,
   weight: ((i * 37) % 10) + 1,
 }));

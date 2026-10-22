@@ -83,7 +83,7 @@ function Bloco4() {
           <ol className="space-y-2">
             {STEPS.map((s, i) => (
               <li key={i} className="flex items-center gap-3 rounded-sm border bg-background px-3 py-2 text-sm">
-                <Checkbox disabled={!incidentStart || (i > 0 && !incidentSteps[i - 1])} checked={incidentSteps[i]}
+                <Checkbox disabled={!incidentStart || (i > 0 && !incidentSteps[i - 1])} checked={!!incidentSteps[i]}
                   onCheckedChange={(v) => set({ incidentSteps: incidentSteps.map((x, j) => (j === i ? !!v : x)) }, { op: "UPDATE", target: "incidentes", detail: `Passo ${i + 1} ${v ? "concluído" : "reaberto"}` })} />
                 <span className="font-mono text-xs text-muted-foreground">0{i + 1}</span> {s}
               </li>
