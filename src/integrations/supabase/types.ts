@@ -161,6 +161,14 @@ export type Database = {
           roles: Database["public"]["Enums"]["app_role"][]
         }[]
       }
+      verify_audit_chain: {
+        Args: never
+        Returns: {
+          broken_at: number
+          ok: boolean
+          total: number
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "dpo" | "csuite"

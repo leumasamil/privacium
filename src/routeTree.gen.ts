@@ -9,7 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedAuditoriaRouteImport } from './routes/_authenticated/auditoria'
 import { Route as AuthenticatedBloco1RouteImport } from './routes/_authenticated/bloco-1'
 import { Route as AuthenticatedBloco2RouteImport } from './routes/_authenticated/bloco-2'
@@ -18,9 +18,10 @@ import { Route as AuthenticatedBloco4RouteImport } from './routes/_authenticated
 import { Route as AuthenticatedBloco5RouteImport } from './routes/_authenticated/bloco-5'
 import { Route as AuthenticatedEnterpriseRouteImport } from './routes/_authenticated/enterprise'
 import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated/kanban'
+import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
-  id: '/_authenticated/',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
@@ -64,8 +65,14 @@ const AuthenticatedKanbanRoute = AuthenticatedKanbanRouteImport.update({
   path: '/kanban',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
+  id: '/_authenticated/painel',
+  path: '/painel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/bloco-1': typeof AuthenticatedBloco1Route
   '/bloco-2': typeof AuthenticatedBloco2Route
@@ -74,9 +81,10 @@ export interface FileRoutesByFullPath {
   '/bloco-5': typeof AuthenticatedBloco5Route
   '/enterprise': typeof AuthenticatedEnterpriseRoute
   '/kanban': typeof AuthenticatedKanbanRoute
-  '/': typeof AuthenticatedIndexRoute
+  '/painel': typeof AuthenticatedPainelRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/bloco-1': typeof AuthenticatedBloco1Route
   '/bloco-2': typeof AuthenticatedBloco2Route
@@ -85,10 +93,11 @@ export interface FileRoutesByTo {
   '/bloco-5': typeof AuthenticatedBloco5Route
   '/enterprise': typeof AuthenticatedEnterpriseRoute
   '/kanban': typeof AuthenticatedKanbanRoute
-  '/': typeof AuthenticatedIndexRoute
+  '/painel': typeof AuthenticatedPainelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authenticated/auditoria': typeof AuthenticatedAuditoriaRoute
   '/_authenticated/bloco-1': typeof AuthenticatedBloco1Route
   '/_authenticated/bloco-2': typeof AuthenticatedBloco2Route
@@ -97,11 +106,12 @@ export interface FileRoutesById {
   '/_authenticated/bloco-5': typeof AuthenticatedBloco5Route
   '/_authenticated/enterprise': typeof AuthenticatedEnterpriseRoute
   '/_authenticated/kanban': typeof AuthenticatedKanbanRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/painel': typeof AuthenticatedPainelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/auditoria'
     | '/bloco-1'
     | '/bloco-2'
@@ -110,9 +120,10 @@ export interface FileRouteTypes {
     | '/bloco-5'
     | '/enterprise'
     | '/kanban'
-    | '/'
+    | '/painel'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/auditoria'
     | '/bloco-1'
     | '/bloco-2'
@@ -121,9 +132,10 @@ export interface FileRouteTypes {
     | '/bloco-5'
     | '/enterprise'
     | '/kanban'
-    | '/'
+    | '/painel'
   id:
     | '__root__'
+    | '/'
     | '/_authenticated/auditoria'
     | '/_authenticated/bloco-1'
     | '/_authenticated/bloco-2'
@@ -132,10 +144,11 @@ export interface FileRouteTypes {
     | '/_authenticated/bloco-5'
     | '/_authenticated/enterprise'
     | '/_authenticated/kanban'
-    | '/_authenticated/'
+    | '/_authenticated/painel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthenticatedAuditoriaRoute: typeof AuthenticatedAuditoriaRoute
   AuthenticatedBloco1Route: typeof AuthenticatedBloco1Route
   AuthenticatedBloco2Route: typeof AuthenticatedBloco2Route
@@ -144,16 +157,16 @@ export interface RootRouteChildren {
   AuthenticatedBloco5Route: typeof AuthenticatedBloco5Route
   AuthenticatedEnterpriseRoute: typeof AuthenticatedEnterpriseRoute
   AuthenticatedKanbanRoute: typeof AuthenticatedKanbanRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_authenticated/': {
-      id: '/_authenticated/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/auditoria': {
@@ -212,10 +225,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKanbanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/painel': {
+      id: '/_authenticated/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof AuthenticatedPainelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthenticatedAuditoriaRoute: AuthenticatedAuditoriaRoute,
   AuthenticatedBloco1Route: AuthenticatedBloco1Route,
   AuthenticatedBloco2Route: AuthenticatedBloco2Route,
@@ -224,7 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedBloco5Route: AuthenticatedBloco5Route,
   AuthenticatedEnterpriseRoute: AuthenticatedEnterpriseRoute,
   AuthenticatedKanbanRoute: AuthenticatedKanbanRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedPainelRoute: AuthenticatedPainelRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
