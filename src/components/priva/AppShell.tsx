@@ -128,7 +128,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         <nav className="flex-1 space-y-1 overflow-auto px-3 py-4">
           {item("/painel", "Esteira BLLOCO", <LayoutDashboard className="h-4 w-4" />)}
-          {canAccess(role, "/bloco") && <p className="px-3 pb-1 pt-4 font-mono text-[10px] uppercase tracking-widest">Ciclo PDCA</p>}
+          {canAccess(role, "/bloco") && <p className="px-3 pb-1 pt-4 font-mono text-[10px] uppercase tracking-widest">Ciclo PRIVA</p>}
           {BLOCKS.map((b) => {
             const unlocked = isUnlocked(signatures, b.n);
             const done = !!signatures[`PI-0${b.n}`];

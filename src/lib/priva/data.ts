@@ -27,11 +27,11 @@ export function riskZone(gm: number) {
 }
 
 export const BLOCKS = [
-  { n: 1, letter: "P", pdca: "Plan", title: "Preparar a Privacidade", pi: "PI-01: Dossiê Legal de Alinhamento de Privacidade" },
-  { n: 2, letter: "R", pdca: "Plan", title: "Registrar as Operações de Tratamento", pi: "PI-02: Registro de Operações de Tratamento (ROT)" },
-  { n: 3, letter: "I", pdca: "Do", title: "Implementar Salvaguardas Técnicas e Jurídicas", pi: "PI-03: Book de Evidências Tecnológicas e Contratuais" },
-  { n: 4, letter: "V", pdca: "Check", title: "Vigiar a Privacidade e Processar Incidentes", pi: "PI-04: Dossiê de Auditoria de Logs e Resposta de Célula" },
-  { n: 5, letter: "A", pdca: "Act", title: "Auditar o Sistema e Mitigar Riscos", pi: "PI-05: Escudo Jurídico de Dosimetria (PREG/RIPD)" },
+  { n: 1, letter: "P", pdca: "Preparar", title: "Preparar a Privacidade", pi: "PI-01: Dossiê Legal de Alinhamento de Privacidade" },
+  { n: 2, letter: "R", pdca: "Registrar", title: "Registrar as Operações de Tratamento", pi: "PI-02: Registro de Operações de Tratamento (ROT)" },
+  { n: 3, letter: "I", pdca: "Implementar", title: "Implementar Salvaguardas Técnicas e Jurídicas", pi: "PI-03: Book de Evidências Tecnológicas e Contratuais" },
+  { n: 4, letter: "V", pdca: "Vigiar", title: "Vigiar a Privacidade e Processar Incidentes", pi: "PI-04: Dossiê de Auditoria de Logs e Resposta de Célula" },
+  { n: 5, letter: "A", pdca: "Auditar", title: "Auditar o Sistema e Mitigar Riscos", pi: "PI-05: Escudo Jurídico de Dosimetria (PREG/RIPD)" },
 ] as const;
 
 export const VERBS = ["Coletar", "Reter", "Processar", "Compartilhar", "Eliminar"] as const;

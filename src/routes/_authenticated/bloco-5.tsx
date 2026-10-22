@@ -92,7 +92,7 @@ function Bloco5() {
         <ul className="list-disc pl-5">{RISKS.map((r) => <li key={r.id}>{r.label}: risco {(ripd[r.id] ?? DEF).prob * (ripd[r.id] ?? DEF).imp}. Mitigação: {ripd[r.id]?.mitig}</li>)}</ul>
         <h3 className="mt-4 font-semibold">Dosimetria</h3>
         <p>Atenuantes comprovadas: redução estimada de {reduction}% conforme art. 13 da Res. CD/ANPD nº 4/2023.</p>
-        <p className="mt-3 text-muted-foreground">Ao concluir, o ciclo PDCA retorna ao Bloco 1 para novo diagnóstico.</p>
+        <p className="mt-3 text-muted-foreground">Ao concluir, o Ciclo PRIVA retorna ao Bloco 1 para novo diagnóstico.</p>
       </PIOutput>
     </div>
   );
