@@ -155,7 +155,7 @@ function TrilhaModal({ empresa, onClose }: { empresa: EmpresaRow | null; onClose
             <tbody>
               {linhas.map((l) => (
                 <tr key={l.seq} className="border-t">
-                  <td className="py-1.5 font-mono">{l.usuario_id && cpfs[l.usuario_id] ? maskCPF(cpfs[l.usuario_id]) : "***.***.***-**"}</td>
+                  <td className="py-1.5 font-mono">{l.usuario_id && cpfs[l.usuario_id] ? maskCPF(cpfs[l.usuario_id] ?? "") : "***.***.***-**"}</td>
                   <td>{l.acao_executada ?? l.op}</td>
                   <td className="font-mono">{l.tabela_afetada ?? l.target}</td>
                   <td className="font-mono">{l.ip_origem ?? "—"}</td>
