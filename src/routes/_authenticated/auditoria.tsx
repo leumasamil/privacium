@@ -31,7 +31,7 @@ function Auditoria() {
   // Verificação recalculada no servidor sobre a cadeia completa
   const verify = async () => {
     await refreshAudit();
-    const { data } = await supabase.rpc("verify_audit_chain");
+    const { data } = await supabase.rpc("verificar_trilha");
     setVerified(!!data?.[0]?.ok);
   };
 

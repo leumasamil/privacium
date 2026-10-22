@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/membros")({
 });
 
 type Member = { id: string; email: string | null; display_name: string | null; roles: Role[] };
-const ALL: Role[] = ["admin", "dpo", "csuite"];
+const ALL: Role[] = ["ADMIN_SISTEMA", "DPO_OPERACIONAL", "C_SUITE"];
 
 function Membros() {
   const { userId, log } = usePriva();
@@ -31,7 +31,7 @@ function Membros() {
   useEffect(() => { void load(); }, [load]);
 
   const toggle = async (m: Member, r: Role, on: boolean) => {
-    if (m.id === userId && r === "admin" && !on) return;
+    if (m.id === userId && r === "ADMIN_SISTEMA" && !on) return;
     const res = on
       ? await supabase.from("user_roles").insert({ user_id: m.id, role: r })
       : await supabase.from("user_roles").delete().eq("user_id", m.id).eq("role", r);
@@ -54,7 +54,7 @@ function Membros() {
               <tr key={m.id} className="border-b">
                 <td className="py-2"><p className="font-medium">{m.display_name}</p><p className="text-xs text-muted-foreground">{m.email}</p></td>
                 {ALL.map((r) => (
-                  <td key={r}><Checkbox checked={m.roles.includes(r)} disabled={m.id === userId && r === "admin"} onCheckedChange={(v) => toggle(m, r, !!v)} /></td>
+                  <td key={r}><Checkbox checked={m.roles.includes(r)} disabled={m.id === userId && r === "ADMIN_SISTEMA"} onCheckedChange={(v) => toggle(m, r, !!v)} /></td>
                 ))}
                 <td>{m.roles.length ? <Tag tone="success">Ativo</Tag> : <Tag tone="warning">Aguardando</Tag>}</td>
               </tr>

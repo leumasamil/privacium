@@ -1,8 +1,8 @@
-export type Role = "admin" | "dpo" | "csuite";
+export type Role = "ADMIN_SISTEMA" | "DPO_OPERACIONAL" | "C_SUITE";
 export const ROLE_LABEL: Record<Role, string> = {
-  admin: "Administrador (SaaS)",
-  dpo: "DPO / Encarregado",
-  csuite: "C-Suite",
+  ADMIN_SISTEMA: "Administrador (SaaS)",
+  DPO_OPERACIONAL: "DPO / Encarregado",
+  C_SUITE: "C-Suite",
 };
 
 export const DEPARTMENTS = ["RH", "TI", "Marketing", "Compras", "Recepção", "Jurídico", "Financeiro"] as const;
@@ -97,7 +97,22 @@ export type KanbanCard = {
 
 export function maskCPF(v: string) {
   const d = v.replace(/\D/g, "");
-  return d.length === 11 ? `***.***.${d.slice(6, 9)}-${d.slice(9)}` : "***.***.***-**";
+  return d.length === 11 ? `***.${d.slice(3, 6)}.***-${d.slice(9)}` : "***.***.***-**";
+}
+export function maskCNPJ(v: string) {
+  const d = v.replace(/\D/g, "");
+  return d.length === 14 ? `**.${d.slice(2, 5)}.***/****-${d.slice(12)}` : "**.***.***/****-**";
+}
+export function isValidCNPJ(v: string) {
+  const d = v.replace(/\D/g, "");
+  if (d.length !== 14 || /^(\d)\1+$/.test(d)) return false;
+  const calc = (n: number) => {
+    const w = n === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const sum = w.reduce((a, x, i) => a + x * Number(d[i]), 0);
+    const r = sum % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  return calc(12) === Number(d[12]) && calc(13) === Number(d[13]);
 }
 export function maskName(v: string) {
   return v.split(" ").map((w) => (w ? w[0] + "•".repeat(Math.max(w.length - 1, 2)) : w)).join(" ");

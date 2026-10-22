@@ -98,6 +98,48 @@ export type Database = {
         }
         Relationships: []
       }
+      trilha_auditoria_sistema: {
+        Row: {
+          cnpj: string | null
+          detail: string
+          hash: string
+          op: string
+          prev_hash: string
+          role: Database["public"]["Enums"]["app_role"]
+          seq: number
+          target: string
+          ts: string
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          cnpj?: string | null
+          detail: string
+          hash: string
+          op: string
+          prev_hash: string
+          role: Database["public"]["Enums"]["app_role"]
+          seq?: number
+          target: string
+          ts?: string
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          cnpj?: string | null
+          detail?: string
+          hash?: string
+          op?: string
+          prev_hash?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          seq?: number
+          target?: string
+          ts?: string
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -113,6 +155,33 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      workspace_empresa: {
+        Row: {
+          cnpj: string
+          created_at: string
+          data: Json
+          razao_social: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          cnpj: string
+          created_at?: string
+          data?: Json
+          razao_social?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          cnpj?: string
+          created_at?: string
+          data?: Json
+          razao_social?: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -185,6 +254,42 @@ export type Database = {
           roles: Database["public"]["Enums"]["app_role"][]
         }[]
       }
+      registrar_trilha: {
+        Args: {
+          _cnpj: string
+          _detail: string
+          _op: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _target: string
+        }
+        Returns: {
+          cnpj: string | null
+          detail: string
+          hash: string
+          op: string
+          prev_hash: string
+          role: Database["public"]["Enums"]["app_role"]
+          seq: number
+          target: string
+          ts: string
+          user_email: string | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "trilha_auditoria_sistema"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      verificar_trilha: {
+        Args: never
+        Returns: {
+          broken_at: number
+          ok: boolean
+          total: number
+        }[]
+      }
       verify_audit_chain: {
         Args: never
         Returns: {
@@ -195,7 +300,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "dpo" | "csuite"
+      app_role: "ADMIN_SISTEMA" | "DPO_OPERACIONAL" | "C_SUITE"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -323,7 +428,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "dpo", "csuite"],
+      app_role: ["ADMIN_SISTEMA", "DPO_OPERACIONAL", "C_SUITE"],
     },
   },
 } as const
