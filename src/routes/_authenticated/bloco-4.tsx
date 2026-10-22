@@ -9,6 +9,7 @@ import { maskCNPJ, sha256 } from "@/lib/priva/data";
 import { slaRestante } from "@/lib/priva/dosimetria";
 import { usePriva } from "@/lib/priva/store";
 import { useCnpjRows } from "@/lib/priva/useCnpjRows";
+import { DEMO_SLA_MS } from "@/lib/priva/demo";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -54,8 +55,8 @@ const mesAtual = () => new Date().toISOString().slice(0, 7);
 const fmt = (ms: number) => { const s = Math.floor(ms / 1000); return `${String(Math.floor(s / 3600)).padStart(2, "0")}:${String(Math.floor((s % 3600) / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };
 
 function Bloco4() {
-  const { cnpj, roles, log } = usePriva();
-  const canEdit = roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA");
+  const { cnpj, roles, log, demo } = usePriva();
+  const canEdit = !demo && (roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA"));
   const lotes = useCnpjRows("lotes_pgaudit", cnpj, "mes_referencia");
   const incs = useCnpjRows("incidentes_seguranca", cnpj, "iniciado_em");
   const ativo = incs.rows.find((i) => !i.encerrado_em) ?? null;
@@ -163,13 +164,13 @@ function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes
 }
 
 function CriseRansomware({ cnpj, ativo, canEdit, refresh }: { cnpj: string; ativo: Incidente | null; canEdit: boolean; refresh: () => void }) {
-  const { log } = usePriva();
+  const { log, demo } = usePriva();
   const [now, setNow] = useState(Date.now());
   const [form, setForm] = useState<Record<string, string>>({});
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
   useEffect(() => { setForm((ativo?.comunicacao ?? {}) as Record<string, string>); }, [ativo?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const restante = slaRestante(ativo?.iniciado_em ?? null, now);
+  const restante = demo ? DEMO_SLA_MS : slaRestante(ativo?.iniciado_em ?? null, now);
   const upd = async (patch: Database["public"]["Tables"]["incidentes_seguranca"]["Update"], detail: string) => {
     if (!ativo) return;
     const { error } = await supabase.from("incidentes_seguranca").update(patch).eq("id", ativo.id);

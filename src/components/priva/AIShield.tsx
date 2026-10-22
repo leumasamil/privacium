@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Send, ShieldCheck, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,14 +56,26 @@ function mockAI(sanitized: string, provider: string, vault: Vault) {
 }
 
 export function AIShield() {
-  const { log, cnpj } = usePriva();
+  const { log, cnpj, demo } = usePriva();
   const [provider, setProvider] = useState<string>(PROVIDERS[0]);
   const [prompt, setPrompt] = useState("");
   const [url, setUrl] = useState(() => (typeof window !== "undefined" && localStorage.getItem(URL_KEY)) || "http://localhost:8000/api/v1/shield/execute");
   const [result, setResult] = useState<{ packet: string; raw: string; answer: string; vault: Vault; source: "api" | "mock" } | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Demonstração: prompt do João da Silva já tokenizado, sem chamar rede nem gravar uso
+  useEffect(() => {
+    if (!demo) { setResult(null); return; }
+    setPrompt(EXEMPLO_PROMPT);
+    const { out, vault } = sanitize(EXEMPLO_PROMPT);
+    const v = vault.map((x) => (x.token.startsWith("[CPF") ? { ...x, token: "[CPF_TOKEN_4821]" } : x));
+    const fixed = vault.reduce((acc, x, i) => acc.split(x.token).join(v[i]?.token ?? x.token), out);
+    const raw = mockAI(fixed, provider, v);
+    setResult({ packet: JSON.stringify({ provider, user_prompt: fixed }, null, 2), raw, answer: restore(raw, v), vault: v, source: "mock" });
+  }, [demo]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const send = async () => {
+    if (demo) return;
     setBusy(true);
     localStorage.setItem(URL_KEY, url);
     const { out, vault } = sanitize(prompt.trim() || EXEMPLO_PROMPT);

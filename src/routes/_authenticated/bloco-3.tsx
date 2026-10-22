@@ -8,6 +8,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { AIShield } from "@/components/priva/AIShield";
 import { sha256 } from "@/lib/priva/data";
 import { usePriva } from "@/lib/priva/store";
+import { DEMO_ATIVOS } from "@/lib/priva/demo";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,14 +37,15 @@ export async function hashEstrutura(raiz: string, estrutura: string) {
 }
 
 function Bloco3() {
-  const { cnpj, roles, log } = usePriva();
+  const { cnpj, roles, log, demo } = usePriva();
   const qc = useQueryClient();
-  const canEdit = roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA");
+  const canEdit = !demo && (roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA"));
   const key = ["ativos_seguranca", cnpj] as const;
   const { data: ativos = [] } = useQuery({
-    queryKey: key,
+    queryKey: [...key, demo],
     enabled: !!cnpj,
     queryFn: async (): Promise<Ativo[]> => {
+      if (demo) return DEMO_ATIVOS;
       const { data, error } = await supabase.from("ativos_seguranca").select("*").eq("empresa_cnpj", cnpj ?? "").order("criado_em");
       if (error) throw error;
       return data;

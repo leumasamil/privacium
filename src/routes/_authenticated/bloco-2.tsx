@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DEPARTMENTS, HIPOTESES, VERBS } from "@/lib/priva/data";
 import { DADOS, INFRA, SALVAGUARDAS, SENSIVEIS, TITULARES, isRisky, validateRot, type RotInput, type RotRow } from "@/lib/priva/rot";
 import { usePriva } from "@/lib/priva/store";
+import { DEMO_ROT } from "@/lib/priva/demo";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -37,14 +38,15 @@ const empty = (cnpj: string): RotInput => ({
 });
 
 function Bloco2() {
-  const { cnpj, log, roles } = usePriva();
+  const { cnpj, log, roles, demo } = usePriva();
   const qc = useQueryClient();
-  const canEdit = roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA");
+  const canEdit = !demo && (roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA"));
   const key = ["registro_operacoes", cnpj] as const;
   const { data: rows = [] } = useQuery({
-    queryKey: key,
+    queryKey: [...key, demo],
     enabled: !!cnpj,
     queryFn: async (): Promise<RotRow[]> => {
+      if (demo) return DEMO_ROT;
       const { data, error } = await supabase.from("registro_operacoes").select("*").eq("empresa_cnpj", cnpj ?? "").order("codigo");
       if (error) throw error;
       return data;

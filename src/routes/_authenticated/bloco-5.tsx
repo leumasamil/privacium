@@ -7,6 +7,7 @@ import type { Json } from "@/integrations/supabase/types";
 import { DOSIMETRIA, TETO_REDUCAO, fatorAtivo, multaComAtenuantes, reducaoDosimetria } from "@/lib/priva/dosimetria";
 import { usePriva } from "@/lib/priva/store";
 import { useCnpjRows } from "@/lib/priva/useCnpjRows";
+import { DEMO_MULTA_BASE } from "@/lib/priva/demo";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,16 +38,16 @@ const ESCUDO_PADRAO = "O Escudo Digital do Bloco 3 tokeniza localmente CPFs, e-m
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 function Bloco5() {
-  const { cnpj, roles, signatures, set, log } = usePriva();
+  const { cnpj, roles, signatures, set, log, demo } = usePriva();
   const navigate = useNavigate();
-  const canEdit = roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA");
+  const canEdit = !demo && (roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA"));
   const ripdRows = useCnpjRows("ripd_ia", cnpj, "atualizado_em");
   const ciclos = useCnpjRows("ciclos_priva", cnpj, "ano_fiscal");
   const salvo = ripdRows.rows[0];
   const [sistema, setSistema] = useState("");
   const [ripd, setRipd] = useState<Record<string, R>>({});
   const [escudo, setEscudo] = useState(ESCUDO_PADRAO);
-  const [base, setBase] = useState(1_000_000);
+  const [base, setBase] = useState(demo ? DEMO_MULTA_BASE : 1_000_000);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
