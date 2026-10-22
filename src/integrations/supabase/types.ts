@@ -135,6 +135,36 @@ export type Database = {
           },
         ]
       }
+      ciclos_priva: {
+        Row: {
+          ano_fiscal: number
+          assinaturas: Json
+          empresa_cnpj: string
+          finalizado_em: string
+          finalizado_por: string | null
+          id: string
+          reducao_dosimetria: number
+        }
+        Insert: {
+          ano_fiscal: number
+          assinaturas?: Json
+          empresa_cnpj: string
+          finalizado_em?: string
+          finalizado_por?: string | null
+          id?: string
+          reducao_dosimetria: number
+        }
+        Update: {
+          ano_fiscal?: number
+          assinaturas?: Json
+          empresa_cnpj?: string
+          finalizado_em?: string
+          finalizado_por?: string | null
+          id?: string
+          reducao_dosimetria?: number
+        }
+        Relationships: []
+      }
       empresas: {
         Row: {
           cnpj: string
@@ -159,6 +189,72 @@ export type Database = {
           plano_assinatura?: string
           razao_social?: string
           status?: string
+        }
+        Relationships: []
+      }
+      incidentes_seguranca: {
+        Row: {
+          comunicacao: Json
+          criado_por: string | null
+          empresa_cnpj: string
+          encerrado_em: string | null
+          enviado_anpd_em: string | null
+          id: string
+          iniciado_em: string
+          passos: boolean[]
+        }
+        Insert: {
+          comunicacao?: Json
+          criado_por?: string | null
+          empresa_cnpj: string
+          encerrado_em?: string | null
+          enviado_anpd_em?: string | null
+          id?: string
+          iniciado_em?: string
+          passos?: boolean[]
+        }
+        Update: {
+          comunicacao?: Json
+          criado_por?: string | null
+          empresa_cnpj?: string
+          encerrado_em?: string | null
+          enviado_anpd_em?: string | null
+          id?: string
+          iniciado_em?: string
+          passos?: boolean[]
+        }
+        Relationships: []
+      }
+      lotes_pgaudit: {
+        Row: {
+          conteudo: string
+          empresa_cnpj: string
+          gerado_em: string
+          gerado_por: string | null
+          hash_sha256: string | null
+          id: string
+          linhas: number
+          mes_referencia: string
+        }
+        Insert: {
+          conteudo: string
+          empresa_cnpj: string
+          gerado_em?: string
+          gerado_por?: string | null
+          hash_sha256?: string | null
+          id?: string
+          linhas?: number
+          mes_referencia: string
+        }
+        Update: {
+          conteudo?: string
+          empresa_cnpj?: string
+          gerado_em?: string
+          gerado_por?: string | null
+          hash_sha256?: string | null
+          id?: string
+          linhas?: number
+          mes_referencia?: string
         }
         Relationships: []
       }
@@ -359,6 +455,33 @@ export type Database = {
             referencedColumns: ["cpf"]
           },
         ]
+      }
+      ripd_ia: {
+        Row: {
+          atualizado_em: string
+          atualizado_por: string | null
+          empresa_cnpj: string
+          escudo_digital: string
+          riscos: Json
+          sistema_avaliado: string
+        }
+        Insert: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          empresa_cnpj: string
+          escudo_digital?: string
+          riscos?: Json
+          sistema_avaliado?: string
+        }
+        Update: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          empresa_cnpj?: string
+          escudo_digital?: string
+          riscos?: Json
+          sistema_avaliado?: string
+        }
+        Relationships: []
       }
       trilha_auditoria_sistema: {
         Row: {
