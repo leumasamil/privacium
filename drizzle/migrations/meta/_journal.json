@@ -36,6 +36,13 @@
       "when": 1792694652275,
       "tag": "0004_empresas_usuarios_trilha_forense",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792694742776,
+      "tag": "0005_revoke_public_definer_exec",
+      "breakpoints": true
     }
   ]
 }
