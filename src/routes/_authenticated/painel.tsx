@@ -5,7 +5,7 @@ import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { PageHeader, Panel, Tag } from "@/components/priva/ui";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/_authenticated/painel")({
   head: () => ({
     meta: [
       { title: "Esteira BLLOCO — PRIVA 2EC" },
