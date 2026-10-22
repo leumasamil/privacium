@@ -782,6 +782,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cnpj_liberado: { Args: { _cnpj: string }; Returns: boolean }
       cnpj_valido: { Args: { _c: string }; Returns: boolean }
       cpf_valido: { Args: { _c: string }; Returns: boolean }
       empresa_ativa: { Args: { _cnpj: string }; Returns: boolean }
@@ -803,6 +804,7 @@ export type Database = {
         }[]
       }
       meu_cpf: { Args: never; Returns: string }
+      minha_empresa_id: { Args: never; Returns: string }
       registrar_acesso: {
         Args: {
           _campo: string
