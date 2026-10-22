@@ -35,14 +35,17 @@ export function demoAnswers(questions: Question[], target = DEMO_SCORE): Record<
     if (total + q.weight <= target) { out[q.id] = true; total += q.weight; } else out[q.id] = false;
   }
   // Ajuste fino: troca uma pergunta marcada por outra não marcada com peso maior para fechar o alvo exato
-  const gap = target - total;
-  if (gap > 0) {
+  for (let guard = 0; total < target && guard < 20; guard++) {
     const on = questions.filter((q) => out[q.id]);
     const off = questions.filter((q) => !out[q.id]);
-    for (const a of on) {
-      const b = off.find((x) => x.weight === a.weight + gap);
-      if (b) { out[a.id] = false; out[b.id] = true; break; }
+    let swapped = false;
+    for (let d = target - total; d > 0 && !swapped; d--) {
+      for (const a of on) {
+        const b = off.find((x) => x.weight === a.weight + d);
+        if (b) { out[a.id] = false; out[b.id] = true; total += d; swapped = true; break; }
+      }
     }
+    if (!swapped) break;
   }
   return out;
 }
