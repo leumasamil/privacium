@@ -19,7 +19,7 @@ export const DOMAINS = [
 const STEMS = [
   "Existe política formal documentada e aprovada para",
   "Há responsável designado por",
-  "Os procedimentos de",
+  "Estão formalizados os procedimentos de",
   "Há registro de evidências sobre",
   "Existe revisão periódica de",
   "Os colaboradores foram treinados em",
