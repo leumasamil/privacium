@@ -140,7 +140,7 @@ export type KanbanCard = {
   howMuch: string;
   block: number;
   column: KanbanColumn;
-  evidenceHash?: string;
+  evidenceHash?: string | undefined;
 };
 
 export function maskCPF(v: string) {

@@ -76,8 +76,8 @@ function Kanban() {
                       {c.evidenceHash && <span className="font-mono text-[10px] text-success">#{c.evidenceHash.slice(0, 8)}</span>}
                     </div>
                     <div className="mt-2 flex gap-1">
-                      {ci > 0 && <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => move(c, KANBAN_COLUMNS[ci - 1].id)}>←</Button>}
-                      {ci < 4 && <Button size="sm" variant="outline" className="h-6 flex-1 px-2" onClick={() => move(c, KANBAN_COLUMNS[ci + 1].id)}>Avançar →</Button>}
+                      {ci > 0 && <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => move(c, KANBAN_COLUMNS[ci - 1]!.id)}>←</Button>}
+                      {ci < 4 && <Button size="sm" variant="outline" className="h-6 flex-1 px-2" onClick={() => move(c, KANBAN_COLUMNS[ci + 1]!.id)}>Avançar →</Button>}
                     </div>
                   </div>
                 ))}
