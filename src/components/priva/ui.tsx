@@ -3,7 +3,7 @@ import { Eye, EyeOff, Lock, ShieldCheck, FileSignature } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { maskCNPJ, maskCPF, maskEmail, maskName } from "@/lib/priva/data";
+import { maskCNPJ, maskCPF, maskEmail, maskName, sha256 } from "@/lib/priva/data";
 import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
@@ -97,8 +97,8 @@ export function Masked({ value, kind }: { value: string; kind: "cpf" | "cnpj" | 
   );
 }
 
-export function PIOutput({ pi, ready, readyHint, children }: { pi: string; ready: boolean; readyHint: string; children: ReactNode }) {
-  const { signatures, sign } = usePriva();
+export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string; ready: boolean; readyHint: string; children: ReactNode; dual?: boolean }) {
+  const { signatures, sign, set, email, cnpj } = usePriva();
   const code = pi.slice(0, 5).replace(" ", "");
   const sig = signatures[code];
   const [open, setOpen] = useState(false);
@@ -128,9 +128,31 @@ export function PIOutput({ pi, ready, readyHint, children }: { pi: string; ready
             {sig ? (
               <span className="font-mono text-xs text-muted-foreground">SHA-256 {sig.hash}</span>
             ) : (
-              <Button onClick={async () => { await sign(code); }}>
-                <ShieldCheck className="h-4 w-4" /> Assinar com Gov.br (simulado)
-              </Button>
+              dual ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  {(["DPO", "DIR"] as const).map((who) => {
+                    const k = `${code}-${who}`;
+                    const done = signatures[k];
+                    return (
+                      <Button key={who} variant={done ? "outline" : "default"} disabled={!!done} onClick={async () => {
+                        const ts = new Date().toISOString();
+                        const by = who === "DPO" ? `DPO ${email} · CPF · Gov.br (simulado)` : `Diretoria · CNPJ ${maskCNPJ(cnpj ?? "")} · Gov.br (simulado)`;
+                        const hash = await sha256(`${k}|${ts}|${by}`);
+                        const next = { ...signatures, [k]: { by, ts, hash } };
+                        const other = signatures[`${code}-${who === "DPO" ? "DIR" : "DPO"}`];
+                        if (other) next[code] = { by: `${other.by} + ${by}`, ts, hash: await sha256(`${code}|${other.hash}|${hash}`) };
+                        set({ signatures: next }, { op: "INSERT", target: "signatures", detail: `${k} assinado${other ? ` · ${code} CHANCELADO` : ""}` });
+                      }}>
+                        <ShieldCheck className="h-4 w-4" /> {done ? "✓ " : ""}{who === "DPO" ? "Assinatura do DPO (CPF)" : "Assinatura da Diretoria (CNPJ)"}
+                      </Button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <Button onClick={async () => { await sign(code); }}>
+                  <ShieldCheck className="h-4 w-4" /> Assinar com Gov.br (simulado)
+                </Button>
+              )
             )}
           </DialogFooter>
         </DialogContent>
