@@ -7,6 +7,7 @@ import { BLOCKS, ROLE_LABEL, isValidCNPJ, maskCNPJ, type Role } from "@/lib/priv
 import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { FollowUpBanner, FollowUpBell } from "@/components/priva/FollowUp";
 
 const ROLE_ACCESS: Record<Role, string[]> = {
   ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/membros"],
@@ -181,7 +182,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </aside>
-      <main className="min-w-0 flex-1 px-10 py-8">
+      <main className="relative min-w-0 flex-1 px-10 py-8">
+        {(role === "DPO_OPERACIONAL" || role === "C_SUITE") && !demo && <FollowUpBanner />}
+        {(role === "DPO_OPERACIONAL" || role === "C_SUITE") && <div className="mb-4 flex justify-end"><FollowUpBell /></div>}
         {demo && (
           <div className="-mx-10 -mt-8 mb-6 flex items-center justify-between gap-3 border-b border-warning bg-warning/15 px-10 py-2 text-sm">
             <span className="flex items-center gap-2 font-medium text-primary"><Presentation className="h-4 w-4" /> Modo Demonstração Ativo - Dados Cenográficos</span>
