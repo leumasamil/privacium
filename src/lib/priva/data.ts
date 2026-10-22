@@ -56,7 +56,7 @@ export type Question = { id: number; domain: string; text: string; weight: numbe
 export const QUESTIONS: Question[] = Array.from({ length: 166 }, (_, i) => ({
   id: i + 1,
   domain: DOMAINS[i % DOMAINS.length]!,
-  text: `${STEMS[i % STEMS.length]} ${TOPICS[(i * 7) % TOPICS.length]}?`,
+  text: `${STEMS[Math.floor(i / TOPICS.length) % STEMS.length]} ${TOPICS[i % TOPICS.length]}?`,
   weight: ((i * 37) % 10) + 1,
 }));
 
