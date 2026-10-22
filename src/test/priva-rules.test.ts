@@ -80,3 +80,15 @@ describe("ROT · travas de risco", () => {
     expect(validateRot({ ...base, finalidade_especifica: "conforme a base legal" })).toMatch(/proibido/);
   });
 });
+
+import { EXEMPLO_PROMPT, restore } from "@/components/priva/AIShield";
+describe("Escudo de IA · nomes e reversão", () => {
+  it("tokeniza nome, CPF e e-mail do exemplo e reverte no endpoint", () => {
+    const { out, vault } = sanitize(EXEMPLO_PROMPT);
+    expect(out).toBe(out.replace(/João da Silva|123\.456\.789-00|joao@email\.com/g, "X"));
+    expect(out).toContain("[NOME_TOKEN_01]");
+    expect(out).toMatch(/\[CPF_TOKEN_\d{4}\]/);
+    expect(out).toMatch(/\[EMAIL_TOKEN_\d{4}\]/);
+    expect(restore(out, vault)).toBe(EXEMPLO_PROMPT);
+  });
+});
