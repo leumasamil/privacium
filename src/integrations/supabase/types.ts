@@ -53,6 +53,33 @@ export type Database = {
         }
         Relationships: []
       }
+      empresas: {
+        Row: {
+          cnpj: string
+          data_cadastro: string
+          id: string
+          plano_assinatura: string
+          razao_social: string
+          status: string
+        }
+        Insert: {
+          cnpj: string
+          data_cadastro?: string
+          id?: string
+          plano_assinatura?: string
+          razao_social?: string
+          status?: string
+        }
+        Update: {
+          cnpj?: string
+          data_cadastro?: string
+          id?: string
+          plano_assinatura?: string
+          razao_social?: string
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -100,45 +127,77 @@ export type Database = {
       }
       trilha_auditoria_sistema: {
         Row: {
+          acao_executada: string | null
+          campo_mascarado_acessado: string | null
           cnpj: string | null
           detail: string
           hash: string
+          hash_integridade_sha256: string | null
+          id: string
+          ip_origem: string | null
           op: string
           prev_hash: string
           role: Database["public"]["Enums"]["app_role"]
           seq: number
+          tabela_afetada: string | null
           target: string
+          timestamp_evento: string | null
           ts: string
           user_email: string | null
           user_id: string
+          usuario_id: string | null
         }
         Insert: {
+          acao_executada?: string | null
+          campo_mascarado_acessado?: string | null
           cnpj?: string | null
           detail: string
           hash: string
+          hash_integridade_sha256?: string | null
+          id?: string
+          ip_origem?: string | null
           op: string
           prev_hash: string
           role: Database["public"]["Enums"]["app_role"]
           seq?: number
+          tabela_afetada?: string | null
           target: string
+          timestamp_evento?: string | null
           ts?: string
           user_email?: string | null
           user_id: string
+          usuario_id?: string | null
         }
         Update: {
+          acao_executada?: string | null
+          campo_mascarado_acessado?: string | null
           cnpj?: string | null
           detail?: string
           hash?: string
+          hash_integridade_sha256?: string | null
+          id?: string
+          ip_origem?: string | null
           op?: string
           prev_hash?: string
           role?: Database["public"]["Enums"]["app_role"]
           seq?: number
+          tabela_afetada?: string | null
           target?: string
+          timestamp_evento?: string | null
           ts?: string
           user_email?: string | null
           user_id?: string
+          usuario_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "trilha_auditoria_sistema_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -157,6 +216,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      usuarios: {
+        Row: {
+          cargo: string
+          cpf: string | null
+          data_criacao: string
+          email: string
+          empresa_id: string | null
+          id: string
+          nome: string
+          perfil_acesso: Database["public"]["Enums"]["app_role"] | null
+        }
+        Insert: {
+          cargo?: string
+          cpf?: string | null
+          data_criacao?: string
+          email: string
+          empresa_id?: string | null
+          id: string
+          nome?: string
+          perfil_acesso?: Database["public"]["Enums"]["app_role"] | null
+        }
+        Update: {
+          cargo?: string
+          cpf?: string | null
+          data_criacao?: string
+          email?: string
+          empresa_id?: string | null
+          id?: string
+          nome?: string
+          perfil_acesso?: Database["public"]["Enums"]["app_role"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usuarios_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "usuarios_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workspace_empresa: {
         Row: {
@@ -237,6 +344,8 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cnpj_valido: { Args: { _c: string }; Returns: boolean }
+      cpf_valido: { Args: { _c: string }; Returns: boolean }
       has_any_role: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
@@ -254,6 +363,43 @@ export type Database = {
           roles: Database["public"]["Enums"]["app_role"][]
         }[]
       }
+      registrar_acesso: {
+        Args: {
+          _campo: string
+          _cnpj: string
+          _detail: string
+          _op: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _target: string
+        }
+        Returns: {
+          acao_executada: string | null
+          campo_mascarado_acessado: string | null
+          cnpj: string | null
+          detail: string
+          hash: string
+          hash_integridade_sha256: string | null
+          id: string
+          ip_origem: string | null
+          op: string
+          prev_hash: string
+          role: Database["public"]["Enums"]["app_role"]
+          seq: number
+          tabela_afetada: string | null
+          target: string
+          timestamp_evento: string | null
+          ts: string
+          user_email: string | null
+          user_id: string
+          usuario_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "trilha_auditoria_sistema"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       registrar_trilha: {
         Args: {
           _cnpj: string
@@ -263,17 +409,25 @@ export type Database = {
           _target: string
         }
         Returns: {
+          acao_executada: string | null
+          campo_mascarado_acessado: string | null
           cnpj: string | null
           detail: string
           hash: string
+          hash_integridade_sha256: string | null
+          id: string
+          ip_origem: string | null
           op: string
           prev_hash: string
           role: Database["public"]["Enums"]["app_role"]
           seq: number
+          tabela_afetada: string | null
           target: string
+          timestamp_evento: string | null
           ts: string
           user_email: string | null
           user_id: string
+          usuario_id: string | null
         }
         SetofOptions: {
           from: "*"
@@ -296,6 +450,16 @@ export type Database = {
           broken_at: number
           ok: boolean
           total: number
+        }[]
+      }
+      volumetria: {
+        Args: never
+        Returns: {
+          ativas: number
+          empresas: number
+          perguntas: number
+          registros_trilha: number
+          usuarios: number
         }[]
       }
     }

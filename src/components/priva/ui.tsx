@@ -59,7 +59,11 @@ export function Masked({ value, kind }: { value: string; kind: "cpf" | "cnpj" | 
       <button
         aria-label={shown ? "Ocultar" : "Revelar"}
         className="text-muted-foreground hover:text-primary"
-        onClick={() => (shown ? setShown(false) : setOpen(true))}
+        onClick={() => {
+          if (shown) return setShown(false);
+          log("SELECT", "titulares", `Clique em visualizar ${kind} ${masked}`, kind);
+          setOpen(true);
+        }}
       >
         {shown ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
       </button>
@@ -81,7 +85,7 @@ export function Masked({ value, kind }: { value: string; kind: "cpf" | "cnpj" | 
               onClick={() => {
                 if (key === ROLE_KEY[role]) {
                   setShown(true); setOpen(false); setKey(""); setErr("");
-                  log("SELECT", "titulares", `Revelação de ${kind} ${masked}`);
+                  log("SELECT", "titulares", `Revelação de ${kind} ${masked}`, kind);
                 } else setErr("Credencial inválida. Tentativa registrada.");
                 if (key !== ROLE_KEY[role]) log("SELECT", "titulares", `Tentativa negada de revelar ${kind}`);
               }}

@@ -68,7 +68,7 @@ type Ctx = Shared & {
   createEmpresa: (cnpj: string, razao: string) => Promise<string | null>;
   setRole: (r: Role) => void;
   set: (patch: Partial<Shared>, log?: { op: AuditEntry["op"]; target: string; detail: string }) => void;
-  log: (op: AuditEntry["op"], target: string, detail: string) => void;
+  log: (op: AuditEntry["op"], target: string, detail: string, campo?: string) => void;
   sign: (pi: string) => Promise<void>;
   reset: () => void;
   refreshAudit: () => Promise<void>;
@@ -169,9 +169,9 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
     }, 600);
   };
 
-  const log = useCallback((op: AuditEntry["op"], target: string, detail: string) => {
+  const log = useCallback((op: AuditEntry["op"], target: string, detail: string, campo?: string) => {
     void (async () => {
-      const { data, error } = await supabase.rpc("registrar_trilha", { _role: roleRef.current, _op: op, _target: target, _detail: detail, _cnpj: cnpjRef.current ?? "" });
+      const { data, error } = await supabase.rpc("registrar_acesso", { _role: roleRef.current, _op: op, _target: target, _detail: detail, _cnpj: cnpjRef.current ?? "", _campo: campo ?? "" });
       if (!error && data && (roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL"))) setAudit((a) => [...a, data as AuditEntry]);
     })();
   }, [roles]);

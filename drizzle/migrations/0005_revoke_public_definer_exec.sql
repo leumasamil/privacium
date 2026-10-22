@@ -1,0 +1,11 @@
+revoke execute on function public.sync_empresa() from public, anon, authenticated;
+revoke execute on function public.sync_usuario_from_profile() from public, anon, authenticated;
+revoke execute on function public.sync_perfil_acesso() from public, anon, authenticated;
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+revoke execute on function public.registrar_trilha(public.app_role, text, text, text, text) from public, anon;
+revoke execute on function public.verificar_trilha() from public, anon;
+revoke execute on function public.has_role(uuid, public.app_role) from anon;
+revoke execute on function public.has_any_role(uuid) from anon;
+revoke execute on function public.list_members() from public, anon;
+revoke execute on function public.verify_audit_chain() from public, anon;
+revoke execute on function public.append_audit(public.app_role, text, text, text) from public, anon;
