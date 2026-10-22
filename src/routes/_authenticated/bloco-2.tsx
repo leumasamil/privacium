@@ -66,12 +66,12 @@ function Bloco2() {
   const save = async () => {
     if (!edit) return;
     const err = validateRot(edit.form);
-    if (err) return toast.error(err);
+    if (err) { toast.error(err); return; }
     const payload = { ...edit.form, justificativa_mitigacao: isRisky(edit.form) ? edit.form.justificativa_mitigacao : null };
     const { data, error } = edit.id
       ? await supabase.from("registro_operacoes").update(payload).eq("id", edit.id).select("codigo").single()
       : await supabase.from("registro_operacoes").insert(payload).select("codigo").single();
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     log(edit.id ? "UPDATE" : "INSERT", "registro_operacoes", `Processo ${data.codigo}`);
     toast.success(`${data.codigo} salvo`);
     setEdit(null);
@@ -81,7 +81,7 @@ function Bloco2() {
   const remove = async (r: RotRow) => {
     if (!confirm(`Excluir ${r.codigo}?`)) return;
     const { error } = await supabase.from("registro_operacoes").delete().eq("id", r.id);
-    if (error) return toast.error("Não foi possível excluir.");
+    if (error) { toast.error("Não foi possível excluir."); return; }
     log("DELETE", "registro_operacoes", `Processo ${r.codigo}`);
     void qc.invalidateQueries({ queryKey: key });
   };
