@@ -29,7 +29,7 @@ function Bloco2() {
   const { inventory, set } = usePriva();
   const update = (i: number, k: keyof InventoryRow, v: string | boolean) => {
     const next = inventory.map((r, j) => (j === i ? { ...r, [k]: v } : r));
-    set({ inventory: next }, { op: "UPDATE", target: "inventario", detail: `${inventory[i].id}.${k}` });
+    set({ inventory: next }, { op: "UPDATE", target: "inventario", detail: `${inventory[i]?.id}.${k}` });
   };
   const risky = (r: InventoryRow) => !!r.sensiveis.trim() || r.menores;
   const reinforced = (r: InventoryRow) => /criptograf|mfa|segrega|anonimiz/i.test(r.salvaguardas);

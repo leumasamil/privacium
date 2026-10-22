@@ -19,7 +19,7 @@ export const DOMAINS = [
 const STEMS = [
   "Existe política formal documentada e aprovada para",
   "Há responsável designado por",
-  "Os procedimentos de",
+  "Estão formalizados os procedimentos de",
   "Há registro de evidências sobre",
   "Existe revisão periódica de",
   "Os colaboradores foram treinados em",
@@ -55,8 +55,8 @@ export type Question = { id: number; domain: string; text: string; weight: numbe
 // 166 perguntas binárias, pesos determinísticos de 1 a 10
 export const QUESTIONS: Question[] = Array.from({ length: 166 }, (_, i) => ({
   id: i + 1,
-  domain: DOMAINS[i % DOMAINS.length],
-  text: `${STEMS[i % STEMS.length]} ${TOPICS[(i * 7) % TOPICS.length]}?`,
+  domain: DOMAINS[i % DOMAINS.length]!,
+  text: `${STEMS[Math.floor(i / TOPICS.length) % STEMS.length]} ${TOPICS[i % TOPICS.length]}?`,
   weight: ((i * 37) % 10) + 1,
 }));
 
@@ -140,7 +140,7 @@ export type KanbanCard = {
   howMuch: string;
   block: number;
   column: KanbanColumn;
-  evidenceHash?: string;
+  evidenceHash?: string | undefined;
 };
 
 export function maskCPF(v: string) {

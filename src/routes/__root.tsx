@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import { PrivaProvider } from "@/lib/priva/store";
 import { AppShell } from "@/components/priva/AppShell";
+import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -125,6 +126,7 @@ function RootComponent() {
         <AppShell>
           <Outlet />
         </AppShell>
+        <Toaster />
       </PrivaProvider>
     </QueryClientProvider>
   );
