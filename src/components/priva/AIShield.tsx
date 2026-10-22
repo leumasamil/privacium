@@ -12,7 +12,7 @@ const URL_KEY = "priva2ec-shield-url";
 type Vault = { token: string; original: string }[];
 
 /** Nome próprio: duas ou mais palavras capitalizadas, aceitando partículas (da, de, do, dos, das). */
-const NOME_RE = /\b[A-ZÀ-Ý][a-zà-ÿ]+(?:\s+(?:(?:da|de|do|dos|das|e)\s+)?[A-ZÀ-Ý][a-zà-ÿ]+)+\b/g;
+const NOME_RE = /(?<![\wÀ-ÿ])[A-ZÀ-Ý][a-zà-ÿ]+(?:\s+(?:(?:da|de|do|dos|das|e)\s+)?[A-ZÀ-Ý][a-zà-ÿ]+)+(?![\wÀ-ÿ])/g;
 export const EXEMPLO_PROMPT = "Resuma o perfil do cliente João da Silva, portador do CPF 123.456.789-00. Contato: joao@email.com";
 
 /** Tokeniza CPFs e e-mails via Regex; o cofre (mapa de reversão) nunca sai do navegador. */
