@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAuditoriaRouteImport } from './routes/_authenticated/auditoria'
 import { Route as AuthenticatedBloco1RouteImport } from './routes/_authenticated/bloco-1'
 import { Route as AuthenticatedBloco2RouteImport } from './routes/_authenticated/bloco-2'
@@ -25,54 +27,64 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAuditoriaRoute = AuthenticatedAuditoriaRouteImport.update({
-  id: '/_authenticated/auditoria',
-  path: '/auditoria',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAuditoriaRoute = AuthenticatedAuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBloco1Route = AuthenticatedBloco1RouteImport.update({
-  id: '/_authenticated/bloco-1',
+  id: '/bloco-1',
   path: '/bloco-1',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBloco2Route = AuthenticatedBloco2RouteImport.update({
-  id: '/_authenticated/bloco-2',
+  id: '/bloco-2',
   path: '/bloco-2',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBloco3Route = AuthenticatedBloco3RouteImport.update({
-  id: '/_authenticated/bloco-3',
+  id: '/bloco-3',
   path: '/bloco-3',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBloco4Route = AuthenticatedBloco4RouteImport.update({
-  id: '/_authenticated/bloco-4',
+  id: '/bloco-4',
   path: '/bloco-4',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBloco5Route = AuthenticatedBloco5RouteImport.update({
-  id: '/_authenticated/bloco-5',
+  id: '/bloco-5',
   path: '/bloco-5',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedEnterpriseRoute = AuthenticatedEnterpriseRouteImport.update({
-  id: '/_authenticated/enterprise',
+  id: '/enterprise',
   path: '/enterprise',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedKanbanRoute = AuthenticatedKanbanRouteImport.update({
-  id: '/_authenticated/kanban',
+  id: '/kanban',
   path: '/kanban',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
-  id: '/_authenticated/painel',
+  id: '/painel',
   path: '/painel',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/bloco-1': typeof AuthenticatedBloco1Route
   '/bloco-2': typeof AuthenticatedBloco2Route
@@ -85,6 +97,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/bloco-1': typeof AuthenticatedBloco1Route
   '/bloco-2': typeof AuthenticatedBloco2Route
@@ -98,6 +111,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/_authenticated/auditoria': typeof AuthenticatedAuditoriaRoute
   '/_authenticated/bloco-1': typeof AuthenticatedBloco1Route
   '/_authenticated/bloco-2': typeof AuthenticatedBloco2Route
@@ -112,6 +127,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/auditoria'
     | '/bloco-1'
     | '/bloco-2'
@@ -124,6 +140,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/auditoria'
     | '/bloco-1'
     | '/bloco-2'
@@ -136,6 +153,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
     | '/_authenticated/auditoria'
     | '/_authenticated/bloco-1'
     | '/_authenticated/bloco-2'
@@ -149,15 +168,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthenticatedAuditoriaRoute: typeof AuthenticatedAuditoriaRoute
-  AuthenticatedBloco1Route: typeof AuthenticatedBloco1Route
-  AuthenticatedBloco2Route: typeof AuthenticatedBloco2Route
-  AuthenticatedBloco3Route: typeof AuthenticatedBloco3Route
-  AuthenticatedBloco4Route: typeof AuthenticatedBloco4Route
-  AuthenticatedBloco5Route: typeof AuthenticatedBloco5Route
-  AuthenticatedEnterpriseRoute: typeof AuthenticatedEnterpriseRoute
-  AuthenticatedKanbanRoute: typeof AuthenticatedKanbanRoute
-  AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -169,74 +181,99 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/auditoria': {
       id: '/_authenticated/auditoria'
       path: '/auditoria'
       fullPath: '/auditoria'
       preLoaderRoute: typeof AuthenticatedAuditoriaRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/bloco-1': {
       id: '/_authenticated/bloco-1'
       path: '/bloco-1'
       fullPath: '/bloco-1'
       preLoaderRoute: typeof AuthenticatedBloco1RouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/bloco-2': {
       id: '/_authenticated/bloco-2'
       path: '/bloco-2'
       fullPath: '/bloco-2'
       preLoaderRoute: typeof AuthenticatedBloco2RouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/bloco-3': {
       id: '/_authenticated/bloco-3'
       path: '/bloco-3'
       fullPath: '/bloco-3'
       preLoaderRoute: typeof AuthenticatedBloco3RouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/bloco-4': {
       id: '/_authenticated/bloco-4'
       path: '/bloco-4'
       fullPath: '/bloco-4'
       preLoaderRoute: typeof AuthenticatedBloco4RouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/bloco-5': {
       id: '/_authenticated/bloco-5'
       path: '/bloco-5'
       fullPath: '/bloco-5'
       preLoaderRoute: typeof AuthenticatedBloco5RouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/enterprise': {
       id: '/_authenticated/enterprise'
       path: '/enterprise'
       fullPath: '/enterprise'
       preLoaderRoute: typeof AuthenticatedEnterpriseRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/kanban': {
       id: '/_authenticated/kanban'
       path: '/kanban'
       fullPath: '/kanban'
       preLoaderRoute: typeof AuthenticatedKanbanRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/painel': {
       id: '/_authenticated/painel'
       path: '/painel'
       fullPath: '/painel'
       preLoaderRoute: typeof AuthenticatedPainelRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAuditoriaRoute: typeof AuthenticatedAuditoriaRoute
+  AuthenticatedBloco1Route: typeof AuthenticatedBloco1Route
+  AuthenticatedBloco2Route: typeof AuthenticatedBloco2Route
+  AuthenticatedBloco3Route: typeof AuthenticatedBloco3Route
+  AuthenticatedBloco4Route: typeof AuthenticatedBloco4Route
+  AuthenticatedBloco5Route: typeof AuthenticatedBloco5Route
+  AuthenticatedEnterpriseRoute: typeof AuthenticatedEnterpriseRoute
+  AuthenticatedKanbanRoute: typeof AuthenticatedKanbanRoute
+  AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAuditoriaRoute: AuthenticatedAuditoriaRoute,
   AuthenticatedBloco1Route: AuthenticatedBloco1Route,
   AuthenticatedBloco2Route: AuthenticatedBloco2Route,
@@ -246,6 +283,15 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedEnterpriseRoute: AuthenticatedEnterpriseRoute,
   AuthenticatedKanbanRoute: AuthenticatedKanbanRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
