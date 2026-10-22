@@ -27,6 +27,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const [novo, setNovo] = useState({ cnpj: "", razao: "", err: "" });
   const lastRead = useRef("");
+  const [suspensa, setSuspensa] = useState(false);
+  useEffect(() => {
+    if (!cnpj || roles.includes("ADMIN_SISTEMA")) { setSuspensa(false); return; }
+    void supabase.rpc("empresa_ativa", { _cnpj: cnpj }).then(({ data }) => setSuspensa(data === false));
+  }, [cnpj, roles]);
   // Rastreabilidade forense: abertura de telas com dados pessoais registra leitura
   useEffect(() => {
     if (!ready || !cnpj || !roles.length) return;
@@ -166,7 +171,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <main className="min-w-0 flex-1 px-10 py-8">
-        {allowed ? children : (
+        {suspensa ? (
+          <div className="rounded-md border border-destructive bg-card p-16 text-center">
+            <Lock className="mx-auto h-8 w-8 text-destructive" />
+            <p className="mt-4 font-semibold text-primary">Acesso suspenso</p>
+            <p className="mt-1 text-sm text-muted-foreground">O contrato deste CNPJ está INATIVO. Entre em contato com a 2EC para reativar.</p>
+          </div>
+        ) : allowed ? children : (
           <div className="rounded-md border border-dashed bg-card p-16 text-center">
             <Lock className="mx-auto h-8 w-8 text-muted-foreground" />
             <p className="mt-4 font-semibold text-primary">Acesso negado pelo princípio do privilégio mínimo</p>

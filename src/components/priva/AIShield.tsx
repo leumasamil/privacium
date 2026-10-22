@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { Send, ShieldCheck, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,7 @@ function mockAI(sanitized: string, provider: string, vault: Vault) {
 }
 
 export function AIShield() {
-  const { log } = usePriva();
+  const { log, cnpj } = usePriva();
   const [provider, setProvider] = useState<string>(PROVIDERS[0]);
   const [prompt, setPrompt] = useState("");
   const [url, setUrl] = useState(() => (typeof window !== "undefined" && localStorage.getItem(URL_KEY)) || "http://localhost:8000/api/v1/shield/execute");
@@ -89,6 +90,7 @@ export function AIShield() {
     if (!answer) answer = mockAI(out, provider, vault);
     setResult({ packet: JSON.stringify({ provider, user_prompt: out }, null, 2), raw: answer, answer: restore(answer, vault), vault, source });
     log("INSERT", "escudo_ia", `Prompt higienizado (${vault.length} tokens) enviado a ${provider} via ${source}`);
+    if (cnpj) void supabase.rpc("registrar_uso_ia", { _cnpj: cnpj, _tokens: Math.ceil(out.length / 4), _bloqueios: vault.length });
     setBusy(false);
   };
 
