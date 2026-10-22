@@ -9,9 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 export const Route = createFileRoute("/_authenticated/membros")({
   head: () => ({
     meta: [
-      { title: "Membros e cargos — PRIVA 2EC" },
+      { title: "Membros e cargos — Privacium" },
       { name: "description", content: "Atribuição de cargos com privilégio mínimo (RBAC)." },
-      { property: "og:title", content: "Membros e cargos — PRIVA 2EC" },
+      { property: "og:title", content: "Membros e cargos — Privacium" },
       { property: "og:description", content: "Atribuição de cargos com privilégio mínimo (RBAC)." },
     ],
   }),

@@ -121,7 +121,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{pi}</DialogTitle>
-            <DialogDescription>Documento simulado · PRIVA 2EC · ISO/IEC 27701</DialogDescription>
+            <DialogDescription>Emitido pelo Ecossistema de Governança Privacium · ISO/IEC 27701</DialogDescription>
           </DialogHeader>
           <div className="max-h-[50vh] overflow-auto rounded-sm border bg-background p-6 text-sm leading-relaxed">{children}</div>
           <DialogFooter>

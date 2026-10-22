@@ -64,7 +64,7 @@ export function AdminDashboard() {
 
   return (
     <div>
-      <PageHeader eyebrow="ADMIN_SISTEMA · Super Administrador" title="Operação comercial do PRIVA 2EC">
+      <PageHeader eyebrow="ADMIN_SISTEMA · Super Administrador" title="Operação comercial do Privacium">
         Visão consolidada dos clientes multi-tenant. Acesso exclusivo do dono do ecossistema.
       </PageHeader>
       <div className="mb-8 grid gap-4 md:grid-cols-3">

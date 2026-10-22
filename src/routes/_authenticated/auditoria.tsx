@@ -10,9 +10,9 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/_authenticated/auditoria")({
   head: () => ({
     meta: [
-      { title: "Auditoria e Evidências Civis — PRIVA 2EC" },
+      { title: "Auditoria e Evidências Civis — Privacium" },
       { name: "description", content: "Trilha forense por CNPJ e trilha master multi-tenant, encadeadas por SHA-256 (ISO/IEC 27037)." },
-      { property: "og:title", content: "Auditoria e Evidências Civis — PRIVA 2EC" },
+      { property: "og:title", content: "Auditoria e Evidências Civis — Privacium" },
       { property: "og:description", content: "Trilha forense por CNPJ e trilha master multi-tenant, encadeadas por SHA-256 (ISO/IEC 27037)." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -79,7 +79,7 @@ function Auditoria() {
   if (master) return (
     <div className="space-y-6">
       <PageHeader eyebrow="ADMIN_SISTEMA · Visão multi-tenant" title="Trilha Forense Master de Infraestrutura">
-        Tráfego de todo o ecossistema PRIVA 2EC, de todas as empresas, encadeado por hash SHA-256 (ISO/IEC 27037).
+        Tráfego de todo o ecossistema Privacium, de todas as empresas, encadeado por hash SHA-256 (ISO/IEC 27037).
       </PageHeader>
       <Volumetria />
       <Panel title={`${rows.length} eventos globais`} action={action}>

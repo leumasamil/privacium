@@ -1,4 +1,4 @@
-// Régua do Ciclo PRIVA semestral: jan–jun e jul–dez.
+// Régua do Ciclo Privacium Semestral semestral: jan–jun e jul–dez.
 export type FaseCiclo = "dia1" | "normal" | "alerta30" | "urgente7";
 const DIA = 86_400_000;
 

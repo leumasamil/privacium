@@ -10,9 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export const Route = createFileRoute("/_authenticated/enterprise")({
   head: () => ({
     meta: [
-      { title: "PRIVA 2EC Enterprise" },
+      { title: "Privacium Enterprise" },
       { name: "description", content: "Módulos C-Suite, DRP, SDLC seguro, higiene de dados, RH e BCR." },
-      { property: "og:title", content: "PRIVA 2EC Enterprise" },
+      { property: "og:title", content: "Privacium Enterprise" },
       { property: "og:description", content: "Módulos C-Suite, DRP, SDLC seguro, higiene de dados, RH e BCR." },
     ],
   }),
@@ -39,7 +39,7 @@ function Enterprise() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Extensão avançada" title="PRIVA 2EC Enterprise" />
+      <PageHeader eyebrow="Extensão avançada" title="Privacium Enterprise" />
       <Tabs defaultValue="a">
         <TabsList>
           <TabsTrigger value="a">A · C-Suite</TabsTrigger><TabsTrigger value="b">B · Resiliência TI</TabsTrigger>

@@ -10,9 +10,9 @@ import { Input } from "@/components/ui/input";
 export const Route = createFileRoute("/_authenticated/kanban")({
   head: () => ({
     meta: [
-      { title: "Kanban 5W2H — PRIVA 2EC" },
+      { title: "Kanban 5W2H — Privacium" },
       { name: "description", content: "Quadro Kanban transversal para as ações 5W2H do Método BLLOCO." },
-      { property: "og:title", content: "Kanban 5W2H — PRIVA 2EC" },
+      { property: "og:title", content: "Kanban 5W2H — Privacium" },
       { property: "og:description", content: "Quadro Kanban transversal para as ações 5W2H do Método BLLOCO." },
     ],
   }),
