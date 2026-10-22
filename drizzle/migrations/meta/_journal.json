@@ -85,6 +85,13 @@
       "when": 1792697487683,
       "tag": "0011_blindagem_rls_inativas_trilha",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792699235019,
+      "tag": "0012_csuite_le_trilha_propria_empresa",
+      "breakpoints": true
     }
   ]
 }
