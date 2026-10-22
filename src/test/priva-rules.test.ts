@@ -43,3 +43,11 @@ describe("Privacy by Default (blueprint)", () => {
     expect(_vj("11.222.333/0001-82")).toBe(false);
   });
 });
+
+import { isValidCPF as _vc } from "@/lib/priva/data";
+describe("CPF do auditor", () => {
+  it("valida dígitos do CPF", () => {
+    expect(_vc("529.982.247-25")).toBe(true);
+    expect(_vc("529.982.247-24")).toBe(false);
+  });
+});

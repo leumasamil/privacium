@@ -166,7 +166,8 @@ function Bloco1() {
 
       <PIOutput pi="PI-01: Dossiê Legal de Alinhamento de Privacidade" ready={questions.length > 0 && answered === questions.length} readyHint={`Responda todas as perguntas (${answered}/${questions.length}).`}>
         <h3 className="font-semibold">1. Resultado do diagnóstico</h3>
-        <p>Empresa: {razao} · CNPJ {maskCNPJ(cnpj)} · Auditor: {email}</p>\n        <p>Grau de Maturidade: <b>{gm.toFixed(1)}%</b> ({score}/{PERFECT_SCORE}) — {zone.label}.</p>
+        <p>Empresa: {razao} · CNPJ {maskCNPJ(cnpj)} · Auditor: {email}</p>
+        <p>Grau de Maturidade: <b>{gm.toFixed(1)}%</b> ({score}/{PERFECT_SCORE}) — {zone.label}.</p>
         <h3 className="mt-4 font-semibold">2. Aderência por departamento</h3>
         <ul className="list-disc pl-5">
           {DEPARTMENTS.map((d) => {
