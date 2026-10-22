@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      ativos_seguranca: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          criado_por: string | null
+          descricao: string
+          empresa_cnpj: string
+          estrutura_pasta: string | null
+          hash_integridade: string | null
+          id: string
+          identificador: string
+          protegido: boolean
+          provedor_nuvem: string | null
+          tipo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          criado_por?: string | null
+          descricao?: string
+          empresa_cnpj: string
+          estrutura_pasta?: string | null
+          hash_integridade?: string | null
+          id?: string
+          identificador: string
+          protegido?: boolean
+          provedor_nuvem?: string | null
+          tipo: string
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          criado_por?: string | null
+          descricao?: string
+          empresa_cnpj?: string
+          estrutura_pasta?: string | null
+          hash_integridade?: string | null
+          id?: string
+          identificador?: string
+          protegido?: boolean
+          provedor_nuvem?: string | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ativos_seguranca_empresa_cnpj_fkey"
+            columns: ["empresa_cnpj"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["cnpj"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           detail: string
@@ -52,6 +105,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      chaves_recuperacao: {
+        Row: {
+          ativo_id: string
+          chave: string
+          registrado_em: string
+          registrado_por: string | null
+        }
+        Insert: {
+          ativo_id: string
+          chave: string
+          registrado_em?: string
+          registrado_por?: string | null
+        }
+        Update: {
+          ativo_id?: string
+          chave?: string
+          registrado_em?: string
+          registrado_por?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chaves_recuperacao_ativo_id_fkey"
+            columns: ["ativo_id"]
+            isOneToOne: true
+            referencedRelation: "ativos_seguranca"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       empresas: {
         Row: {
