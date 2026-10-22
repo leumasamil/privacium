@@ -192,6 +192,44 @@ export type Database = {
         }
         Relationships: []
       }
+      faturamento_saas: {
+        Row: {
+          criado_em: string
+          data_vencimento: string
+          empresa_id: string
+          id: string
+          link_fatura_simulado: string
+          status_pagamento: string
+          valor_mensalidade: number
+        }
+        Insert: {
+          criado_em?: string
+          data_vencimento?: string
+          empresa_id: string
+          id?: string
+          link_fatura_simulado?: string
+          status_pagamento?: string
+          valor_mensalidade?: number
+        }
+        Update: {
+          criado_em?: string
+          data_vencimento?: string
+          empresa_id?: string
+          id?: string
+          link_fatura_simulado?: string
+          status_pagamento?: string
+          valor_mensalidade?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faturamento_saas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incidentes_seguranca: {
         Row: {
           comunicacao: Json
@@ -257,6 +295,41 @@ export type Database = {
           mes_referencia?: string
         }
         Relationships: []
+      }
+      metricas_uso_ia: {
+        Row: {
+          atualizado_em: string
+          empresa_id: string
+          id: string
+          limite_mensal_tokens: number
+          quantidade_bloqueios_vazamento: number
+          volume_tokens_sinteticos_gerados: number
+        }
+        Insert: {
+          atualizado_em?: string
+          empresa_id: string
+          id?: string
+          limite_mensal_tokens?: number
+          quantidade_bloqueios_vazamento?: number
+          volume_tokens_sinteticos_gerados?: number
+        }
+        Update: {
+          atualizado_em?: string
+          empresa_id?: string
+          id?: string
+          limite_mensal_tokens?: number
+          quantidade_bloqueios_vazamento?: number
+          volume_tokens_sinteticos_gerados?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metricas_uso_ia_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: true
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       perguntas_diagnostico: {
         Row: {
@@ -676,6 +749,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_gm_empresas: {
+        Args: never
+        Returns: {
+          cnpj: string
+          gm: number
+        }[]
+      }
       append_audit: {
         Args: {
           _detail: string
@@ -704,6 +784,7 @@ export type Database = {
       }
       cnpj_valido: { Args: { _c: string }; Returns: boolean }
       cpf_valido: { Args: { _c: string }; Returns: boolean }
+      empresa_ativa: { Args: { _cnpj: string }; Returns: boolean }
       has_any_role: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
@@ -794,6 +875,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      registrar_uso_ia: {
+        Args: { _bloqueios: number; _cnpj: string; _tokens: number }
+        Returns: undefined
       }
       verificar_trilha: {
         Args: never
