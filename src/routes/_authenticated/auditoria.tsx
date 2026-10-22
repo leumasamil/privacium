@@ -81,6 +81,7 @@ function Auditoria() {
       <PageHeader eyebrow="ADMIN_SISTEMA · Visão multi-tenant" title="Trilha Forense Master de Infraestrutura">
         Tráfego de todo o ecossistema PRIVA 2EC, de todas as empresas, encadeado por hash SHA-256 (ISO/IEC 27037).
       </PageHeader>
+      <Volumetria />
       <Panel title={`${rows.length} eventos globais`} action={action}>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
