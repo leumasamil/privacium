@@ -99,6 +99,13 @@
       "when": 1792699829581,
       "tag": "0013_registrar_falha_login",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792699966192,
+      "tag": "0014_trilha_aceita_login_falha",
+      "breakpoints": true
     }
   ]
 }
