@@ -22,9 +22,9 @@ type Incidente = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
 export const Route = createFileRoute("/_authenticated/bloco-4")({
   head: () => ({
     meta: [
-      { title: "Bloco 4 · Vigiar e Responder — PRIVA 2EC" },
+      { title: "Bloco 4 · Vigiar e Responder — Privacium" },
       { name: "description", content: "Console forense pgAudit com hash SHA-256, gestão de crise de ransomware e SLA de 72h da ANPD." },
-      { property: "og:title", content: "Bloco 4 · Vigiar e Responder — PRIVA 2EC" },
+      { property: "og:title", content: "Bloco 4 · Vigiar e Responder — Privacium" },
       { property: "og:description", content: "Console forense pgAudit com hash SHA-256, gestão de crise de ransomware e SLA de 72h da ANPD." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -71,7 +71,7 @@ function Bloco4() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Bloco 4 · (V) Ciclo PRIVA · ISO 27037" title="Vigiar a Privacidade e Processar Incidentes" />
+      <PageHeader eyebrow="Bloco 4 · (V) Ciclo Privacium Semestral · ISO 27037" title="Vigiar a Privacidade e Processar Incidentes" />
       <ConsolePgAudit cnpj={cnpj} lotes={lotes.rows} canEdit={canEdit} refresh={lotes.refresh} />
       <CriseRansomware cnpj={cnpj} ativo={ativo} canEdit={canEdit} refresh={incs.refresh} />
       <PIOutput pi="PI-04: Dossiê de Auditoria de Logs e Resposta de Célula" ready={pronto} readyHint="Gere ao menos um lote pgAudit com hash e conclua um incidente com os 6 passos e comunicação à ANPD." dual>
@@ -118,7 +118,7 @@ function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes
 
   const gerarPdf = (l: Lote) => {
     const doc = new jsPDF();
-    doc.setFontSize(14); doc.text("PI-04: Dossiê de Auditoria de Logs e Resposta de Célula", 14, 18);
+    doc.setFontSize(14); doc.setFontSize(8); doc.text("Emitido pelo Ecossistema de Governança Privacium", 14, 10); doc.setFontSize(14); doc.text("PI-04: Dossiê de Auditoria de Logs e Resposta de Célula", 14, 18);
     doc.setFontSize(9);
     const meta = [
       `CNPJ: ${maskCNPJ(cnpj)}   Mês de referência: ${l.mes_referencia}   Linhas: ${l.linhas}`,

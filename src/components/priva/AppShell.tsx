@@ -1,3 +1,4 @@
+import { PrivaciumLogo } from "@/components/priva/Logo";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -109,8 +110,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen">
       <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
         <div className="border-b border-sidebar-border px-5 py-5">
-          <p className="text-lg font-semibold tracking-tight text-sidebar-accent-foreground">PRIVA <span className="text-sidebar-primary">2EC</span></p>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em]">Governança de Privacidade</p>
+          <PrivaciumLogo size="sm" className="text-sidebar-accent-foreground" />
+          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.2em]">Governança de Privacidade</p>
         </div>
         <div className="border-b border-sidebar-border px-5 py-4">
           <label className="font-mono text-[10px] uppercase tracking-widest">Painel (RBAC)</label>
@@ -145,7 +146,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
         <nav className="flex-1 space-y-1 overflow-auto px-3 py-4">
           {item("/painel", "Esteira BLLOCO", <LayoutDashboard className="h-4 w-4" />)}
-          {(demo || canAccess(role, "/bloco")) && <p className="px-3 pb-1 pt-4 font-mono text-[10px] uppercase tracking-widest">Ciclo PRIVA</p>}
+          {(demo || canAccess(role, "/bloco")) && <p className="px-3 pb-1 pt-4 font-mono text-[10px] uppercase tracking-widest">Ciclo Privacium Semestral</p>}
           {BLOCKS.map((b) => {
             const unlocked = isUnlocked(signatures, b.n);
             const done = !!signatures[`PI-0${b.n}`];
@@ -207,7 +208,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="rounded-md border border-destructive bg-card p-16 text-center">
             <Lock className="mx-auto h-8 w-8 text-destructive" />
             <p className="mt-4 font-semibold text-primary">Acesso suspenso</p>
-            <p className="mt-1 text-sm text-muted-foreground">O contrato deste CNPJ está INATIVO. Entre em contato com a 2EC para reativar.</p>
+            <p className="mt-1 text-sm text-muted-foreground">O contrato deste CNPJ está INATIVO. Entre em contato com a Privacium para reativar.</p>
           </div>
         ) : allowed ? children : (
           <div className="rounded-md border border-dashed bg-card p-16 text-center">

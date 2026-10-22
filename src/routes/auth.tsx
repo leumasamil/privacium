@@ -1,3 +1,4 @@
+import { PrivaciumLogo } from "@/components/priva/Logo";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ShieldCheck } from "lucide-react";
@@ -13,10 +14,10 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>): Search => (typeof s["redirect"] === "string" ? { redirect: s["redirect"] } : {}),
   head: () => ({
     meta: [
-      { title: "Entrar — PRIVA 2EC" },
-      { name: "description", content: "Acesso seguro à plataforma PRIVA 2EC de governança de privacidade." },
-      { property: "og:title", content: "Entrar — PRIVA 2EC" },
-      { property: "og:description", content: "Acesso seguro à plataforma PRIVA 2EC de governança de privacidade." },
+      { title: "Entrar — Privacium" },
+      { name: "description", content: "Acesso seguro à plataforma Privacium de governança de privacidade." },
+      { property: "og:title", content: "Entrar — Privacium" },
+      { property: "og:description", content: "Acesso seguro à plataforma Privacium de governança de privacidade." },
     ],
   }),
   component: AuthPage,
@@ -70,16 +71,17 @@ function AuthPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="hidden flex-col justify-between bg-sidebar p-12 text-sidebar-foreground lg:flex">
-        <p className="text-2xl font-semibold text-sidebar-accent-foreground">PRIVA <span className="text-sidebar-primary">2EC</span></p>
+        <PrivaciumLogo size="lg" className="text-sidebar-accent-foreground" />
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em]">Privacy by Design · ISO/IEC 27701 · 27037</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight text-sidebar-accent-foreground">Governança de privacidade como ciclo contínuo.</h1>
-          <p className="mt-4 max-w-md text-sm">Método BLLOCO sob a lógica do Ciclo PRIVA: preparar, registrar, implementar, vigiar e auditar.</p>
+          <p className="mt-4 max-w-md text-sm">Método BLLOCO sob a lógica do Ciclo Privacium Semestral: preparar, registrar, implementar, vigiar e auditar.</p>
         </div>
         <p className="flex items-center gap-2 text-xs"><ShieldCheck className="h-4 w-4 text-sidebar-primary" /> Toda ação é registrada em trilha de auditoria imutável.</p>
       </div>
       <div className="flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
+          <PrivaciumLogo size="sm" className="mb-6 text-primary lg:hidden" />
           <h2 className="text-2xl font-semibold text-primary">{mode === "in" ? "Entrar" : "Criar conta"}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "in" ? "Acesse o painel do seu cargo." : "Novas contas aguardam liberação de um administrador."}

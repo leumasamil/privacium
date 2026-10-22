@@ -16,9 +16,9 @@ import { Textarea } from "@/components/ui/textarea";
 export const Route = createFileRoute("/_authenticated/bloco-5")({
   head: () => ({
     meta: [
-      { title: "Bloco 5 · Auditar e Mitigar — PRIVA 2EC" },
+      { title: "Bloco 5 · Auditar e Mitigar — Privacium" },
       { name: "description", content: "RIPD algorítmico para IA (Art. 38 LGPD / ISO 42001) e Escudo Jurídico de Dosimetria (Res. CD/ANPD nº 4/2023)." },
-      { property: "og:title", content: "Bloco 5 · Auditar e Mitigar — PRIVA 2EC" },
+      { property: "og:title", content: "Bloco 5 · Auditar e Mitigar — Privacium" },
       { property: "og:description", content: "RIPD algorítmico para IA (Art. 38 LGPD / ISO 42001) e Escudo Jurídico de Dosimetria (Res. CD/ANPD nº 4/2023)." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -81,14 +81,14 @@ function Bloco5() {
     setBusy(false);
     if (error) { toast.error("Não foi possível finalizar o ciclo."); return; }
     set({ signatures: {}, incidentStart: null, incidentSteps: [false, false, false, false, false, false] },
-      { op: "INSERT", target: "ciclos_priva", detail: `Ciclo PRIVA ${anoAtual} finalizado · Ano Fiscal ${anoAtual + 1} aberto · Bloco 1 reativado` });
+      { op: "INSERT", target: "ciclos_priva", detail: `Ciclo Privacium Semestral ${anoAtual} finalizado · Ano Fiscal ${anoAtual + 1} aberto · Bloco 1 reativado` });
     toast.success(`Ano Fiscal ${anoAtual + 1} iniciado. Bloco 1 reativado.`);
     void navigate({ to: "/bloco-1" });
   };
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow={`Bloco 5 · (A) Ciclo PRIVA · Ano Fiscal ${anoAtual}`} title="Auditar o Sistema de Privacidade e Mitigar Riscos" />
+      <PageHeader eyebrow={`Bloco 5 · (A) Ciclo Privacium Semestral · Ano Fiscal ${anoAtual}`} title="Auditar o Sistema de Privacidade e Mitigar Riscos" />
 
       <Panel title="RIPD algorítmico · IA e LLMs (Art. 38 LGPD / ISO 42001)">
         <label className="text-xs text-muted-foreground">Sistema de IA avaliado
@@ -169,12 +169,12 @@ function Bloco5() {
       </PIOutput>
 
       {signatures["PI-05"] && (
-        <Panel title="Ciclo PRIVA concluído" className="border-success">
+        <Panel title="Ciclo Privacium Semestral concluído" className="border-success">
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <PartyPopper className="h-10 w-10 text-success" />
             <p className="text-xl font-semibold text-primary">Conformidade estrutural alcançada · Ano Fiscal {anoAtual}</p>
             <p className="max-w-lg text-sm text-muted-foreground">Os cinco Produtos Internos estão chancelados por DPO e Diretoria. Ao finalizar, o ciclo é arquivado com a redução de {reducao}% e o Ano Fiscal {anoAtual + 1} começa pelo Bloco 1.</p>
-            <Button onClick={finalizar} disabled={busy || !canEdit}><RefreshCw className="h-4 w-4" /> Finalizar Ciclo PRIVA</Button>
+            <Button onClick={finalizar} disabled={busy || !canEdit}><RefreshCw className="h-4 w-4" /> Finalizar Ciclo Privacium Semestral</Button>
           </div>
         </Panel>
       )}

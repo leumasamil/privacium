@@ -21,9 +21,9 @@ type Ativo = Database["public"]["Tables"]["ativos_seguranca"]["Row"];
 export const Route = createFileRoute("/_authenticated/bloco-3")({
   head: () => ({
     meta: [
-      { title: "Bloco 3 · Implementar Salvaguardas — PRIVA 2EC" },
+      { title: "Bloco 3 · Implementar Salvaguardas — Privacium" },
       { name: "description", content: "Ativos de segurança (BitLocker, Cryptomator) e simulador do Escudo Digital de IA (Art. 46 LGPD)." },
-      { property: "og:title", content: "Bloco 3 · Implementar Salvaguardas — PRIVA 2EC" },
+      { property: "og:title", content: "Bloco 3 · Implementar Salvaguardas — Privacium" },
       { property: "og:description", content: "Ativos de segurança (BitLocker, Cryptomator) e simulador do Escudo Digital de IA (Art. 46 LGPD)." },
     ],
   }),
@@ -76,7 +76,7 @@ function Bloco3() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Bloco 3 · (I) Ciclo PRIVA · Art. 46 LGPD" title="Implementar Salvaguardas Técnicas e Jurídicas" />
+      <PageHeader eyebrow="Bloco 3 · (I) Ciclo Privacium Semestral · Art. 46 LGPD" title="Implementar Salvaguardas Técnicas e Jurídicas" />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <BitLockerCard endpoints={endpoints} prot={prot} cnpj={cnpj} canEdit={canEdit} refresh={refresh} remove={remove} />

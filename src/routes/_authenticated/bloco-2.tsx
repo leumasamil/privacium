@@ -19,9 +19,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/bloco-2")({
   head: () => ({
     meta: [
-      { title: "Bloco 2 · Registro de Operações de Tratamento — PRIVA 2EC" },
+      { title: "Bloco 2 · Registro de Operações de Tratamento — Privacium" },
       { name: "description", content: "Planilha mestre do ROT (Art. 37 da LGPD) com 12 colunas operacionais e travas de risco." },
-      { property: "og:title", content: "Bloco 2 · Registro de Operações de Tratamento — PRIVA 2EC" },
+      { property: "og:title", content: "Bloco 2 · Registro de Operações de Tratamento — Privacium" },
       { property: "og:description", content: "Planilha mestre do ROT (Art. 37 da LGPD) com 12 colunas operacionais e travas de risco." },
     ],
   }),
@@ -92,7 +92,7 @@ function Bloco2() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Bloco 2 · (R) Ciclo PRIVA · Art. 37 LGPD" title="Registrar as Operações de Tratamento">
+      <PageHeader eyebrow="Bloco 2 · (R) Ciclo Privacium Semestral · Art. 37 LGPD" title="Registrar as Operações de Tratamento">
         Planilha mestre do ROT. Linhas com menores de idade ou dados pessoais sensíveis recebem tarja vermelha e exigem justificativa das medidas mitigadoras.
       </PageHeader>
 
