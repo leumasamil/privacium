@@ -79,7 +79,7 @@ function Index() {
           </ol>
         </div>
         <p className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <RefreshCw className="h-3 w-3" /> Plan → Do → Check → Act → novo diagnóstico: a privacidade é um ciclo contínuo.
+          <RefreshCw className="h-3 w-3" /> Preparar → Registrar → Implementar → Vigiar → Auditar → novo diagnóstico: a privacidade é um ciclo contínuo.
         </p>
       </Panel>
     </div>

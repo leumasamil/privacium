@@ -45,7 +45,7 @@ function Bloco5() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Bloco 5 · (A) Act" title="Auditar o Sistema de Privacidade e Mitigar Riscos" />
+      <PageHeader eyebrow="Bloco 5 · (A) Ciclo PRIVA" title="Auditar o Sistema de Privacidade e Mitigar Riscos" />
 
       <Panel title="RIPD · IA generativa corporativa">
         <div className="space-y-4">

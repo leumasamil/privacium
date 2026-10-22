@@ -90,7 +90,7 @@ function Bloco2() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Bloco 2 · (R) Plan · Art. 37 LGPD" title="Registrar as Operações de Tratamento">
+      <PageHeader eyebrow="Bloco 2 · (R) Ciclo PRIVA · Art. 37 LGPD" title="Registrar as Operações de Tratamento">
         Planilha mestre do ROT. Linhas com menores de idade ou dados pessoais sensíveis recebem tarja vermelha e exigem justificativa das medidas mitigadoras.
       </PageHeader>
 

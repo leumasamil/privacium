@@ -83,7 +83,7 @@ function Bloco1() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Bloco 1 · (P) Plan" title="Preparar a Privacidade">
+      <PageHeader eyebrow="Bloco 1 · (P) Ciclo PRIVA" title="Preparar a Privacidade">
         Diagnóstico de Entrada pela LGPD. SIM soma o peso de criticidade da pergunta; NÃO soma zero.
       </PageHeader>
 
