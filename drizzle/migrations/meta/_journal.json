@@ -92,6 +92,13 @@
       "when": 1792699235019,
       "tag": "0012_csuite_le_trilha_propria_empresa",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792699829581,
+      "tag": "0013_registrar_falha_login",
+      "breakpoints": true
     }
   ]
 }

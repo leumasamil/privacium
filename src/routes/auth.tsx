@@ -54,7 +54,10 @@ function AuthPage() {
     setBusy(true); setMsg(null);
     if (mode === "in") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setMsg({ tone: "err", text: "E-mail ou senha inválidos, ou e-mail ainda não confirmado." });
+      if (error) {
+        void supabase.rpc("registrar_falha_login", { _email: email });
+        setMsg({ tone: "err", text: "E-mail ou senha inválidos, ou e-mail ainda não confirmado." });
+      }
       else navigate({ to: safePath(next) as "/painel" });
     } else {
       const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });

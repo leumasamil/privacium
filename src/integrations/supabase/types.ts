@@ -568,14 +568,14 @@ export type Database = {
           ip_origem: string | null
           op: string
           prev_hash: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["app_role"] | null
           seq: number
           tabela_afetada: string | null
           target: string
           timestamp_evento: string | null
           ts: string
           user_email: string | null
-          user_id: string
+          user_id: string | null
           usuario_id: string | null
         }
         Insert: {
@@ -589,14 +589,14 @@ export type Database = {
           ip_origem?: string | null
           op: string
           prev_hash: string
-          role: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["app_role"] | null
           seq?: number
           tabela_afetada?: string | null
           target: string
           timestamp_evento?: string | null
           ts?: string
           user_email?: string | null
-          user_id: string
+          user_id?: string | null
           usuario_id?: string | null
         }
         Update: {
@@ -610,14 +610,14 @@ export type Database = {
           ip_origem?: string | null
           op?: string
           prev_hash?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["app_role"] | null
           seq?: number
           tabela_afetada?: string | null
           target?: string
           timestamp_evento?: string | null
           ts?: string
           user_email?: string | null
-          user_id?: string
+          user_id?: string | null
           usuario_id?: string | null
         }
         Relationships: [
@@ -825,14 +825,14 @@ export type Database = {
           ip_origem: string | null
           op: string
           prev_hash: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["app_role"] | null
           seq: number
           tabela_afetada: string | null
           target: string
           timestamp_evento: string | null
           ts: string
           user_email: string | null
-          user_id: string
+          user_id: string | null
           usuario_id: string | null
         }
         SetofOptions: {
@@ -842,6 +842,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      registrar_falha_login: { Args: { _email: string }; Returns: undefined }
       registrar_trilha: {
         Args: {
           _cnpj: string
@@ -861,14 +862,14 @@ export type Database = {
           ip_origem: string | null
           op: string
           prev_hash: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["app_role"] | null
           seq: number
           tabela_afetada: string | null
           target: string
           timestamp_evento: string | null
           ts: string
           user_email: string | null
-          user_id: string
+          user_id: string | null
           usuario_id: string | null
         }
         SetofOptions: {
