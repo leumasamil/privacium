@@ -5,6 +5,7 @@ import { useQuestions } from "@/lib/priva/questions";
 import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { PageHeader, Panel, Tag } from "@/components/priva/ui";
 import { cn } from "@/lib/utils";
+import { AdminDashboard, CSuiteDashboard } from "@/components/priva/RoleDashboards";
 
 export const Route = createFileRoute("/_authenticated/painel")({
   head: () => ({
@@ -15,8 +16,15 @@ export const Route = createFileRoute("/_authenticated/painel")({
       { property: "og:description", content: "Linha de montagem da conformidade: 5 blocos sequenciais sob o ciclo PDCA." },
     ],
   }),
-  component: Index,
+  component: Painel,
 });
+
+function Painel() {
+  const { role } = usePriva();
+  if (role === "ADMIN_SISTEMA") return <AdminDashboard />;
+  if (role === "C_SUITE") return <CSuiteDashboard />;
+  return <Index />;
+}
 
 function Index() {
   const { signatures, answers, enterprise, audit, kanban } = usePriva();
@@ -27,7 +35,7 @@ function Index() {
 
   return (
     <div>
-      <PageHeader eyebrow={`Trilho ${enterprise ? "Enterprise" : "Core"} · Método BLLOCO`} title="Esteira de Conformidade">
+      <PageHeader eyebrow={`Trilho ${enterprise ? "Enterprise" : "Core"} · Método BLLOCO`} title="Onboarding Industrial · Esteira de Conformidade">
         Cada bloco produz um Produto Interno (PI). O próximo bloco só é liberado após a chancela digital do anterior. Ao fim do bloco A, o ciclo retroalimenta o bloco P.
       </PageHeader>
 
