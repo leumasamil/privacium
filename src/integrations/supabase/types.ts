@@ -152,6 +152,80 @@ export type Database = {
         }
         Relationships: []
       }
+      registro_operacoes: {
+        Row: {
+          atualizado_em: string
+          base_prazo: string
+          categoria_titulares: string[]
+          codigo: string
+          compartilhamento: string
+          criado_em: string
+          criado_por: string | null
+          dados_pessoais: string[]
+          dados_sensiveis: string[]
+          empresa_cnpj: string
+          finalidade_especifica: string
+          genero_verbo: string
+          hipotese_tratamento: string
+          id: string
+          infraestrutura: string
+          justificativa_mitigacao: string | null
+          salvaguardas: string[]
+          setor: string
+          tempo_retencao: string
+        }
+        Insert: {
+          atualizado_em?: string
+          base_prazo: string
+          categoria_titulares?: string[]
+          codigo?: string
+          compartilhamento?: string
+          criado_em?: string
+          criado_por?: string | null
+          dados_pessoais?: string[]
+          dados_sensiveis?: string[]
+          empresa_cnpj: string
+          finalidade_especifica: string
+          genero_verbo: string
+          hipotese_tratamento: string
+          id?: string
+          infraestrutura: string
+          justificativa_mitigacao?: string | null
+          salvaguardas?: string[]
+          setor: string
+          tempo_retencao: string
+        }
+        Update: {
+          atualizado_em?: string
+          base_prazo?: string
+          categoria_titulares?: string[]
+          codigo?: string
+          compartilhamento?: string
+          criado_em?: string
+          criado_por?: string | null
+          dados_pessoais?: string[]
+          dados_sensiveis?: string[]
+          empresa_cnpj?: string
+          finalidade_especifica?: string
+          genero_verbo?: string
+          hipotese_tratamento?: string
+          id?: string
+          infraestrutura?: string
+          justificativa_mitigacao?: string | null
+          salvaguardas?: string[]
+          setor?: string
+          tempo_retencao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registro_operacoes_empresa_cnpj_fkey"
+            columns: ["empresa_cnpj"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["cnpj"]
+          },
+        ]
+      }
       respostas_diagnostico: {
         Row: {
           empresa_cnpj: string
