@@ -3,7 +3,7 @@ import { Eye, EyeOff, Lock, ShieldCheck, FileSignature } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { maskCPF, maskEmail, maskName } from "@/lib/priva/data";
+import { maskCNPJ, maskCPF, maskEmail, maskName } from "@/lib/priva/data";
 import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";

@@ -29,3 +29,17 @@ describe("Escudo de IA", () => {
     expect(vault).toHaveLength(2);
   });
 });
+
+import { maskCPF as _mc, maskCNPJ as _mj, isValidCNPJ as _vj } from "@/lib/priva/data";
+describe("Privacy by Default (blueprint)", () => {
+  it("CPF mascarado no padrão ***.555.***-77", () => {
+    expect(_mc("123.555.789-77")).toBe("***.555.***-77");
+  });
+  it("CNPJ mascarado esconde a raiz", () => {
+    expect(_mj("11.222.333/0001-81")).toBe("**.222.***/****-81");
+  });
+  it("valida dígitos do CNPJ", () => {
+    expect(_vj("11.222.333/0001-81")).toBe(true);
+    expect(_vj("11.222.333/0001-82")).toBe(false);
+  });
+});
