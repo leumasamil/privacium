@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const ROLE_ACCESS: Record<Role, string[]> = {
   ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/membros"],
   DPO_OPERACIONAL: ["/painel", "/bloco", "/kanban", "/auditoria", "/enterprise"],
-  C_SUITE: ["/painel", "/enterprise", "/kanban"],
+  C_SUITE: ["/painel", "/enterprise", "/kanban", "/auditoria"],
 };
 const SENSITIVE = [
   { path: "/bloco-2", target: "inventario_dados_pessoais" },
