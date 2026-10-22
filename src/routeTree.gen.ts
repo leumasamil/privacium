@@ -10,99 +10,133 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuditoriaRouteImport } from './routes/auditoria'
-import { Route as Bloco1RouteImport } from './routes/bloco-1'
-import { Route as Bloco2RouteImport } from './routes/bloco-2'
-import { Route as Bloco3RouteImport } from './routes/bloco-3'
-import { Route as Bloco4RouteImport } from './routes/bloco-4'
-import { Route as Bloco5RouteImport } from './routes/bloco-5'
-import { Route as EnterpriseRouteImport } from './routes/enterprise'
-import { Route as KanbanRouteImport } from './routes/kanban'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAuditoriaRouteImport } from './routes/_authenticated/auditoria'
+import { Route as AuthenticatedBloco1RouteImport } from './routes/_authenticated/bloco-1'
+import { Route as AuthenticatedBloco2RouteImport } from './routes/_authenticated/bloco-2'
+import { Route as AuthenticatedBloco3RouteImport } from './routes/_authenticated/bloco-3'
+import { Route as AuthenticatedBloco4RouteImport } from './routes/_authenticated/bloco-4'
+import { Route as AuthenticatedBloco5RouteImport } from './routes/_authenticated/bloco-5'
+import { Route as AuthenticatedEnterpriseRouteImport } from './routes/_authenticated/enterprise'
+import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated/kanban'
+import { Route as AuthenticatedMembrosRouteImport } from './routes/_authenticated/membros'
+import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuditoriaRoute = AuditoriaRouteImport.update({
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAuditoriaRoute = AuthenticatedAuditoriaRouteImport.update({
   id: '/auditoria',
   path: '/auditoria',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const Bloco1Route = Bloco1RouteImport.update({
+const AuthenticatedBloco1Route = AuthenticatedBloco1RouteImport.update({
   id: '/bloco-1',
   path: '/bloco-1',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const Bloco2Route = Bloco2RouteImport.update({
+const AuthenticatedBloco2Route = AuthenticatedBloco2RouteImport.update({
   id: '/bloco-2',
   path: '/bloco-2',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const Bloco3Route = Bloco3RouteImport.update({
+const AuthenticatedBloco3Route = AuthenticatedBloco3RouteImport.update({
   id: '/bloco-3',
   path: '/bloco-3',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const Bloco4Route = Bloco4RouteImport.update({
+const AuthenticatedBloco4Route = AuthenticatedBloco4RouteImport.update({
   id: '/bloco-4',
   path: '/bloco-4',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const Bloco5Route = Bloco5RouteImport.update({
+const AuthenticatedBloco5Route = AuthenticatedBloco5RouteImport.update({
   id: '/bloco-5',
   path: '/bloco-5',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const EnterpriseRoute = EnterpriseRouteImport.update({
+const AuthenticatedEnterpriseRoute = AuthenticatedEnterpriseRouteImport.update({
   id: '/enterprise',
   path: '/enterprise',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const KanbanRoute = KanbanRouteImport.update({
+const AuthenticatedKanbanRoute = AuthenticatedKanbanRouteImport.update({
   id: '/kanban',
   path: '/kanban',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMembrosRoute = AuthenticatedMembrosRouteImport.update({
+  id: '/membros',
+  path: '/membros',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auditoria': typeof AuditoriaRoute
-  '/bloco-1': typeof Bloco1Route
-  '/bloco-2': typeof Bloco2Route
-  '/bloco-3': typeof Bloco3Route
-  '/bloco-4': typeof Bloco4Route
-  '/bloco-5': typeof Bloco5Route
-  '/enterprise': typeof EnterpriseRoute
-  '/kanban': typeof KanbanRoute
+  '/auth': typeof AuthRoute
+  '/auditoria': typeof AuthenticatedAuditoriaRoute
+  '/bloco-1': typeof AuthenticatedBloco1Route
+  '/bloco-2': typeof AuthenticatedBloco2Route
+  '/bloco-3': typeof AuthenticatedBloco3Route
+  '/bloco-4': typeof AuthenticatedBloco4Route
+  '/bloco-5': typeof AuthenticatedBloco5Route
+  '/enterprise': typeof AuthenticatedEnterpriseRoute
+  '/kanban': typeof AuthenticatedKanbanRoute
+  '/membros': typeof AuthenticatedMembrosRoute
+  '/painel': typeof AuthenticatedPainelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auditoria': typeof AuditoriaRoute
-  '/bloco-1': typeof Bloco1Route
-  '/bloco-2': typeof Bloco2Route
-  '/bloco-3': typeof Bloco3Route
-  '/bloco-4': typeof Bloco4Route
-  '/bloco-5': typeof Bloco5Route
-  '/enterprise': typeof EnterpriseRoute
-  '/kanban': typeof KanbanRoute
+  '/auth': typeof AuthRoute
+  '/auditoria': typeof AuthenticatedAuditoriaRoute
+  '/bloco-1': typeof AuthenticatedBloco1Route
+  '/bloco-2': typeof AuthenticatedBloco2Route
+  '/bloco-3': typeof AuthenticatedBloco3Route
+  '/bloco-4': typeof AuthenticatedBloco4Route
+  '/bloco-5': typeof AuthenticatedBloco5Route
+  '/enterprise': typeof AuthenticatedEnterpriseRoute
+  '/kanban': typeof AuthenticatedKanbanRoute
+  '/membros': typeof AuthenticatedMembrosRoute
+  '/painel': typeof AuthenticatedPainelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/auditoria': typeof AuditoriaRoute
-  '/bloco-1': typeof Bloco1Route
-  '/bloco-2': typeof Bloco2Route
-  '/bloco-3': typeof Bloco3Route
-  '/bloco-4': typeof Bloco4Route
-  '/bloco-5': typeof Bloco5Route
-  '/enterprise': typeof EnterpriseRoute
-  '/kanban': typeof KanbanRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/auditoria': typeof AuthenticatedAuditoriaRoute
+  '/_authenticated/bloco-1': typeof AuthenticatedBloco1Route
+  '/_authenticated/bloco-2': typeof AuthenticatedBloco2Route
+  '/_authenticated/bloco-3': typeof AuthenticatedBloco3Route
+  '/_authenticated/bloco-4': typeof AuthenticatedBloco4Route
+  '/_authenticated/bloco-5': typeof AuthenticatedBloco5Route
+  '/_authenticated/enterprise': typeof AuthenticatedEnterpriseRoute
+  '/_authenticated/kanban': typeof AuthenticatedKanbanRoute
+  '/_authenticated/membros': typeof AuthenticatedMembrosRoute
+  '/_authenticated/painel': typeof AuthenticatedPainelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/auditoria'
     | '/bloco-1'
     | '/bloco-2'
@@ -111,9 +145,12 @@ export interface FileRouteTypes {
     | '/bloco-5'
     | '/enterprise'
     | '/kanban'
+    | '/membros'
+    | '/painel'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/auditoria'
     | '/bloco-1'
     | '/bloco-2'
@@ -122,29 +159,29 @@ export interface FileRouteTypes {
     | '/bloco-5'
     | '/enterprise'
     | '/kanban'
+    | '/membros'
+    | '/painel'
   id:
     | '__root__'
     | '/'
-    | '/auditoria'
-    | '/bloco-1'
-    | '/bloco-2'
-    | '/bloco-3'
-    | '/bloco-4'
-    | '/bloco-5'
-    | '/enterprise'
-    | '/kanban'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/auditoria'
+    | '/_authenticated/bloco-1'
+    | '/_authenticated/bloco-2'
+    | '/_authenticated/bloco-3'
+    | '/_authenticated/bloco-4'
+    | '/_authenticated/bloco-5'
+    | '/_authenticated/enterprise'
+    | '/_authenticated/kanban'
+    | '/_authenticated/membros'
+    | '/_authenticated/painel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuditoriaRoute: typeof AuditoriaRoute
-  Bloco1Route: typeof Bloco1Route
-  Bloco2Route: typeof Bloco2Route
-  Bloco3Route: typeof Bloco3Route
-  Bloco4Route: typeof Bloco4Route
-  Bloco5Route: typeof Bloco5Route
-  EnterpriseRoute: typeof EnterpriseRoute
-  KanbanRoute: typeof KanbanRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -156,75 +193,126 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auditoria': {
-      id: '/auditoria'
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/auditoria': {
+      id: '/_authenticated/auditoria'
       path: '/auditoria'
       fullPath: '/auditoria'
-      preLoaderRoute: typeof AuditoriaRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedAuditoriaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/bloco-1': {
-      id: '/bloco-1'
+    '/_authenticated/bloco-1': {
+      id: '/_authenticated/bloco-1'
       path: '/bloco-1'
       fullPath: '/bloco-1'
-      preLoaderRoute: typeof Bloco1RouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedBloco1RouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/bloco-2': {
-      id: '/bloco-2'
+    '/_authenticated/bloco-2': {
+      id: '/_authenticated/bloco-2'
       path: '/bloco-2'
       fullPath: '/bloco-2'
-      preLoaderRoute: typeof Bloco2RouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedBloco2RouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/bloco-3': {
-      id: '/bloco-3'
+    '/_authenticated/bloco-3': {
+      id: '/_authenticated/bloco-3'
       path: '/bloco-3'
       fullPath: '/bloco-3'
-      preLoaderRoute: typeof Bloco3RouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedBloco3RouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/bloco-4': {
-      id: '/bloco-4'
+    '/_authenticated/bloco-4': {
+      id: '/_authenticated/bloco-4'
       path: '/bloco-4'
       fullPath: '/bloco-4'
-      preLoaderRoute: typeof Bloco4RouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedBloco4RouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/bloco-5': {
-      id: '/bloco-5'
+    '/_authenticated/bloco-5': {
+      id: '/_authenticated/bloco-5'
       path: '/bloco-5'
       fullPath: '/bloco-5'
-      preLoaderRoute: typeof Bloco5RouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedBloco5RouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/enterprise': {
-      id: '/enterprise'
+    '/_authenticated/enterprise': {
+      id: '/_authenticated/enterprise'
       path: '/enterprise'
       fullPath: '/enterprise'
-      preLoaderRoute: typeof EnterpriseRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedEnterpriseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/kanban': {
-      id: '/kanban'
+    '/_authenticated/kanban': {
+      id: '/_authenticated/kanban'
       path: '/kanban'
       fullPath: '/kanban'
-      preLoaderRoute: typeof KanbanRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedKanbanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/membros': {
+      id: '/_authenticated/membros'
+      path: '/membros'
+      fullPath: '/membros'
+      preLoaderRoute: typeof AuthenticatedMembrosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/painel': {
+      id: '/_authenticated/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof AuthenticatedPainelRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAuditoriaRoute: typeof AuthenticatedAuditoriaRoute
+  AuthenticatedBloco1Route: typeof AuthenticatedBloco1Route
+  AuthenticatedBloco2Route: typeof AuthenticatedBloco2Route
+  AuthenticatedBloco3Route: typeof AuthenticatedBloco3Route
+  AuthenticatedBloco4Route: typeof AuthenticatedBloco4Route
+  AuthenticatedBloco5Route: typeof AuthenticatedBloco5Route
+  AuthenticatedEnterpriseRoute: typeof AuthenticatedEnterpriseRoute
+  AuthenticatedKanbanRoute: typeof AuthenticatedKanbanRoute
+  AuthenticatedMembrosRoute: typeof AuthenticatedMembrosRoute
+  AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAuditoriaRoute: AuthenticatedAuditoriaRoute,
+  AuthenticatedBloco1Route: AuthenticatedBloco1Route,
+  AuthenticatedBloco2Route: AuthenticatedBloco2Route,
+  AuthenticatedBloco3Route: AuthenticatedBloco3Route,
+  AuthenticatedBloco4Route: AuthenticatedBloco4Route,
+  AuthenticatedBloco5Route: AuthenticatedBloco5Route,
+  AuthenticatedEnterpriseRoute: AuthenticatedEnterpriseRoute,
+  AuthenticatedKanbanRoute: AuthenticatedKanbanRoute,
+  AuthenticatedMembrosRoute: AuthenticatedMembrosRoute,
+  AuthenticatedPainelRoute: AuthenticatedPainelRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuditoriaRoute: AuditoriaRoute,
-  Bloco1Route: Bloco1Route,
-  Bloco2Route: Bloco2Route,
-  Bloco3Route: Bloco3Route,
-  Bloco4Route: Bloco4Route,
-  Bloco5Route: Bloco5Route,
-  EnterpriseRoute: EnterpriseRoute,
-  KanbanRoute: KanbanRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

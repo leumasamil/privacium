@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { ShieldCheck, ShieldAlert } from "lucide-react";
-import { sha256 } from "@/lib/priva/data";
+import { supabase } from "@/integrations/supabase/client";
 import { usePriva } from "@/lib/priva/store";
 import { Masked, PageHeader, Panel, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/auditoria")({
+export const Route = createFileRoute("/_authenticated/auditoria")({
   head: () => ({
     meta: [
       { title: "Trilha de Auditoria — PRIVA 2EC" },
@@ -25,17 +25,14 @@ const TITULARES = [
 ];
 
 function Auditoria() {
-  const { audit } = usePriva();
+  const { audit, refreshAudit } = usePriva();
   const [verified, setVerified] = useState<null | boolean>(null);
 
+  // Verificação recalculada no servidor sobre a cadeia completa
   const verify = async () => {
-    let prev = "0".repeat(64);
-    for (const e of audit) {
-      const h = await sha256(`${e.seq}|${e.ts}|${e.role}|${e.op}|${e.target}|${e.detail}|${e.prevHash}`);
-      if (e.prevHash !== prev || h !== e.hash) return setVerified(false);
-      prev = e.hash;
-    }
-    setVerified(true);
+    await refreshAudit();
+    const { data } = await supabase.rpc("verify_audit_chain");
+    setVerified(!!data?.[0]?.ok);
   };
 
   return (
@@ -68,12 +65,13 @@ function Auditoria() {
       }>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
-            <thead><tr className="border-b text-left font-mono uppercase text-muted-foreground"><th className="py-2">#</th><th>Data/hora</th><th>Perfil</th><th>Operação</th><th>Alvo</th><th>Detalhe</th><th>Hash SHA-256</th></tr></thead>
+            <thead><tr className="border-b text-left font-mono uppercase text-muted-foreground"><th className="py-2">#</th><th>Data/hora</th><th>Usuário</th><th>Perfil</th><th>Operação</th><th>Alvo</th><th>Detalhe</th><th>Hash SHA-256</th></tr></thead>
             <tbody>
               {[...audit].reverse().map((e) => (
                 <tr key={e.seq} className="border-b">
                   <td className="py-1.5 font-mono">{e.seq}</td>
                   <td className="font-mono">{new Date(e.ts).toLocaleString("pt-BR")}</td>
+                  <td className="max-w-40 truncate">{e.user_email}</td>
                   <td>{e.role}</td>
                   <td><Tag tone={e.op === "DELETE" ? "destructive" : e.op === "SELECT" ? "muted" : "primary"}>{e.op}</Tag></td>
                   <td className="font-mono">{e.target}</td>
@@ -81,7 +79,7 @@ function Auditoria() {
                   <td className="font-mono text-muted-foreground">{e.hash.slice(0, 20)}…</td>
                 </tr>
               ))}
-              {!audit.length && <tr><td colSpan={7} className="py-6 text-center text-muted-foreground">Nenhum evento registrado ainda.</td></tr>}
+              {!audit.length && <tr><td colSpan={8} className="py-6 text-center text-muted-foreground">Nenhum evento registrado ainda.</td></tr>}
             </tbody>
           </table>
         </div>

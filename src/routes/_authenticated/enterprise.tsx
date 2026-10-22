@@ -7,7 +7,7 @@ import { PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export const Route = createFileRoute("/enterprise")({
+export const Route = createFileRoute("/_authenticated/enterprise")({
   head: () => ({
     meta: [
       { title: "PRIVA 2EC Enterprise" },

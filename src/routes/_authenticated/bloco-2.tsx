@@ -6,7 +6,7 @@ import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/bloco-2")({
+export const Route = createFileRoute("/_authenticated/bloco-2")({
   head: () => ({
     meta: [
       { title: "Bloco 2 · Registrar Operações — PRIVA 2EC" },
