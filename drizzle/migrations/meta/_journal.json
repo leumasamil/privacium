@@ -29,6 +29,13 @@
       "when": 1792693170442,
       "tag": "0003_blueprint_alignment",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792694652275,
+      "tag": "0004_empresas_usuarios_trilha_forense",
+      "breakpoints": true
     }
   ]
 }
