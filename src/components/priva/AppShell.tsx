@@ -1,8 +1,8 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Lock, CheckCircle2, LayoutDashboard, KanbanSquare, ScrollText, Building2, RotateCcw, LogOut, Users } from "lucide-react";
-import { BLOCKS, ROLE_LABEL, type Role } from "@/lib/priva/data";
+import { BLOCKS, ROLE_LABEL, isValidCNPJ, maskCNPJ, type Role } from "@/lib/priva/data";
 import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
@@ -12,14 +12,45 @@ const ROLE_ACCESS: Record<Role, string[]> = {
   DPO_OPERACIONAL: ["/painel", "/bloco", "/kanban", "/auditoria", "/enterprise"],
   C_SUITE: ["/painel", "/enterprise", "/kanban"],
 };
+const SENSITIVE = [
+  { path: "/bloco-2", target: "inventario_dados_pessoais" },
+  { path: "/auditoria", target: "titulares" },
+  { path: "/bloco-5", target: "ripd" },
+];
 export function canAccess(role: Role, path: string) {
   return ROLE_ACCESS[role].some((p) => path.startsWith(p));
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { role, roles, setRole, set, enterprise, signatures, reset, ready, email } = usePriva();
+  const { role, roles, setRole, set, enterprise, signatures, reset, ready, email, cnpj, empresas, selectEmpresa, createEmpresa, log } = usePriva();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const [novo, setNovo] = useState({ cnpj: "", razao: "", err: "" });
+  const lastRead = useRef("");
+  // Rastreabilidade forense: abertura de telas com dados pessoais registra leitura
+  useEffect(() => {
+    if (!ready || !cnpj || !roles.length) return;
+    const sensitive = SENSITIVE.find((p) => pathname.startsWith(p.path));
+    const key = `${cnpj}|${pathname}|${role}`;
+    if (sensitive && lastRead.current !== key && canAccess(role, pathname)) {
+      lastRead.current = key;
+      log("SELECT", sensitive.target, `Leitura da tela ${pathname}`);
+    }
+  }, [ready, cnpj, pathname, role, roles.length, log]);
+  const submitEmpresa = async () => {
+    if (!isValidCNPJ(novo.cnpj)) return setNovo((n) => ({ ...n, err: "CNPJ inválido." }));
+    if (!novo.razao.trim()) return setNovo((n) => ({ ...n, err: "Informe a razão social." }));
+    const err = await createEmpresa(novo.cnpj, novo.razao);
+    setNovo(err ? { ...novo, err } : { cnpj: "", razao: "", err: "" });
+  };
+  const empresaForm = (
+    <div className="space-y-2">
+      <input value={novo.cnpj} onChange={(e) => setNovo({ ...novo, cnpj: e.target.value, err: "" })} placeholder="CNPJ (14 dígitos)" className="w-full rounded-sm border bg-background px-2 py-1.5 text-sm text-foreground" />
+      <input value={novo.razao} onChange={(e) => setNovo({ ...novo, razao: e.target.value, err: "" })} placeholder="Razão social" className="w-full rounded-sm border bg-background px-2 py-1.5 text-sm text-foreground" />
+      {novo.err && <p className="text-xs text-destructive">{novo.err}</p>}
+      <button onClick={submitEmpresa} className="w-full rounded-sm bg-primary px-2 py-1.5 text-sm text-primary-foreground">Cadastrar CNPJ</button>
+    </div>
+  );
   const signOut = async () => { await supabase.auth.signOut(); navigate({ to: "/auth" }); };
 
   if (!ready) return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Carregando…</div>;
@@ -29,6 +60,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Lock className="mx-auto h-8 w-8 text-muted-foreground" />
         <h1 className="mt-4 text-lg font-semibold text-primary">Aguardando liberação</h1>
         <p className="mt-2 text-sm text-muted-foreground">Sua conta ({email}) foi criada. Um administrador precisa atribuir seu cargo (DPO, C-Suite ou Administrador) antes do acesso.</p>
+        <button onClick={signOut} className="mt-6 text-sm text-primary hover:underline">Sair</button>
+      </div>
+    </div>
+  );
+  if (!cnpj) return (
+    <div className="flex min-h-screen items-center justify-center bg-background p-8">
+      <div className="w-full max-w-md rounded-md border bg-card p-10">
+        <Building2 className="h-8 w-8 text-muted-foreground" />
+        <h1 className="mt-4 text-lg font-semibold text-primary">Cadastre a primeira empresa</h1>
+        <p className="mt-2 mb-4 text-sm text-muted-foreground">O progresso do Método BLLOCO é amarrado a cada CNPJ.</p>
+        {role === "C_SUITE" ? <p className="text-sm text-muted-foreground">Peça ao DPO ou administrador para cadastrar.</p> : empresaForm}
         <button onClick={signOut} className="mt-6 text-sm text-primary hover:underline">Sair</button>
       </div>
     </div>
@@ -70,6 +112,19 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             {roles.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
           </select>
+        </div>
+        <div className="border-b border-sidebar-border px-5 py-4">
+          <label className="font-mono text-[10px] uppercase tracking-widest">Empresa (CNPJ)</label>
+          <select
+            value={cnpj}
+            onChange={(e) => selectEmpresa(e.target.value)}
+            className="mt-1 w-full rounded-sm border border-sidebar-border bg-sidebar-accent px-2 py-1.5 text-sm text-sidebar-accent-foreground"
+          >
+            {empresas.map((e) => <option key={e.cnpj} value={e.cnpj}>{maskCNPJ(e.cnpj)} · {e.razao_social}</option>)}
+          </select>
+          {role !== "C_SUITE" && (
+            <details className="mt-2 text-xs"><summary className="cursor-pointer opacity-70">+ Nova empresa</summary><div className="mt-2">{empresaForm}</div></details>
+          )}
         </div>
         <nav className="flex-1 space-y-1 overflow-auto px-3 py-4">
           {item("/painel", "Esteira BLLOCO", <LayoutDashboard className="h-4 w-4" />)}

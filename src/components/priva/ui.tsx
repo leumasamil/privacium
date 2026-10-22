@@ -46,13 +46,13 @@ export function Tag({ tone = "muted", children }: { tone?: "muted" | "destructiv
 const ROLE_KEY: Record<string, string> = { ADMIN_SISTEMA: "ADM-2EC", DPO_OPERACIONAL: "DPO-2EC", C_SUITE: "" };
 
 /** Dado pessoal mascarado; revelação exige credencial do cargo (C-Suite não tem need-to-know). */
-export function Masked({ value, kind }: { value: string; kind: "cpf" | "name" | "email" }) {
+export function Masked({ value, kind }: { value: string; kind: "cpf" | "cnpj" | "name" | "email" }) {
   const { role, log } = usePriva();
   const [shown, setShown] = useState(false);
   const [open, setOpen] = useState(false);
   const [key, setKey] = useState("");
   const [err, setErr] = useState("");
-  const masked = kind === "cpf" ? maskCPF(value) : kind === "name" ? maskName(value) : maskEmail(value);
+  const masked = kind === "cpf" ? maskCPF(value) : kind === "cnpj" ? maskCNPJ(value) : kind === "name" ? maskName(value) : maskEmail(value);
   return (
     <span className="inline-flex items-center gap-1 font-mono text-xs">
       {shown ? value : masked}
