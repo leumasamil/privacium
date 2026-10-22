@@ -10,15 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuditoriaRouteImport } from './routes/auditoria'
 import { Route as Bloco1RouteImport } from './routes/bloco-1'
 import { Route as Bloco2RouteImport } from './routes/bloco-2'
 import { Route as Bloco3RouteImport } from './routes/bloco-3'
 import { Route as Bloco4RouteImport } from './routes/bloco-4'
 import { Route as Bloco5RouteImport } from './routes/bloco-5'
+import { Route as EnterpriseRouteImport } from './routes/enterprise'
+import { Route as KanbanRouteImport } from './routes/kanban'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditoriaRoute = AuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Bloco1Route = Bloco1RouteImport.update({
@@ -46,55 +54,97 @@ const Bloco5Route = Bloco5RouteImport.update({
   path: '/bloco-5',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EnterpriseRoute = EnterpriseRouteImport.update({
+  id: '/enterprise',
+  path: '/enterprise',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KanbanRoute = KanbanRouteImport.update({
+  id: '/kanban',
+  path: '/kanban',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auditoria': typeof AuditoriaRoute
   '/bloco-1': typeof Bloco1Route
   '/bloco-2': typeof Bloco2Route
   '/bloco-3': typeof Bloco3Route
   '/bloco-4': typeof Bloco4Route
   '/bloco-5': typeof Bloco5Route
+  '/enterprise': typeof EnterpriseRoute
+  '/kanban': typeof KanbanRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auditoria': typeof AuditoriaRoute
   '/bloco-1': typeof Bloco1Route
   '/bloco-2': typeof Bloco2Route
   '/bloco-3': typeof Bloco3Route
   '/bloco-4': typeof Bloco4Route
   '/bloco-5': typeof Bloco5Route
+  '/enterprise': typeof EnterpriseRoute
+  '/kanban': typeof KanbanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auditoria': typeof AuditoriaRoute
   '/bloco-1': typeof Bloco1Route
   '/bloco-2': typeof Bloco2Route
   '/bloco-3': typeof Bloco3Route
   '/bloco-4': typeof Bloco4Route
   '/bloco-5': typeof Bloco5Route
+  '/enterprise': typeof EnterpriseRoute
+  '/kanban': typeof KanbanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/bloco-1' | '/bloco-2' | '/bloco-3' | '/bloco-4' | '/bloco-5'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bloco-1' | '/bloco-2' | '/bloco-3' | '/bloco-4' | '/bloco-5'
-  id:
-    | '__root__'
     | '/'
+    | '/auditoria'
     | '/bloco-1'
     | '/bloco-2'
     | '/bloco-3'
     | '/bloco-4'
     | '/bloco-5'
+    | '/enterprise'
+    | '/kanban'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/auditoria'
+    | '/bloco-1'
+    | '/bloco-2'
+    | '/bloco-3'
+    | '/bloco-4'
+    | '/bloco-5'
+    | '/enterprise'
+    | '/kanban'
+  id:
+    | '__root__'
+    | '/'
+    | '/auditoria'
+    | '/bloco-1'
+    | '/bloco-2'
+    | '/bloco-3'
+    | '/bloco-4'
+    | '/bloco-5'
+    | '/enterprise'
+    | '/kanban'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuditoriaRoute: typeof AuditoriaRoute
   Bloco1Route: typeof Bloco1Route
   Bloco2Route: typeof Bloco2Route
   Bloco3Route: typeof Bloco3Route
   Bloco4Route: typeof Bloco4Route
   Bloco5Route: typeof Bloco5Route
+  EnterpriseRoute: typeof EnterpriseRoute
+  KanbanRoute: typeof KanbanRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -104,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auditoria': {
+      id: '/auditoria'
+      path: '/auditoria'
+      fullPath: '/auditoria'
+      preLoaderRoute: typeof AuditoriaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bloco-1': {
@@ -141,16 +198,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Bloco5RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/enterprise': {
+      id: '/enterprise'
+      path: '/enterprise'
+      fullPath: '/enterprise'
+      preLoaderRoute: typeof EnterpriseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kanban': {
+      id: '/kanban'
+      path: '/kanban'
+      fullPath: '/kanban'
+      preLoaderRoute: typeof KanbanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuditoriaRoute: AuditoriaRoute,
   Bloco1Route: Bloco1Route,
   Bloco2Route: Bloco2Route,
   Bloco3Route: Bloco3Route,
   Bloco4Route: Bloco4Route,
   Bloco5Route: Bloco5Route,
+  EnterpriseRoute: EnterpriseRoute,
+  KanbanRoute: KanbanRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
