@@ -30,7 +30,7 @@ function Index() {
   const { signatures, cnpj, enterprise, audit, kanban } = usePriva();
   const answers = useRespostas(cnpj);
   const questions = useQuestions();
-  const { gm, score } = computeGM(answers, questions);
+  const { gm, score, bankMax } = computeGM(answers, questions);
   const zone = riskZone(gm);
   const done = BLOCKS.filter((b) => signatures[`PI-0${b.n}`]).length;
 
@@ -42,7 +42,7 @@ function Index() {
 
       <div className="mb-8 grid gap-4 md:grid-cols-4">
         <Stat label="Grau de Maturidade" value={`${gm.toFixed(1)}%`} sub={<Tag tone={zone.tone}>{zone.label}</Tag>} />
-        <Stat label="Score" value={`${score} / 1660`} sub="pontos ponderados" />
+        <Stat label="Score" value={`${score} / ${bankMax}`} sub="pontos ponderados" />
         <Stat label="PIs chancelados" value={`${done} / 5`} sub={enterprise ? "+ PI-06 Enterprise" : "Trilho Core"} />
         <Stat label="Eventos auditados" value={String(audit.length)} sub={`${kanban.filter((k) => k.column !== "done").length} ações 5W2H abertas`} />
       </div>

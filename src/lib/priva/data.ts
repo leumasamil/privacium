@@ -9,10 +9,9 @@ export const DEPARTMENTS = ["RH", "TI", "Marketing", "Compras", "Recepção", "J
 
 export type Question = { id: string; department: string; principle: string; text: string; weight: number };
 
-export const PERFECT_SCORE = 1660;
 
 /**
- * SA = soma dos pesos das respostas SIM. GM = (SA / 1660) * 100.
+ * SA = soma dos pesos das respostas SIM. GM = (SA / soma dos pesos do banco) * 100.
  * Divisor = soma real dos pesos de todas as perguntas cadastradas (Score Perfeito Real).
  */
 export function computeGM(answers: Record<string, boolean>, questions: Question[]) {

@@ -93,7 +93,7 @@ export function CSuiteDashboard() {
   const { cnpj, signatures, log } = usePriva();
   const answers = useRespostas(cnpj);
   const questions = useQuestions();
-  const { gm, score } = computeGM(answers, questions);
+  const { gm, score, bankMax } = computeGM(answers, questions);
   const zone = riskZone(gm);
   useEffect(() => { log("SELECT", "relatorio_erm", "Abertura do painel C_SUITE"); }, [log]);
 
@@ -113,7 +113,7 @@ export function CSuiteDashboard() {
       </PageHeader>
       <div className="mb-8 grid gap-4 md:grid-cols-3">
         <Stat label="Grau de maturidade" value={`${gm.toFixed(1)}%`} sub={<Tag tone={zone.tone}>{zone.label}</Tag>} />
-        <Stat label="Score" value={`${score} / 1660`} sub="pontos ponderados" />
+        <Stat label="Score" value={`${score} / ${bankMax}`} sub="pontos ponderados" />
         <Stat label="Etapas concluídas" value={`${Object.keys(signatures).length}`} sub="produtos chancelados" />
       </div>
       <div className="grid gap-6 lg:grid-cols-[auto_1fr]">
