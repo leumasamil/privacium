@@ -1,11 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowRight, HardDrive, KeyRound } from "lucide-react";
-import { tokenizePrompt } from "@/lib/priva/data";
+import { HardDrive } from "lucide-react";
+import { AIShield } from "@/components/priva/AIShield";
 import { usePriva } from "@/lib/priva/store";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/_authenticated/bloco-3")({
   head: () => ({
@@ -21,8 +19,6 @@ export const Route = createFileRoute("/_authenticated/bloco-3")({
 
 function Bloco3() {
   const { assets, set } = usePriva();
-  const [prompt, setPrompt] = useState("Resuma o histórico do cliente João da Silva, CPF 123.456.789-09, e-mail joao.silva@empresa.com.br, que pediu portabilidade.");
-  const { out, map } = tokenizePrompt(prompt);
   const toggle = (id: string, k: "bitlocker" | "vault", v: boolean) =>
     set({ assets: assets.map((a) => (a.id === id ? { ...a, [k]: v } : a)) }, { op: "UPDATE", target: "ativos", detail: `${id}.${k}=${v}` });
   const coverage = assets.filter((a) => a.bitlocker && a.vault).length;
@@ -47,32 +43,7 @@ function Bloco3() {
         </table>
       </Panel>
 
-      <Panel title="Simulador do Proxy · Escudo Digital de IA">
-        <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
-          <div>
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">1. Prompt original</p>
-            <Textarea rows={7} value={prompt} onChange={(e) => setPrompt(e.target.value)} />
-          </div>
-          <ArrowRight className="hidden self-center text-muted-foreground lg:block" />
-          <div>
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">2. Filtro Regex/NER → API externa</p>
-            <div className="min-h-[170px] rounded-sm border bg-primary p-3 font-mono text-xs leading-relaxed text-primary-foreground">{out}</div>
-          </div>
-          <ArrowRight className="hidden self-center text-muted-foreground lg:block" />
-          <div>
-            <p className="mb-2 flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground"><KeyRound className="h-3 w-3" /> 3. Cofre local SQLite (cifrado)</p>
-            <table className="w-full rounded-sm border text-xs">
-              <thead><tr className="border-b bg-muted text-left"><th className="p-2">Token efêmero</th><th className="p-2">Chave de reversão</th></tr></thead>
-              <tbody>
-                {map.map((m) => (
-                  <tr key={m.token} className="border-b"><td className="p-2 font-mono">{m.token}</td><td className="p-2 font-mono text-muted-foreground">AES-256:{btoa(unescape(encodeURIComponent(m.original))).slice(0, 14)}…</td></tr>
-                ))}
-                {!map.length && <tr><td colSpan={2} className="p-2 text-muted-foreground">Nenhum dado pessoal detectado.</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </Panel>
+      <AIShield />
 
       <PIOutput pi="PI-03: Book de Evidências Tecnológicas e Contratuais" ready={coverage === assets.length} readyHint="Ative BitLocker e cofre em todos os endpoints.">
         <p>Evidências de salvaguardas técnicas (art. 46 LGPD; ISO/IEC 27701 cl. 6.9).</p>

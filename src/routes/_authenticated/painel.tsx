@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2, Lock, RefreshCw } from "lucide-react";
 import { BLOCKS, computeGM, riskZone } from "@/lib/priva/data";
+import { useQuestions } from "@/lib/priva/questions";
 import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { PageHeader, Panel, Tag } from "@/components/priva/ui";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,8 @@ export const Route = createFileRoute("/_authenticated/painel")({
 
 function Index() {
   const { signatures, answers, enterprise, audit, kanban } = usePriva();
-  const { gm, score } = computeGM(answers);
+  const questions = useQuestions();
+  const { gm, score } = computeGM(answers, questions);
   const zone = riskZone(gm);
   const done = BLOCKS.filter((b) => signatures[`PI-0${b.n}`]).length;
 

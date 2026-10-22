@@ -5,70 +5,22 @@ export const ROLE_LABEL: Record<Role, string> = {
   csuite: "C-Suite",
 };
 
-export const DOMAINS = [
-  "Governança e Liderança",
-  "Mapeamento de Dados",
-  "Hipóteses Legais",
-  "Direitos dos Titulares",
-  "Segurança da Informação",
-  "Gestão de Terceiros",
-  "Incidentes",
-  "Cultura e Treinamento",
-];
+export const DEPARTMENTS = ["RH", "TI", "Marketing", "Compras", "Recepção", "Jurídico", "Financeiro"] as const;
 
-const STEMS = [
-  "Existe política formal documentada e aprovada para",
-  "Há responsável designado por",
-  "Estão formalizados os procedimentos de",
-  "Há registro de evidências sobre",
-  "Existe revisão periódica de",
-  "Os colaboradores foram treinados em",
-  "Há controles técnicos implementados para",
-  "Existe indicador de desempenho monitorado para",
-];
-const TOPICS = [
-  "coleta de dados pessoais",
-  "retenção e descarte",
-  "compartilhamento com terceiros",
-  "dados sensíveis",
-  "dados de crianças e adolescentes",
-  "transferência internacional",
-  "atendimento a titulares",
-  "controle de acesso lógico",
-  "criptografia de endpoints",
-  "backups e recuperação",
-  "resposta a incidentes",
-  "uso de inteligência artificial",
-  "cookies e rastreadores",
-  "contratos com operadores",
-  "monitoramento de logs",
-  "minimização de dados",
-  "anonimização e pseudonimização",
-  "avaliação de impacto (RIPD)",
-  "comunicação com a ANPD",
-  "gestão de consentimento",
-  "segurança física",
-];
-
-export type Question = { id: number; domain: string; text: string; weight: number };
-
-// 166 perguntas binárias, pesos determinísticos de 1 a 10
-export const QUESTIONS: Question[] = Array.from({ length: 166 }, (_, i) => ({
-  id: i + 1,
-  domain: DOMAINS[i % DOMAINS.length]!,
-  text: `${STEMS[Math.floor(i / TOPICS.length) % STEMS.length]} ${TOPICS[i % TOPICS.length]}?`,
-  weight: ((i * 37) % 10) + 1,
-}));
+export type Question = { id: number; department: string; principle: string; text: string; weight: number };
 
 export const PERFECT_SCORE = 1660;
-const WEIGHT_SUM = QUESTIONS.reduce((a, q) => a + q.weight, 0);
 
-/** GM = (Score Alcançado / 1660) * 100. Pesos são normalizados para a escala de 1660 pontos. */
-export function computeGM(answers: Record<number, boolean>) {
-  const raw = QUESTIONS.reduce((a, q) => a + (answers[q.id] ? q.weight : 0), 0);
-  const score = Math.round((raw / WEIGHT_SUM) * PERFECT_SCORE);
-  const gm = (score / PERFECT_SCORE) * 100;
-  return { score, gm };
+/**
+ * SA = soma dos pesos das respostas SIM. GM = (SA / 1660) * 100.
+ * O Score Perfeito do manual é 1660; quando a soma dos pesos do banco difere, o SA é
+ * reescalado proporcionalmente para a régua de 1660 pontos.
+ */
+export function computeGM(answers: Record<number, boolean>, questions: Question[]) {
+  const bankMax = questions.reduce((a, q) => a + q.weight, 0) || 1;
+  const raw = questions.reduce((a, q) => a + (answers[q.id] ? q.weight : 0), 0);
+  const score = Math.round((raw / bankMax) * PERFECT_SCORE);
+  return { raw, bankMax, score, gm: (score / PERFECT_SCORE) * 100 };
 }
 
 export function riskZone(gm: number) {
