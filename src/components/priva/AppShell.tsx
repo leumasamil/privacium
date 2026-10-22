@@ -8,9 +8,9 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 const ROLE_ACCESS: Record<Role, string[]> = {
-  admin: ["/painel", "/auditoria", "/kanban", "/membros"],
-  dpo: ["/painel", "/bloco", "/kanban", "/auditoria", "/enterprise"],
-  csuite: ["/painel", "/enterprise", "/kanban"],
+  ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/membros"],
+  DPO_OPERACIONAL: ["/painel", "/bloco", "/kanban", "/auditoria", "/enterprise"],
+  C_SUITE: ["/painel", "/enterprise", "/kanban"],
 };
 export function canAccess(role: Role, path: string) {
   return ROLE_ACCESS[role].some((p) => path.startsWith(p));
@@ -105,7 +105,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </label>
           <p className="truncate opacity-70">{email}</p>
           <div className="flex justify-between">
-            {roles.includes("admin") && <button onClick={reset} className="flex items-center gap-1 opacity-70 hover:opacity-100"><RotateCcw className="h-3 w-3" /> Reiniciar esteira</button>}
+            {roles.includes("ADMIN_SISTEMA") && <button onClick={reset} className="flex items-center gap-1 opacity-70 hover:opacity-100"><RotateCcw className="h-3 w-3" /> Reiniciar esteira</button>}
             <button onClick={signOut} className="flex items-center gap-1 opacity-70 hover:opacity-100"><LogOut className="h-3 w-3" /> Sair</button>
           </div>
         </div>

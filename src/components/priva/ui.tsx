@@ -43,7 +43,7 @@ export function Tag({ tone = "muted", children }: { tone?: "muted" | "destructiv
   return <span className={cn("inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-medium", map[tone])}>{children}</span>;
 }
 
-const ROLE_KEY: Record<string, string> = { admin: "ADM-2EC", dpo: "DPO-2EC", csuite: "" };
+const ROLE_KEY: Record<string, string> = { ADMIN_SISTEMA: "ADM-2EC", DPO_OPERACIONAL: "DPO-2EC", C_SUITE: "" };
 
 /** Dado pessoal mascarado; revelação exige credencial do cargo (C-Suite não tem need-to-know). */
 export function Masked({ value, kind }: { value: string; kind: "cpf" | "name" | "email" }) {
@@ -68,16 +68,16 @@ export function Masked({ value, kind }: { value: string; kind: "cpf" | "name" | 
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Lock className="h-4 w-4" /> Credencial de descriptografia</DialogTitle>
             <DialogDescription>
-              {role === "csuite"
+              {role === "C_SUITE"
                 ? "O perfil C-Suite não possui necessidade de conhecer (need-to-know) dados de titulares."
                 : `Informe a chave do perfil para revelar o dado. Demonstração: ${ROLE_KEY[role]}`}
             </DialogDescription>
           </DialogHeader>
-          {role !== "csuite" && <Input value={key} onChange={(e) => setKey(e.target.value)} placeholder="Chave do cargo" />}
+          {role !== "C_SUITE" && <Input value={key} onChange={(e) => setKey(e.target.value)} placeholder="Chave do cargo" />}
           {err && <p className="text-sm text-destructive">{err}</p>}
           <DialogFooter>
             <Button
-              disabled={role === "csuite"}
+              disabled={role === "C_SUITE"}
               onClick={() => {
                 if (key === ROLE_KEY[role]) {
                   setShown(true); setOpen(false); setKey(""); setErr("");

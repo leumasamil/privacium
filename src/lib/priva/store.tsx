@@ -73,7 +73,7 @@ type Ctx = Shared & {
 const g = globalThis as unknown as { __privaCtx?: React.Context<Ctx | null> };
 const C = (g.__privaCtx ??= createContext<Ctx | null>(null));
 const ROLE_PREF = "priva2ec-active-role";
-const ORDER: Role[] = ["dpo", "admin", "csuite"];
+const ORDER: Role[] = ["DPO_OPERACIONAL", "ADMIN_SISTEMA", "C_SUITE"];
 
 export function PrivaProvider({ children }: { children: ReactNode }) {
   const [shared, setShared] = useState<Shared>(initialShared);
@@ -81,14 +81,14 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
-  const [role, setRoleState] = useState<Role>("dpo");
+  const [role, setRoleState] = useState<Role>("DPO_OPERACIONAL");
   const [audit, setAudit] = useState<AuditEntry[]>([]);
   const roleRef = useRef(role);
   roleRef.current = role;
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pending = useRef<Shared | null>(null);
 
-  const canReadAudit = roles.includes("admin") || roles.includes("dpo");
+  const canReadAudit = roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL");
 
   const refreshAudit = useCallback(async () => {
     const { data } = await supabase.from("audit_log").select("*").order("seq", { ascending: false }).limit(500);
@@ -147,7 +147,7 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
   const log = useCallback((op: AuditEntry["op"], target: string, detail: string) => {
     void (async () => {
       const { data, error } = await supabase.rpc("append_audit", { _role: roleRef.current, _op: op, _target: target, _detail: detail });
-      if (!error && data && (roles.includes("admin") || roles.includes("dpo"))) setAudit((a) => [...a, data as AuditEntry]);
+      if (!error && data && (roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL"))) setAudit((a) => [...a, data as AuditEntry]);
     })();
   }, [roles]);
 

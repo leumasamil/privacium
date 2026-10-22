@@ -1,8 +1,8 @@
-export type Role = "admin" | "dpo" | "csuite";
+export type Role = "ADMIN_SISTEMA" | "DPO_OPERACIONAL" | "C_SUITE";
 export const ROLE_LABEL: Record<Role, string> = {
-  admin: "Administrador (SaaS)",
-  dpo: "DPO / Encarregado",
-  csuite: "C-Suite",
+  ADMIN_SISTEMA: "Administrador (SaaS)",
+  DPO_OPERACIONAL: "DPO / Encarregado",
+  C_SUITE: "C-Suite",
 };
 
 export const DEPARTMENTS = ["RH", "TI", "Marketing", "Compras", "Recepção", "Jurídico", "Financeiro"] as const;
