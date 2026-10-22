@@ -12,7 +12,7 @@ type EmpresaRow = { id: string; cnpj: string; razao_social: string; plano_assina
 type Vol = { empresas: number; ativas: number; usuarios: number; registros_trilha: number; perguntas: number };
 
 /** Mensalidade ilustrativa por plano (valores de demonstração). */
-export const MENSALIDADE: Record<string, number> = { CORE: 1500, ENTERPRISE: 4900 };
+export const MENSALIDADE: Record<string, number> = { CORE: 450, ENTERPRISE: 2450 };
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
