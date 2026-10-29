@@ -1,7 +1,7 @@
 import type { Signature } from "./store";
 import { hasSensivel, isRisky, type RotInput } from "./rot";
 
-export type Estado = "ok" | "andamento" | "pendente" | "bloqueado";
+export type Estado = "ok" | "andamento" | "pendente" | "atencao" | "critico" | "bloqueado";
 export type Responsavel = "DPO_OPERACIONAL" | "C_SUITE" | "ADMIN_SISTEMA";
 export type Pendencia = {
   id: string;
@@ -13,7 +13,13 @@ export type Pendencia = {
   bloco: number;
   ancora: string;
   acao: string;
+  /** Linha "Próxima ação sugerida" explicando por que e, se houver, a sequência de passos. */
+  sugestao?: string;
 };
+
+const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+/** "2026-09" → "setembro/2026" */
+export const mesExtenso = (m: string) => { const [a, mm] = m.split("-"); return `${MESES[Number(mm) - 1] ?? mm}/${a}`; };
 
 export const PI_INFO: Record<number, { codigo: string; nome: string; explica: string }> = {
   1: { codigo: "PI-01", nome: "Dossiê Legal de Alinhamento de Privacidade", explica: "É o resultado do diagnóstico de entrada: mostra o Grau de Maturidade da empresa frente à LGPD. Só com esse dossiê assinado o Bloco 2 é liberado." },
@@ -52,7 +58,7 @@ export function montarChecklist(d: DadosBloco, sigs: Record<string, Signature>):
   const n = d.n;
   if (d.n === 1) {
     const falta = d.perguntas - d.respondidas;
-    it.push({ id: "diag", titulo: `Responder às ${d.perguntas} perguntas do diagnóstico por setor`, exige: falta > 0 ? `Faltam ${falta} de ${d.perguntas} respostas.` : `${d.perguntas} de ${d.perguntas} respondidas.`, responsavel: "DPO_OPERACIONAL", estado: est(d.respondidas, d.perguntas), bloco: 1, ancora: "diagnostico", acao: `Responder as ${falta} perguntas restantes` });
+    it.push({ id: "diag", titulo: `Responder às ${d.perguntas} perguntas do diagnóstico por setor`, exige: falta > 0 ? `Faltam ${falta} de ${d.perguntas} respostas.` : `${d.perguntas} de ${d.perguntas} respondidas.`, responsavel: "DPO_OPERACIONAL", estado: est(d.respondidas, d.perguntas), bloco: 1, ancora: "diagnostico", acao: `Responder as ${falta} perguntas pendentes`, sugestao: "Responda setor por setor; cada clique já fica salvo no CNPJ ativo." });
     if (d.naos > 0) it.push({ id: "naos", titulo: `Revisar as ${d.naos} respostas marcadas como "não"`, exige: "Confirme cada \"não\" com o gestor do setor antes de assinar — elas reduzem o Grau de Maturidade.", responsavel: "DPO_OPERACIONAL", estado: falta > 0 ? "andamento" : "ok", bloco: 1, ancora: "diagnostico", acao: `Revisar as respostas "não"` });
     if (d.perguntas > 0) it.push({ id: "gm", titulo: "Registrar formalmente o Grau de Maturidade", exige: "O Grau de Maturidade é registrado no PI-01 quando todas as perguntas estiverem respondidas.", responsavel: "DPO_OPERACIONAL", estado: falta === 0 ? "ok" : "bloqueado", bloco: 1, ancora: "diagnostico", acao: "Ver o Grau de Maturidade" });
   }
@@ -65,7 +71,7 @@ export function montarChecklist(d: DadosBloco, sigs: Record<string, Signature>):
       const sens = r.filter(hasSensivel);
       if (sens.length) {
         const sem7b = sens.filter((x) => !(x.hipotese_sensivel ?? "").startsWith("Art. 11")).length;
-        it.push({ id: "7b", titulo: "Campo 7B preenchido quando há dado pessoal sensível", exige: sem7b ? `${sem7b} processo(s) com dado pessoal sensível sem hipótese do art. 11.` : "Todos os processos com dado pessoal sensível têm 7B.", responsavel: "DPO_OPERACIONAL", estado: sem7b ? "andamento" : "ok", bloco: 2, ancora: "rot", acao: `Preencher o campo 7B em ${sem7b} processo(s)` });
+        it.push({ id: "7b", titulo: "Campo 7B preenchido quando há dado pessoal sensível", exige: sem7b ? `${sem7b} processo(s) com dado pessoal sensível sem hipótese do art. 11.` : "Todos os processos com dado pessoal sensível têm 7B.", responsavel: "DPO_OPERACIONAL", estado: sem7b ? "critico" : "ok", bloco: 2, ancora: "rot", acao: `Preencher o campo 7B em ${sem7b} processo(s)` });
       }
       const risco = r.filter(isRisky);
       if (risco.length) {
@@ -84,17 +90,21 @@ export function montarChecklist(d: DadosBloco, sigs: Record<string, Signature>):
     it.push({ id: "cof", titulo: "Cadastrar cofre e gerar o hash de integridade da pasta", exige: d.cofres.length ? `${comHash} de ${d.cofres.length} cofres com SHA-256.` : "Nenhum cofre Cryptomator catalogado.", responsavel: "DPO_OPERACIONAL", estado: d.cofres.length ? est(comHash, d.cofres.length) : "pendente", bloco: 3, ancora: "cofres", acao: d.cofres.length ? "Gerar o hash dos cofres" : "Catalogar o primeiro cofre" });
   }
   if (d.n === 4) {
-    const semHash = d.lotes.filter((l) => !l.hash_sha256);
-    if (!d.lotes.length) it.push({ id: "lote", titulo: "Registrar o lote mensal de auditoria", exige: "Nenhum lote pgAudit extraído.", responsavel: "DPO_OPERACIONAL", estado: "pendente", bloco: 4, ancora: "lotes", acao: "Extrair o lote do mês" });
-    else it.push({ id: "lote", titulo: "Selar os lotes mensais de auditoria com hash", exige: semHash.length ? `Lotes em aberto: ${semHash.map((l) => l.mes_referencia).join(", ")}.` : `${d.lotes.length} lote(s) selado(s).`, responsavel: "DPO_OPERACIONAL", estado: semHash.length ? "andamento" : "ok", bloco: 4, ancora: "lotes", acao: semHash.length ? `Gerar hash do lote ${semHash[0]!.mes_referencia}` : "Ver lotes" });
+    // Só bloqueia lote de mês anterior ao corrente sem hash; o mês corrente não bloqueia.
+    const atual = new Date(d.agora).toISOString().slice(0, 7);
+    const semHash = d.lotes.filter((l) => !l.hash_sha256 && l.mes_referencia < atual).sort((a, b) => a.mes_referencia.localeCompare(b.mes_referencia));
+    if (!d.lotes.length) it.push({ id: "lote", titulo: "Registrar o lote mensal de auditoria", exige: "Nenhum lote pgAudit extraído.", responsavel: "DPO_OPERACIONAL", estado: "pendente", bloco: 4, ancora: "lotes", acao: `Extrair o lote de ${mesExtenso(atual)}`, sugestao: `São 2 passos: (1) extrair o lote de ${mesExtenso(atual)}, (2) gerar o hash SHA-256 ao fechar o mês.` });
+    else it.push({ id: "lote", titulo: "Selar os lotes mensais de auditoria com hash", exige: semHash.length ? `Lotes de meses fechados sem hash: ${semHash.map((l) => mesExtenso(l.mes_referencia)).join(", ")}.` : "Todos os lotes de meses fechados estão selados.", responsavel: "DPO_OPERACIONAL", estado: semHash.length ? "atencao" : "ok", bloco: 4, ancora: "lotes", acao: semHash.length ? `Selar o lote de ${mesExtenso(semHash[0]!.mes_referencia)}` : "Ver lotes", sugestao: semHash.length ? `São 3 passos: (1) abrir o lote de ${mesExtenso(semHash[0]!.mes_referencia)}, (2) conferir as linhas, (3) gerar o hash e selar.` : undefined });
     const abertos = d.incidentes.filter((i) => !i.encerrado_em);
     const encerrado = d.incidentes.some((i) => i.encerrado_em && i.passos.every(Boolean) && i.enviado_anpd_em);
     for (const i of abertos) {
       const feitos = i.passos.filter(Boolean).length;
       const ref = `#${i.id.slice(0, 6)}`;
-      it.push({ id: `inc-${i.id}`, titulo: `Concluir as 6 etapas do incidente ${ref}`, exige: `${feitos} de 6 etapas concluídas.`, responsavel: "DPO_OPERACIONAL", estado: feitos ? "andamento" : "pendente", bloco: 4, ancora: "incidentes", acao: `Retomar o incidente ${ref}` });
-      const vencido = d.agora - new Date(i.iniciado_em).getTime() > 72 * 3600_000;
-      if (!i.enviado_anpd_em) it.push({ id: `anpd-${i.id}`, titulo: `Formulário ANPD do incidente ${ref}`, exige: vencido ? "SLA de 72 horas vencido — comunique a ANPD imediatamente." : "Preencher e enviar dentro do SLA de 72 horas.", responsavel: "DPO_OPERACIONAL", estado: vencido ? "bloqueado" : "pendente", bloco: 4, ancora: "incidentes", acao: `Preencher o formulário ANPD do incidente ${ref}` });
+      it.push({ id: `inc-${i.id}`, titulo: `Concluir as 6 etapas do incidente ${ref}`, exige: `${feitos} de 6 etapas concluídas.`, responsavel: "DPO_OPERACIONAL", estado: feitos ? "andamento" : "pendente", bloco: 4, ancora: "incidentes", acao: `Concluir a etapa ${Math.min(feitos + 1, 6)} de 6 do incidente ${ref}`, sugestao: `Faltam ${6 - feitos} etapa(s); registre data e responsável em cada uma.` });
+      const decorrido = d.agora - new Date(i.iniciado_em).getTime();
+      const vencido = decorrido > 72 * 3600_000;
+      const proximo = !vencido && decorrido > 48 * 3600_000;
+      if (!i.enviado_anpd_em) it.push({ id: `anpd-${i.id}`, titulo: `Formulário ANPD do incidente ${ref}`, exige: vencido ? "SLA de 72 horas vencido — comunique a ANPD imediatamente." : "Preencher e enviar dentro do SLA de 72 horas.", responsavel: "DPO_OPERACIONAL", estado: vencido ? "critico" : proximo ? "atencao" : "pendente", bloco: 4, ancora: "incidentes", acao: `Preencher o formulário ANPD do incidente ${ref}`, sugestao: vencido ? "SLA de 72 horas estourado: é a pendência mais urgente deste CNPJ." : proximo ? "Menos de 24 horas para o fim do SLA de 72 horas." : undefined });
     }
     if (!abertos.length && !encerrado) it.push({ id: "inc", titulo: "Concluir um incidente com as 6 etapas e comunicação à ANPD", exige: "O PI-04 exige ao menos um incidente (real ou simulado) encerrado.", responsavel: "DPO_OPERACIONAL", estado: "pendente", bloco: 4, ancora: "incidentes", acao: "Declarar e conduzir um incidente" });
   }
