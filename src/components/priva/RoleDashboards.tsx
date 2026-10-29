@@ -1,3 +1,4 @@
+import { CardGM, CardPIs, CardScore } from "@/components/priva/Indicadores";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DEPARTMENTS, computeGM, maskCNPJ, maskCPF, riskZone } from "@/lib/priva/data";
@@ -188,7 +189,6 @@ export function CSuiteDashboard() {
   const answers = useRespostas(cnpj);
   const questions = useQuestions();
   const { gm, score, bankMax } = computeGM(answers, questions);
-  const zone = riskZone(gm);
   useEffect(() => { log("SELECT", "relatorio_erm", "Abertura do painel C_SUITE"); }, [log]);
 
   const risks = DEPARTMENTS.map((d) => {
@@ -206,9 +206,9 @@ export function CSuiteDashboard() {
         Riscos de privacidade por área, em linguagem executiva. Dados pessoais brutos não são exibidos neste painel.
       </PageHeader>
       <div className="mb-8 grid gap-4 md:grid-cols-3">
-        <Stat label="Grau de maturidade" value={`${gm.toFixed(1)}%`} sub={<Tag tone={zone.tone}>{zone.label}</Tag>} />
-        <Stat label="Score" value={`${score} / ${bankMax}`} sub="pontos ponderados" />
-        <Stat label="Etapas concluídas" value={`${Object.keys(signatures).length}`} sub="produtos chancelados" />
+        <CardGM gm={gm} />
+        <CardScore score={score} max={bankMax} />
+        <CardPIs signatures={signatures} enterprise={false} />
       </div>
       <div className="grid gap-6 lg:grid-cols-[auto_1fr]">
         <Panel title="Matriz probabilidade × impacto">

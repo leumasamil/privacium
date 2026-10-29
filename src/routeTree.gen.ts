@@ -19,6 +19,7 @@ import { Route as AuthenticatedBloco3RouteImport } from './routes/_authenticated
 import { Route as AuthenticatedBloco4RouteImport } from './routes/_authenticated/bloco-4'
 import { Route as AuthenticatedBloco5RouteImport } from './routes/_authenticated/bloco-5'
 import { Route as AuthenticatedEnterpriseRouteImport } from './routes/_authenticated/enterprise'
+import { Route as AuthenticatedGlossarioRouteImport } from './routes/_authenticated/glossario'
 import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated/kanban'
 import { Route as AuthenticatedManualRouteImport } from './routes/_authenticated/manual'
 import { Route as AuthenticatedMembrosRouteImport } from './routes/_authenticated/membros'
@@ -74,6 +75,11 @@ const AuthenticatedEnterpriseRoute = AuthenticatedEnterpriseRouteImport.update({
   path: '/enterprise',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGlossarioRoute = AuthenticatedGlossarioRouteImport.update({
+  id: '/glossario',
+  path: '/glossario',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedKanbanRoute = AuthenticatedKanbanRouteImport.update({
   id: '/kanban',
   path: '/kanban',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/bloco-4': typeof AuthenticatedBloco4Route
   '/bloco-5': typeof AuthenticatedBloco5Route
   '/enterprise': typeof AuthenticatedEnterpriseRoute
+  '/glossario': typeof AuthenticatedGlossarioRoute
   '/kanban': typeof AuthenticatedKanbanRoute
   '/manual': typeof AuthenticatedManualRoute
   '/membros': typeof AuthenticatedMembrosRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/bloco-4': typeof AuthenticatedBloco4Route
   '/bloco-5': typeof AuthenticatedBloco5Route
   '/enterprise': typeof AuthenticatedEnterpriseRoute
+  '/glossario': typeof AuthenticatedGlossarioRoute
   '/kanban': typeof AuthenticatedKanbanRoute
   '/manual': typeof AuthenticatedManualRoute
   '/membros': typeof AuthenticatedMembrosRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/_authenticated/bloco-4': typeof AuthenticatedBloco4Route
   '/_authenticated/bloco-5': typeof AuthenticatedBloco5Route
   '/_authenticated/enterprise': typeof AuthenticatedEnterpriseRoute
+  '/_authenticated/glossario': typeof AuthenticatedGlossarioRoute
   '/_authenticated/kanban': typeof AuthenticatedKanbanRoute
   '/_authenticated/manual': typeof AuthenticatedManualRoute
   '/_authenticated/membros': typeof AuthenticatedMembrosRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/bloco-4'
     | '/bloco-5'
     | '/enterprise'
+    | '/glossario'
     | '/kanban'
     | '/manual'
     | '/membros'
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/bloco-4'
     | '/bloco-5'
     | '/enterprise'
+    | '/glossario'
     | '/kanban'
     | '/manual'
     | '/membros'
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bloco-4'
     | '/_authenticated/bloco-5'
     | '/_authenticated/enterprise'
+    | '/_authenticated/glossario'
     | '/_authenticated/kanban'
     | '/_authenticated/manual'
     | '/_authenticated/membros'
@@ -281,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEnterpriseRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/glossario': {
+      id: '/_authenticated/glossario'
+      path: '/glossario'
+      fullPath: '/glossario'
+      preLoaderRoute: typeof AuthenticatedGlossarioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/kanban': {
       id: '/_authenticated/kanban'
       path: '/kanban'
@@ -327,6 +346,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBloco4Route: typeof AuthenticatedBloco4Route
   AuthenticatedBloco5Route: typeof AuthenticatedBloco5Route
   AuthenticatedEnterpriseRoute: typeof AuthenticatedEnterpriseRoute
+  AuthenticatedGlossarioRoute: typeof AuthenticatedGlossarioRoute
   AuthenticatedKanbanRoute: typeof AuthenticatedKanbanRoute
   AuthenticatedManualRoute: typeof AuthenticatedManualRoute
   AuthenticatedMembrosRoute: typeof AuthenticatedMembrosRoute
@@ -342,6 +362,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBloco4Route: AuthenticatedBloco4Route,
   AuthenticatedBloco5Route: AuthenticatedBloco5Route,
   AuthenticatedEnterpriseRoute: AuthenticatedEnterpriseRoute,
+  AuthenticatedGlossarioRoute: AuthenticatedGlossarioRoute,
   AuthenticatedKanbanRoute: AuthenticatedKanbanRoute,
   AuthenticatedManualRoute: AuthenticatedManualRoute,
   AuthenticatedMembrosRoute: AuthenticatedMembrosRoute,

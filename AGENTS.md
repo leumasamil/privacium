@@ -30,4 +30,5 @@
 - Supplier references persist only in isolated monitor tables; server-only matching follows authenticated tenant/role authorization and a DB cooldown. Decision RPCs audit internal IDs/states only; explicit own-impact confirmation creates a clean incident. Monitor never feeds PI documents, blockers or progress.
 
 - ANPD has a standalone authenticated incident-ID route (un-nested from Block 4) and shared pending links; risk selections are DB-canonicalized with required case details, while vector suggestions never prove completed actions. Why: reliable crisis navigation, normative traceability and no false evidence.
-- Shared navigation collapses below the desktop breakpoint and long action labels wrap. Why: the crisis form must remain accessible without horizontal overflow on narrow screens.
+- Navigation collapses on narrow screens; long labels wrap. Why: no horizontal overflow in crisis forms.
+- Glossary terms and dashboard indicators come from one shared glossary module. Why: no bare acronyms; every metric shows definition, formula and action.
