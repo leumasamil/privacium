@@ -21,6 +21,8 @@ import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
 import { montarChecklist } from '@/lib/priva/pendencias';
 import type { EstadoIncidente } from '@/lib/priva/estadoIncidente';
 import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
+import { ConsultarBasesPublicas } from '@/components/priva/ConsultarBasesPublicas';
+import { PainelNoticiasIncidentes } from '@/components/priva/PainelNoticiasIncidentes';
 
 type Lote = Database["public"]["Tables"]["lotes_pgaudit"]["Row"];
 type Incidente = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
@@ -82,6 +84,9 @@ function Bloco4() {
         <ul className="list-disc pl-5 font-mono text-xs">{lotesComHash.map((l) => <li key={l.id}>{l.mes_referencia} · {l.linhas} linhas · {l.hash_sha256}</li>)}</ul>
         {encerrado && <p className="mt-2"><b>Incidente encerrado:</b> declarado em {new Date(encerrado.iniciado_em).toLocaleString("pt-BR")}, comunicado à ANPD em {new Date(encerrado.enviado_anpd_em ?? "").toLocaleString("pt-BR")}.</p>}
       </PIOutput>
+      {/* Dado de terceiro não é evidência própria: referências ficam fora do
+          PIOutput, docRef, PDFs, dossiê, trilha e hashes de todas as chancelas. */}
+      <PainelNoticiasIncidentes />
     </div>
   );
 }
@@ -120,6 +125,8 @@ function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes
   };
 
   const gerarPdf = (l: Lote) => {
+    // Apenas atos da empresa e contato DPO; referências externas nunca entram
+    // neste dossiê, no PDF ou em seu hash encadeado.
     const doc = new jsPDF();
     doc.setFontSize(14); doc.setFontSize(8); doc.text("Emitido pelo Ecossistema de Governança Privacium", 14, 10); doc.setFontSize(14); doc.text("PI-04: Dossiê de Auditoria de Logs e Resposta de Célula", 14, 18);
     doc.setFontSize(9);
@@ -242,6 +249,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
         <p className="text-sm">Etapas concluídas: {estado.etapas.concluidas} de {estado.etapas.total}</p>
         {(estado.motivos_bloqueio.length > 0 || bloqueios.length > 0) && <><p className="font-semibold text-atencao">Não é possível encerrar. Pendências:</p><ul className="space-y-1 text-sm text-atencao">{estado.correcoes.map(c => <li key={c.mensagem}>{c.mensagem} <a className="underline" href={`#${c.ancora}`}>{c.acao} →</a></li>)}{bloqueios.map(m => <li key={m}>{m}</li>)}</ul></>}
       </div>}
+      <div className="mb-4 flex justify-end print:hidden" data-referencia-externa><ConsultarBasesPublicas /></div>
       {/* Barra de etapas */}
       <ol ref={stepsRef} className="mb-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-6" aria-label="Etapas do incidente">
         {STEPS.map((s, i) => {

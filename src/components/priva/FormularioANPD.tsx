@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { EstadoIncidente } from '@/lib/priva/estadoIncidente';
+import { CasosPublicosSemelhantes } from './ReferenciasExternas';
 type Incidente = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
 export function FormularioANPD({ incidente, estado, encerramento, canEdit, refresh }: { incidente: Incidente; estado: EstadoIncidente; encerramento: React.ReactNode; canEdit: boolean; refresh: () => void | Promise<unknown> }) {
   const { demo } = usePriva();
@@ -66,5 +67,7 @@ export function FormularioANPD({ incidente, estado, encerramento, canEdit, refre
       <div><label htmlFor="anpd-encarregado">Contato do Encarregado (DPO)</label><Input id="anpd-encarregado" value={email} readOnly placeholder="Contato ainda não cadastrado" />{!email && <p className="mt-1 text-sm text-atencao">Nenhum DPO cadastrado para este CNPJ. <Link to="/membros" className="underline">Cadastrar DPO →</Link></p>}</div>
       {!incidente.enviado_anpd_em && <><ul aria-live="polite" className="space-y-1 text-sm text-atencao">{motivos.map(m => <li key={m.campo}>{m.mensagem} <Button type="button" variant="link" className="h-auto p-0 text-atencao" onClick={() => ir(m.campo)}>Ir para {m.campo.startsWith("etapa") ? "a etapa" : "o campo"} →</Button></li>)}</ul>{falha && <p role="alert" className="text-destructive">{falha}</p>}{!canEdit && <p className="text-atencao">Envio disponível apenas para DPO e Administrador, fora do modo demonstração.</p>}<Button id="anpd-envio" type="submit" disabled={!editavel || !!motivos.length || busy} className={!motivos.length ? "bg-success text-success-foreground hover:bg-success/90" : ""}>{busy ? "Enviando…" : motivos.length ? `Faltam ${motivos.length} itens: ${motivos.map(m => m.titulo).join(", ")}` : "Enviar à ANPD (simulado)"}</Button></>}
     </form>
+    {/* Contexto isolado: nunca faz parte do formulário salvo, da trilha ou do PI-04. */}
+    <CasosPublicosSemelhantes natureza={form.natureza} categorias={form.categorias} />
   </section>;
 }
