@@ -1,3 +1,5 @@
+import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
+import { AJUDA } from "@/lib/priva/ajuda";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { FileDown, Hash, Play, Send, Timer } from "lucide-react";
@@ -72,6 +74,7 @@ function Bloco4() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 4 · (V) Ciclo Privacium Semestral · ISO 27037" title="Vigiar a Privacidade e Processar Incidentes" />
+      <AjudaTarefa {...AJUDA[4]!} />
       <ConsolePgAudit cnpj={cnpj} lotes={lotes.rows} canEdit={canEdit} refresh={lotes.refresh} />
       <CriseRansomware cnpj={cnpj} ativo={ativo} canEdit={canEdit} refresh={incs.refresh} />
       <PIOutput pi="PI-04: Dossiê de Auditoria de Logs e Resposta de Célula" ready={pronto} readyHint="Gere ao menos um lote pgAudit com hash e conclua um incidente com os 6 passos e comunicação à ANPD." dual>

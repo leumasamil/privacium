@@ -1,3 +1,5 @@
+import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
+import { AJUDA } from "@/lib/priva/ajuda";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { DEPARTMENTS, computeGM, riskZone } from "@/lib/priva/data";
@@ -91,6 +93,7 @@ function Bloco1() {
       <PageHeader eyebrow="Bloco 1 · (P) Ciclo Privacium Semestral" title="Preparar a Privacidade">
         Diagnóstico de Entrada pela LGPD. SIM soma o peso de criticidade da pergunta; NÃO soma zero.
       </PageHeader>
+      <AjudaTarefa {...AJUDA[1]!} />
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-md border-l-4 border-primary bg-card p-4">

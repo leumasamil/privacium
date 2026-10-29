@@ -15,6 +15,7 @@ export const Route = createFileRoute("/_authenticated/manual")({
       { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { aba?: string } => (typeof s["aba"] === "string" ? { aba: s["aba"] } : {}),
   component: Manual,
 });
 
@@ -51,12 +52,13 @@ const FAQ: [string, string][] = [
 ];
 
 function Manual() {
+  const { aba } = Route.useSearch();
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Transversal · Método BLLOCO" title="Manual de Uso">
         Como operar cada bloco do Ciclo Privacium Semestral, com terminologia estrita da LGPD.
       </PageHeader>
-      <Tabs defaultValue="guias">
+      <Tabs defaultValue={aba ?? "guias"}>
         <TabsList className="flex h-auto flex-wrap justify-start">
           <TabsTrigger value="guias">Guias 5W2H</TabsTrigger>
           <TabsTrigger value="quadro">Art. 7º × Art. 11</TabsTrigger>
