@@ -23,7 +23,7 @@ export function ProximoPasso() {
   const blocoTela = m ? Number(m[1]) : Math.min(blocoCorrente(signatures), 5);
   const blocoBase = isUnlocked(signatures, blocoTela) ? blocoTela : blocoTela - 1;
   const { data } = useDadosBloco(blocoBase, cnpj);
-  if (!cnpj || pathname.startsWith("/manual")) return null;
+  if (!cnpj || pathname.startsWith("/manual") || pathname.startsWith("/membros")) return null;
 
   let itens = data ? montarChecklist(data, signatures) : [];
   if (pathname.startsWith("/kanban")) {

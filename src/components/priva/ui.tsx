@@ -9,6 +9,7 @@ import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { TelaBloqueio } from "./TelaBloqueio";
+import { useEncarregado } from "@/lib/priva/useEncarregado";
 
 export function PageHeader({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
   return (
@@ -103,6 +104,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
   const { signatures, sign, set, email, cnpj, log } = usePriva();
   const code = pi.slice(0, 5).replace(" ", "");
   const sig = signatures[code];
+  const encarregado = useEncarregado();
   const [open, setOpen] = useState(false);
   const docRef = useRef<HTMLDivElement>(null);
   return (
@@ -126,7 +128,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
             <DialogTitle>{pi}</DialogTitle>
             <DialogDescription>Emitido pelo Ecossistema de Governança Privacium · ISO/IEC 27701</DialogDescription>
           </DialogHeader>
-          <div ref={docRef} className="max-h-[50vh] overflow-auto rounded-sm border bg-background p-6 text-sm leading-relaxed">{children}</div>
+          <div ref={docRef} className="max-h-[50vh] overflow-auto rounded-sm border bg-background p-6 text-sm leading-relaxed">{children}{["PI-01", "PI-02", "PI-04"].includes(code) && <p className="mt-4 border-t pt-3"><b>Encarregado (DPO):</b> {encarregado.data ? `${encarregado.data.nome} · ${encarregado.data.email}${encarregado.data.telefone ? ` · ${encarregado.data.telefone}` : ""}` : "Contato não cadastrado"}</p>}</div>
           <DialogFooter>
             {sig ? (
               <div className="flex w-full flex-wrap items-center justify-between gap-2">

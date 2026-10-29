@@ -13,8 +13,8 @@ import { ProximoPasso } from "@/components/priva/ProximoPasso";
 
 const ROLE_ACCESS: Record<Role, string[]> = {
   ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/membros", "/manual"],
-  DPO_OPERACIONAL: ["/painel", "/bloco", "/kanban", "/auditoria", "/enterprise", "/manual"],
-  C_SUITE: ["/painel", "/enterprise", "/kanban", "/auditoria", "/manual"],
+  DPO_OPERACIONAL: ["/painel", "/bloco", "/kanban", "/auditoria", "/enterprise", "/manual", "/membros"],
+  C_SUITE: ["/painel", "/enterprise", "/kanban", "/auditoria", "/manual", "/membros"],
 };
 const SENSITIVE = [
   { path: "/bloco-2", target: "inventario_dados_pessoais" },
