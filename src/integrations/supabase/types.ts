@@ -417,6 +417,7 @@ export type Database = {
           empresa_cnpj: string
           finalidade_especifica: string
           genero_verbo: string
+          hipotese_sensivel: string | null
           hipotese_tratamento: string
           id: string
           infraestrutura: string
@@ -438,6 +439,7 @@ export type Database = {
           empresa_cnpj: string
           finalidade_especifica: string
           genero_verbo: string
+          hipotese_sensivel?: string | null
           hipotese_tratamento: string
           id?: string
           infraestrutura: string
@@ -459,6 +461,7 @@ export type Database = {
           empresa_cnpj?: string
           finalidade_especifica?: string
           genero_verbo?: string
+          hipotese_sensivel?: string | null
           hipotese_tratamento?: string
           id?: string
           infraestrutura?: string
