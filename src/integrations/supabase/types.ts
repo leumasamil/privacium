@@ -386,6 +386,130 @@ export type Database = {
           },
         ]
       }
+      monitor_fornecedores: {
+        Row: {
+          ativo_id: string | null
+          avaliado_em: string | null
+          avaliado_por: string | null
+          campo_origem: string
+          contas_afetadas: number
+          data_vazamento: string
+          empresa_cnpj: string
+          estado: string
+          fonte: string
+          fornecedor_nome: string
+          id: string
+          incidente_proprio_id: string | null
+          justificativa: string | null
+          processo_rot_id: string | null
+          referencia_chave: string
+          tipos_dados: string[]
+          triagem: Json
+          url_referencia: string
+          verificado_em: string
+        }
+        Insert: {
+          ativo_id?: string | null
+          avaliado_em?: string | null
+          avaliado_por?: string | null
+          campo_origem: string
+          contas_afetadas?: number
+          data_vazamento: string
+          empresa_cnpj: string
+          estado?: string
+          fonte?: string
+          fornecedor_nome: string
+          id?: string
+          incidente_proprio_id?: string | null
+          justificativa?: string | null
+          processo_rot_id?: string | null
+          referencia_chave: string
+          tipos_dados?: string[]
+          triagem?: Json
+          url_referencia: string
+          verificado_em?: string
+        }
+        Update: {
+          ativo_id?: string | null
+          avaliado_em?: string | null
+          avaliado_por?: string | null
+          campo_origem?: string
+          contas_afetadas?: number
+          data_vazamento?: string
+          empresa_cnpj?: string
+          estado?: string
+          fonte?: string
+          fornecedor_nome?: string
+          id?: string
+          incidente_proprio_id?: string | null
+          justificativa?: string | null
+          processo_rot_id?: string | null
+          referencia_chave?: string
+          tipos_dados?: string[]
+          triagem?: Json
+          url_referencia?: string
+          verificado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monitor_fornecedores_ativo_id_fkey"
+            columns: ["ativo_id"]
+            isOneToOne: false
+            referencedRelation: "ativos_seguranca"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitor_fornecedores_empresa_cnpj_fkey"
+            columns: ["empresa_cnpj"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["cnpj"]
+          },
+          {
+            foreignKeyName: "monitor_fornecedores_incidente_proprio_id_fkey"
+            columns: ["incidente_proprio_id"]
+            isOneToOne: false
+            referencedRelation: "incidentes_seguranca"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitor_fornecedores_processo_rot_id_fkey"
+            columns: ["processo_rot_id"]
+            isOneToOne: false
+            referencedRelation: "registro_operacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monitor_verificacoes: {
+        Row: {
+          empresa_cnpj: string
+          erro: boolean
+          sucesso_em: string | null
+          tentativa_em: string | null
+        }
+        Insert: {
+          empresa_cnpj: string
+          erro?: boolean
+          sucesso_em?: string | null
+          tentativa_em?: string | null
+        }
+        Update: {
+          empresa_cnpj?: string
+          erro?: boolean
+          sucesso_em?: string | null
+          tentativa_em?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monitor_verificacoes_empresa_cnpj_fkey"
+            columns: ["empresa_cnpj"]
+            isOneToOne: true
+            referencedRelation: "empresas"
+            referencedColumns: ["cnpj"]
+          },
+        ]
+      }
       perguntas_diagnostico: {
         Row: {
           enunciado: string
@@ -840,6 +964,15 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      avaliar_fornecedor: {
+        Args: {
+          _estado: string
+          _id: string
+          _justificativa?: string
+          _triagem?: Json
+        }
+        Returns: string
+      }
       catalogo_categorias_anpd: {
         Args: never
         Returns: {
@@ -872,6 +1005,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      iniciar_verificacao_fornecedores: {
+        Args: { _cnpj: string }
         Returns: boolean
       }
       list_members: {

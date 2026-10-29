@@ -169,6 +169,13 @@
       "when": 1793311668464,
       "tag": "0023_categorias_guiadas_anpd",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793312001369,
+      "tag": "0024_monitor_fornecedores_informativo",
+      "breakpoints": true
     }
   ]
 }
