@@ -849,6 +849,7 @@ export type Database = {
         Args: { _form: Json; _incidente: string; _processo: string }
         Returns: string
       }
+      fonte_natureza_anpd: { Args: { _valor: string }; Returns: string }
       has_any_role: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {

@@ -148,6 +148,13 @@
       "when": 1793309441850,
       "tag": "0020_estado_incidente_e_encerramento_atomico",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793310953626,
+      "tag": "0021_classificacao_naturezas_anpd",
+      "breakpoints": true
     }
   ]
 }
