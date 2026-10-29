@@ -14,4 +14,8 @@ describe("App routing", () => {
 
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
+  it('keeps unknown paths on the explicit catch-all instead of auth', () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+    expect(router.matchRoutes('/pagina-inexistente').at(-1)?.routeId).toBe('/$');
+  });
 });

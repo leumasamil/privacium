@@ -242,6 +242,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
   };
   const encerramento = estado && canEdit ? <EncerrarIncidente estado={estado} busy={busy} onClick={() => void encerrar()} /> : null;
   const declarar = async () => {
+    if (!canEdit || busy) return;
     const { error } = await supabase.from("incidentes_seguranca").insert({ empresa_cnpj: cnpj });
     if (error) { toast.error("Falha ao declarar."); return; }
     log("INSERT", "incidentes_seguranca", "Incidente de ransomware declarado · SLA 72h iniciado");

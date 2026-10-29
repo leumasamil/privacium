@@ -193,9 +193,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         {(role === "DPO_OPERACIONAL" || role === "C_SUITE") && !demo && <FollowUpBanner />}
         {(role === "DPO_OPERACIONAL" || role === "C_SUITE") && <div className="mb-4 flex justify-end"><FollowUpBell /></div>}
         {demo && (
-          <div className="-mx-10 -mt-8 mb-6 flex items-center justify-between gap-3 border-b border-warning bg-warning/15 px-10 py-2 text-sm">
-            <span className="flex items-center gap-2 font-medium text-primary"><Presentation className="h-4 w-4" /> Modo Demonstração Ativo - Dados Cenográficos</span>
-            <button onClick={() => setDemo(false)} className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"><X className="h-3 w-3" /> Encerrar Demonstração</button>
+          <div role="status" className="sticky top-0 z-40 mb-6 flex flex-wrap items-center justify-between gap-3 border border-warning bg-warning px-4 py-3 text-sm text-warning-foreground">
+            <span className="flex min-w-0 flex-1 items-start gap-2 font-medium"><Presentation className="h-4 w-4 shrink-0" /> Modo demonstração — as ações estão desativadas. Desative o modo demo no menu para operar.</span>
+            <Button variant="outline" className="h-auto whitespace-normal" onClick={() => setDemo(false)}><X className="h-4 w-4" /> Sair do modo demonstração</Button>
           </div>
         )}
         <AlertDialog open={demoAsk} onOpenChange={setDemoAsk}>
