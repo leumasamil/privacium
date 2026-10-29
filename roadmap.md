@@ -3,5 +3,5 @@
 - [x] Completar formulário ANPD, validação, envio simulado e SLA congelado.
 - [x] Conectar pendências e PDFs ao contato real; verificar fluxo autenticado.
 - [ ] Conectar contato à política gerada: bloqueado porque não existe gerador de política no aplicativo atual.
-- [ ] Unificar estado do incidente, pendências e encerramento com feedback.
-- [ ] Registrar etapas e encerramento atomicamente; verificar fluxo autenticado e testes.
+- [x] Unificar estado do incidente, pendências e encerramento com feedback.
+- [x] Registrar etapas e encerramento atomicamente; verificar fluxo autenticado e testes.
