@@ -11,13 +11,15 @@ import { montarChecklist, PI_INFO, RISCOS_IA, proximoPasso, type DadosBloco, typ
 import type { RotInput } from "@/lib/priva/rot";
 import { cn } from "@/lib/utils";
 import { ESTADO, EstadoBadge } from "./estado";
+import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
 
 const ROTULO: Record<string, string> = { DPO_OPERACIONAL: "DPO_OPERACIONAL", C_SUITE: "Diretoria (C_SUITE)", ADMIN_SISTEMA: "ADMIN_SISTEMA" };
 
 export function useDadosBloco(n: number, cnpj: string | null) {
-  return useQuery({
+  const bloco4 = useEstadoBloco4(n === 4 ? cnpj : null);
+  const outros = useQuery({
     queryKey: ["pendencias", n, cnpj],
-    enabled: !!cnpj,
+    enabled: !!cnpj && n !== 4,
     queryFn: async (): Promise<DadosBloco> => {
       const c = cnpj ?? "";
       if (n === 1) {
@@ -55,6 +57,7 @@ export function useDadosBloco(n: number, cnpj: string | null) {
       return { n: 4, lotes: l.data ?? [], incidentes: i.data ?? [], agora: Date.now() };
     },
   });
+  return n === 4 ? bloco4 : outros;
 }
 
 function linkDe(p: Pendencia) {

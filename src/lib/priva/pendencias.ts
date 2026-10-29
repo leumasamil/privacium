@@ -1,5 +1,6 @@
 import type { Signature } from "./store";
 import { hasSensivel, isRisky, type RotInput } from "./rot";
+import { carregarEstadoIncidente, type IncidenteFonte } from './estadoIncidente';
 
 export type Estado = "ok" | "andamento" | "pendente" | "atencao" | "critico" | "bloqueado";
 export type Responsavel = "DPO_OPERACIONAL" | "C_SUITE" | "ADMIN_SISTEMA";
@@ -36,7 +37,7 @@ export type DadosBloco =
   | { n: 2; rot: RotInput[] }
   | { n: 3; endpoints: { protegido: boolean }[]; cofres: { hash_integridade: string | null }[]; chaves: number | null }
   | { n: 5; sistema: string; escudo: string; riscos: { label: string; mitig: string }[] }
-  | { n: 4; lotes: { mes_referencia: string; hash_sha256: string | null }[]; incidentes: { id: string; passos: boolean[]; iniciado_em: string; enviado_anpd_em: string | null; encerrado_em: string | null }[]; agora: number };
+  | { n: 4; lotes: { mes_referencia: string; hash_sha256: string | null }[]; incidentes: IncidenteFonte[]; agora: number };
 
 const est = (feitos: number, total: number): Estado => (total > 0 && feitos >= total ? "ok" : feitos > 0 ? "andamento" : "pendente");
 
@@ -98,15 +99,20 @@ export function montarChecklist(d: DadosBloco, sigs: Record<string, Signature>):
     if (!d.lotes.length) it.push({ id: "lote", titulo: "Registrar o lote mensal de auditoria", exige: "Nenhum lote pgAudit extraído.", responsavel: "DPO_OPERACIONAL", estado: "pendente", bloco: 4, ancora: "lotes", acao: `Extrair o lote de ${mesExtenso(atual)}`, sugestao: `São 2 passos: (1) extrair o lote de ${mesExtenso(atual)}, (2) gerar o hash SHA-256 ao fechar o mês.` });
     else it.push({ id: "lote", titulo: "Selar os lotes mensais de auditoria com hash", exige: semHash.length ? `Lotes de meses fechados sem hash: ${semHash.map((l) => mesExtenso(l.mes_referencia)).join(", ")}.` : "Todos os lotes de meses fechados estão selados.", responsavel: "DPO_OPERACIONAL", estado: semHash.length ? "atencao" : "ok", bloco: 4, ancora: "lotes", acao: semHash.length ? `Selar o lote de ${mesExtenso(semHash[0]!.mes_referencia)}` : "Ver lotes", sugestao: semHash.length ? `São 3 passos: (1) abrir o lote de ${mesExtenso(semHash[0]!.mes_referencia)}, (2) conferir as linhas, (3) gerar o hash e selar.` : undefined });
     const abertos = d.incidentes.filter((i) => !i.encerrado_em);
-    const encerrado = d.incidentes.some((i) => i.encerrado_em && i.passos.every(Boolean) && i.enviado_anpd_em);
-    for (const i of abertos) {
-      const feitos = i.passos.filter(Boolean).length;
+    const estados = d.incidentes.map(i => carregarEstadoIncidente(i.id, { ...d, assinaturas: sigs }));
+    const encerrado = estados.some(e => e.incidente.encerrado_em && e.etapas.concluidas === 6 && e.anpd.enviado);
+    for (const i of d.incidentes) {
+      const e = carregarEstadoIncidente(i.id, { ...d, assinaturas: sigs });
+      const feitos = e.etapas.concluidas;
       const ref = `#${i.id.slice(0, 6)}`;
-      it.push({ id: `inc-${i.id}`, titulo: `Concluir as 6 etapas do incidente ${ref}`, exige: feitos === 6 ? "Comunicação concluída; encerre o incidente." : `${feitos} de 6 etapas concluídas.`, responsavel: "DPO_OPERACIONAL", estado: feitos ? "andamento" : "pendente", bloco: 4, ancora: feitos === 5 ? "anpd" : "incidentes", acao: feitos === 6 ? "Encerrar incidente" : feitos === 5 ? "Comunicar à ANPD" : `Concluir a etapa ${Math.min(feitos + 1, 6)} de 6 do incidente ${ref}`, sugestao: feitos === 6 ? "Encerre o incidente para liberar a assinatura do PI-04." : `Faltam ${6 - feitos} etapa(s); registre data e responsável em cada uma.` });
+      const faltam = e.etapas.itens.filter(x => !x.concluida);
+      const proxima = faltam[0];
+      it.push({ id: `inc-${i.id}`, titulo: `Concluir as 6 etapas do incidente ${ref}`, exige: `${feitos} de 6 concluídas.${faltam.length ? ` Falta: ${faltam.map(x => `${String(x.numero).padStart(2, '0')} ${x.nome}`).join(', ')}.` : ''}`, responsavel: 'DPO_OPERACIONAL', estado: feitos === 6 ? 'ok' : feitos ? 'andamento' : 'pendente', bloco: 4, ancora: proxima?.numero === 6 ? 'anpd' : `incidente-etapa-${proxima?.numero ?? 1}`, acao: proxima?.numero === 6 ? `Preencher e enviar o formulário ANPD do incidente ${ref}` : `Concluir a etapa ${proxima?.numero ?? 1} de 6 do incidente ${ref}` });
+      if (!i.encerrado_em && e.anpd.enviado) it.push({ id: `encerrar-${i.id}`, titulo: `Encerrar incidente ${ref}`, exige: e.podeEncerrar ? 'Comunicação concluída; encerre o incidente.' : e.motivos_bloqueio.join('; '), responsavel: 'DPO_OPERACIONAL', estado: 'andamento', bloco: 4, ancora: e.correcoes[0]?.ancora ?? 'encerramento', acao: e.podeEncerrar ? 'Encerrar incidente' : 'Completar os registros das etapas' });
       const decorrido = d.agora - new Date(i.iniciado_em).getTime();
-      const vencido = decorrido > 72 * 3600_000;
+      const vencido = e.anpd.prazo_vencido;
       const proximo = !vencido && decorrido > 48 * 3600_000;
-      if (!i.enviado_anpd_em) it.push({ id: `anpd-${i.id}`, titulo: `Formulário ANPD do incidente ${ref}`, exige: vencido ? "SLA de 72 horas vencido — comunique a ANPD imediatamente." : "Preencher e enviar dentro do SLA de 72 horas.", responsavel: "DPO_OPERACIONAL", estado: vencido ? "critico" : proximo ? "atencao" : "pendente", bloco: 4, ancora: "anpd", acao: "Comunicar à ANPD", sugestao: vencido ? "SLA de 72 horas estourado: é a pendência mais urgente deste CNPJ." : proximo ? "Menos de 24 horas para o fim do SLA de 72 horas." : undefined });
+      it.push({ id: `anpd-${i.id}`, titulo: `Formulário ANPD do incidente ${ref}`, exige: e.anpd.enviado ? 'Comunicação registrada.' : vencido ? 'SLA de 72 horas vencido — comunique a ANPD imediatamente.' : 'Preencher e enviar dentro do SLA de 72 horas.', responsavel: 'DPO_OPERACIONAL', estado: e.anpd.enviado ? 'ok' : vencido ? 'critico' : proximo ? 'atencao' : 'pendente', bloco: 4, ancora: 'anpd', acao: 'Abrir formulário ANPD' });
     }
     if (!abertos.length && !encerrado) it.push({ id: "inc", titulo: "Concluir um incidente com as 6 etapas e comunicação à ANPD", exige: "O PI-04 exige ao menos um incidente (real ou simulado) encerrado.", responsavel: "DPO_OPERACIONAL", estado: "pendente", bloco: 4, ancora: "incidentes", acao: "Declarar e conduzir um incidente" });
   }
