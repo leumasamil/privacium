@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { BadgeFornecedorROT } from '@/components/priva/AlertaFornecedorVazado';
 
 export const Route = createFileRoute("/_authenticated/bloco-2")({
   head: () => ({
@@ -117,7 +118,7 @@ function Bloco2() {
               {rows.map((r) => {
                 const risk = isRisky(r);
                 return (
-                  <tr key={r.id} className={cn("border-b align-top", risk && "border-l-4 border-l-destructive bg-destructive/15")}>
+                  <tr id={`rot-${r.id}`} key={r.id} className={cn("scroll-mt-6 border-b align-top", risk && "border-l-4 border-l-destructive bg-destructive/15")}>
                     <td className="px-2 py-2 font-mono font-semibold text-primary">
                       {r.codigo}
                       {risk && <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold uppercase text-destructive"><AlertTriangle className="h-3 w-3" /> Alerta crítico</p>}
@@ -133,7 +134,7 @@ function Bloco2() {
                     <td className="px-2 py-2">{r.base_prazo}</td>
                     <td className="px-2 py-2">{r.compartilhamento}</td>
                     <td className="px-2 py-2"><Tags items={r.salvaguardas} /></td>
-                    <td className="px-2 py-2">{r.infraestrutura}</td>
+                    <td className="px-2 py-2">{r.infraestrutura}<BadgeFornecedorROT processoId={r.id} /></td>
                     <td className="whitespace-nowrap px-2 py-2">
                       {canEdit && <>
                         <button aria-label="Editar" className="mr-2" onClick={() => {
@@ -238,6 +239,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
           <Field label="9. Base do Prazo"><Input value={f.base_prazo} placeholder="Art. 206 do Código Civil" onChange={(e) => up({ base_prazo: e.target.value })} /></Field>
           <Field label="10. Compartilhamento / Destinatários"><Input value={f.compartilhamento} onChange={(e) => up({ compartilhamento: e.target.value })} /></Field>
           <Field label="12. Infraestrutura / Mídia">
+            {edit.id && <BadgeFornecedorROT processoId={edit.id} />}
             <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.infraestrutura} onChange={(e) => up({ infraestrutura: e.target.value })}>
               {INFRA.map((i) => <option key={i}>{i}</option>)}
             </select>

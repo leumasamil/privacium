@@ -83,7 +83,7 @@ function Bloco3() {
       <PageHeader eyebrow="Bloco 3 · (I) Ciclo Privacium Semestral · Art. 46 LGPD" title="Implementar Salvaguardas Técnicas e Jurídicas" />
       <AjudaTarefa {...AJUDA[3]!} />
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div id="ativos" className="grid scroll-mt-6 gap-6 xl:grid-cols-2">
         <BitLockerCard endpoints={endpoints} prot={prot} cnpj={cnpj} canEdit={canEdit} refresh={refresh} remove={remove} />
         <CryptomatorCard cofres={cofres} cnpj={cnpj} canEdit={canEdit} refresh={refresh} remove={remove} />
       </div>
@@ -107,14 +107,16 @@ function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { en
   const { log } = usePriva();
   const [hw, setHw] = useState("");
   const [host, setHost] = useState("");
+  const [responsavel, setResponsavel] = useState('');
+  const [localizacao, setLocalizacao] = useState('');
   const pct = endpoints.length ? (prot / endpoints.length) * 100 : 0;
 
   const add = async () => {
     if (!hw.trim()) return;
-    const { error } = await supabase.from("ativos_seguranca").insert({ empresa_cnpj: cnpj, tipo: "ENDPOINT", identificador: hw.trim(), descricao: host.trim() });
+    const { error } = await supabase.from("ativos_seguranca").insert({ empresa_cnpj: cnpj, tipo: "ENDPOINT", identificador: hw.trim(), descricao: host.trim(), responsavel: responsavel.trim() || null, localizacao: localizacao.trim() || null });
     if (error) { toast.error(error.code === "23505" ? "ID de hardware já cadastrado." : "Não foi possível cadastrar."); return; }
     log("INSERT", "ativos_seguranca", `Endpoint ${hw.trim()}`);
-    setHw(""); setHost(""); refresh();
+    setHw(""); setHost(""); setResponsavel(''); setLocalizacao(''); refresh();
   };
   const toggle = async (a: Ativo, v: boolean) => {
     const { error } = await supabase.from("ativos_seguranca").update({ protegido: v, atualizado_em: new Date().toISOString() }).eq("id", a.id);
@@ -134,6 +136,7 @@ function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { en
             <HardDrive className="h-4 w-4 text-muted-foreground" />
             <span className="font-mono text-xs">{a.identificador}</span>
             <span className="text-xs text-muted-foreground">{a.descricao}</span>
+            {(a.responsavel || a.localizacao) && <span className="text-xs text-muted-foreground">{a.responsavel} · {a.localizacao}</span>}
             <span className="ml-auto flex items-center gap-2">
               {a.protegido ? <Tag tone="success">Protegido</Tag> : <Tag tone="warning">Pendente</Tag>}
               {canEdit && <Switch checked={a.protegido} onCheckedChange={(v) => void toggle(a, v)} />}
@@ -145,9 +148,11 @@ function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { en
         {!endpoints.length && <li className="py-3 text-sm text-muted-foreground">Nenhum endpoint cadastrado.</li>}
       </ul>
       {canEdit && (
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           <Input placeholder="ID do hardware (ex: SN-5CG1234XYZ)" value={hw} onChange={(e) => setHw(e.target.value)} />
           <Input placeholder="Hostname" value={host} onChange={(e) => setHost(e.target.value)} />
+          <Input aria-label="Responsável pelo endpoint" placeholder="Responsável / fornecedor (opcional)" value={responsavel} onChange={e=>setResponsavel(e.target.value)} />
+          <Input aria-label="Localização do endpoint" placeholder="Localização / domínio (opcional)" value={localizacao} onChange={e=>setLocalizacao(e.target.value)} />
           <Button onClick={() => void add()}><Plus className="h-4 w-4" /></Button>
         </div>
       )}
@@ -210,6 +215,8 @@ function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove }: { cofres: A
   const [provedor, setProvedor] = useState("Google Drive");
   const [estrutura, setEstrutura] = useState("");
   const [preview, setPreview] = useState("");
+  const [responsavel, setResponsavel] = useState('');
+  const [localizacao, setLocalizacao] = useState('');
 
   useEffect(() => {
     let alive = true;
@@ -222,11 +229,11 @@ function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove }: { cofres: A
     if (!raiz.trim()) return;
     const hash = await hashEstrutura(raiz, estrutura);
     const { error } = await supabase.from("ativos_seguranca").insert({
-      empresa_cnpj: cnpj, tipo: "COFRE", identificador: raiz.trim(), provedor_nuvem: provedor, estrutura_pasta: estrutura, hash_integridade: hash, protegido: true,
+      empresa_cnpj: cnpj, tipo: "COFRE", identificador: raiz.trim(), provedor_nuvem: provedor, estrutura_pasta: estrutura, hash_integridade: hash, protegido: true, responsavel: responsavel.trim() || null, localizacao: localizacao.trim() || null,
     });
     if (error) { toast.error(error.code === "23505" ? "Cofre já catalogado." : "Não foi possível catalogar."); return; }
     log("INSERT", "ativos_seguranca", `Cofre ${raiz.trim()} · SHA-256 ${hash.slice(0, 16)}`);
-    setRaiz(""); setEstrutura(""); refresh();
+    setRaiz(""); setEstrutura(""); setResponsavel(''); setLocalizacao(''); refresh();
   };
 
   return (
@@ -241,6 +248,7 @@ function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove }: { cofres: A
               {canEdit && <button aria-label="Excluir" className="ml-auto" onClick={() => remove(a)}><Trash2 className="h-3 w-3 text-muted-foreground" /></button>}
             </div>
             <p className="mt-1 break-all font-mono text-[10px] text-success">SHA-256 {a.hash_integridade}</p>
+            {(a.responsavel || a.localizacao) && <p className="text-xs text-muted-foreground">{a.responsavel} · {a.localizacao}</p>}
           </li>
         ))}
         {!cofres.length && <li className="py-3 text-sm text-muted-foreground">Nenhum cofre catalogado.</li>}
@@ -254,6 +262,8 @@ function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove }: { cofres: A
             </select>
           </div>
           <Textarea rows={3} placeholder={"Estrutura da pasta (um caminho por linha)\nholerites/2026-01.pdf\ncontratos/"} value={estrutura} onChange={(e) => setEstrutura(e.target.value)} />
+          <Input aria-label="Responsável pelo cofre" placeholder="Responsável / fornecedor (opcional)" value={responsavel} onChange={e=>setResponsavel(e.target.value)} />
+          <Input aria-label="Localização do cofre" placeholder="Localização / domínio (opcional)" value={localizacao} onChange={e=>setLocalizacao(e.target.value)} />
           {preview && <p className="break-all font-mono text-[10px] text-muted-foreground">Hash calculado: {preview}</p>}
           <Button onClick={() => void add()} className="w-full"><Plus className="h-4 w-4" /> Catalogar cofre</Button>
         </div>

@@ -26,6 +26,7 @@ import type { EstadoIncidente } from '@/lib/priva/estadoIncidente';
 import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
 import { ConsultarBasesPublicas } from '@/components/priva/ConsultarBasesPublicas';
 import { PainelNoticiasIncidentes } from '@/components/priva/PainelNoticiasIncidentes';
+import { AlertaFornecedorVazado } from '@/components/priva/AlertaFornecedorVazado';
 
 type Lote = Database["public"]["Tables"]["lotes_pgaudit"]["Row"];
 type Incidente = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
@@ -79,6 +80,7 @@ function Bloco4() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 4 · (V) Ciclo Privacium Semestral · ISO 27037" title="Vigiar a Privacidade e Processar Incidentes" />
+      <AlertaFornecedorVazado />
       {AJUDA[4] && <AjudaTarefa {...AJUDA[4]} pendencias={montarChecklist(consulta.data, signatures)} />}
       <ConsolePgAudit cnpj={cnpj} lotes={lotes.rows} incidentes={incs.rows} canEdit={canEdit} refresh={lotes.refresh} />
       <CriseRansomware cnpj={cnpj} ativo={ativo} estado={estado} canEdit={canEdit} refresh={incs.refresh} />

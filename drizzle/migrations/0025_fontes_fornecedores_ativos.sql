@@ -1,0 +1,3 @@
+ALTER TABLE public.ativos_seguranca ADD COLUMN responsavel text, ADD COLUMN localizacao text;
+COMMENT ON COLUMN public.ativos_seguranca.responsavel IS 'Optional asset responsible entity, used conservatively for informational supplier monitoring; no inferred personal identities.';
+COMMENT ON COLUMN public.ativos_seguranca.localizacao IS 'Optional asset location/provider reference; no automatic external disclosure.';
