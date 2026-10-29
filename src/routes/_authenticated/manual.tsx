@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/manual")({
       { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>): { aba?: string } => (typeof s.aba === "string" ? { aba: s.aba } : {}),
+  validateSearch: (s: Record<string, unknown>): { aba?: string } => (typeof s["aba"] === "string" ? { aba: s["aba"] } : {}),
   component: Manual,
 });
 
