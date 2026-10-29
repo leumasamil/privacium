@@ -18,6 +18,8 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Acesso seguro à plataforma Privacium de governança de privacidade." },
       { property: "og:title", content: "Entrar — Privacium" },
       { property: "og:description", content: "Acesso seguro à plataforma Privacium de governança de privacidade." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,
