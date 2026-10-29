@@ -50,6 +50,24 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-brand: "Montserrat", var(--font-sans);
+  --color-pendencia: var(--pendencia);
+  --color-pendencia-bg: var(--pendencia-bg);
+  --color-pendencia-border: var(--pendencia-border);
+  --color-concluido: var(--concluido);
+  --color-concluido-bg: var(--concluido-bg);
+  --color-concluido-border: var(--concluido-border);
+  --color-atencao: var(--atencao);
+  --color-atencao-bg: var(--atencao-bg);
+  --color-atencao-border: var(--atencao-border);
+  --color-bloqueado: var(--bloqueado);
+  --color-bloqueado-bg: var(--bloqueado-bg);
+  --color-bloqueado-border: var(--bloqueado-border);
+  --color-ajuda: var(--ajuda);
+  --color-ajuda-bg: var(--ajuda-bg);
+  --color-ajuda-border: var(--ajuda-border);
+  --color-critico: var(--critico);
+  --color-critico-bg: var(--critico-bg);
+  --color-critico-border: var(--critico-border);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
@@ -108,6 +126,25 @@
   --sidebar-ring: oklch(0.7 0.003 286);
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  /* Estados semânticos (texto · fundo · borda) */
+  --pendencia: #B45309;
+  --pendencia-bg: #FEF3C7;
+  --pendencia-border: #F59E0B;
+  --concluido: #15803D;
+  --concluido-bg: #DCFCE7;
+  --concluido-border: #22C55E;
+  --atencao: #C2410C;
+  --atencao-bg: #FFEDD5;
+  --atencao-border: #F97316;
+  --bloqueado: #52525B;
+  --bloqueado-bg: #F4F4F5;
+  --bloqueado-border: #A1A1AA;
+  --ajuda: #1D4ED8;
+  --ajuda-bg: #DBEAFE;
+  --ajuda-border: #3B82F6;
+  --critico: #B91C1C;
+  --critico-bg: #FEE2E2;
+  --critico-border: #EF4444;
 }
 
 @layer base {

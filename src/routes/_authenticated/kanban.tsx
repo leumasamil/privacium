@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { KANBAN_COLUMNS, sha256, type KanbanCard, type KanbanColumn } from "@/lib/priva/data";
 import { usePriva } from "@/lib/priva/store";
 import { PageHeader, Tag } from "@/components/priva/ui";
+import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
+import { AJUDA_KANBAN } from "@/lib/priva/ajuda";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -45,6 +47,7 @@ function Kanban() {
       <PageHeader eyebrow="Gestão transversal" title="Kanban 5W2H">
         Em Execução aceita no máximo 3 cartões. "Pendente com Terceiros" pausa o cronômetro de conformidade. A revisão exige evidência com hash SHA-256.
       </PageHeader>
+      <div id="kanban-guia" className="mb-6"><AjudaTarefa {...AJUDA_KANBAN} /></div>
       <form className="mb-6 flex max-w-xl gap-2" onSubmit={(e) => {
         e.preventDefault(); if (!what.trim()) return;
         set({ kanban: [...kanban, { id: crypto.randomUUID(), what, why: "—", who: "—", where: "—", when: "—", how: "—", howMuch: "—", block: 1, column: "todo" }] }, { op: "INSERT", target: "kanban", detail: what });
