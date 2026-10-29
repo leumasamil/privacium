@@ -176,6 +176,13 @@
       "when": 1793312001369,
       "tag": "0024_monitor_fornecedores_informativo",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793312050558,
+      "tag": "0025_fontes_fornecedores_ativos",
+      "breakpoints": true
     }
   ]
 }

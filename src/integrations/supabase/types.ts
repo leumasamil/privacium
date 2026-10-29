@@ -25,8 +25,10 @@ export type Database = {
           hash_integridade: string | null
           id: string
           identificador: string
+          localizacao: string | null
           protegido: boolean
           provedor_nuvem: string | null
+          responsavel: string | null
           tipo: string
         }
         Insert: {
@@ -39,8 +41,10 @@ export type Database = {
           hash_integridade?: string | null
           id?: string
           identificador: string
+          localizacao?: string | null
           protegido?: boolean
           provedor_nuvem?: string | null
+          responsavel?: string | null
           tipo: string
         }
         Update: {
@@ -53,8 +57,10 @@ export type Database = {
           hash_integridade?: string | null
           id?: string
           identificador?: string
+          localizacao?: string | null
           protegido?: boolean
           provedor_nuvem?: string | null
+          responsavel?: string | null
           tipo?: string
         }
         Relationships: [
