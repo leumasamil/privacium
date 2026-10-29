@@ -3,7 +3,7 @@ export type FornecedorFonte = { nome: string; processo_rot_id: string | null; at
 export type VazamentoFornecedor = { Name: string; Title: string; Domain: string; BreachDate: string; PwnCount: number; DataClasses: string[] };
 export const normalizarFornecedor = (nome: string) => nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\b(s\.?\s*a\.?|ltda\.?|limitada|inc\.?|llc|corp\.?)\b/g, '').replace(/[^a-z0-9]/g, '');
 function dominio(texto: string) {
-  const encontrado = texto.toLowerCase().match(/(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+(?:\.[a-z0-9-]+)+)/)?.[1];
+  const encontrado = texto.toLowerCase().match(/(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,})(?=[/:\s]|$)/)?.[1];
   return encontrado?.replace(/^www\./, '') ?? '';
 }
 const genericos = new Set(['servidorlocal','nuvempublica','nuvemprivada','backup','bitlocker','criptografia','mfa','rls','firewall','antivirus','cofre','local','cloud']);

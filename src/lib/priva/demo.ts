@@ -68,9 +68,9 @@ export const DEMO_ATIVOS: Ativo[] = [
   ...Array.from({ length: 20 }, (_, i): Ativo => ({
     id: `demo-ep-${i}`, empresa_cnpj: DEMO_CNPJ, tipo: "ENDPOINT", identificador: `NB-${["FIN", "RH", "TI", "DIR", "COM"][i % 5]}-${String(i + 1).padStart(2, "0")}`,
     descricao: "Notebook corporativo", protegido: true, provedor_nuvem: null, estrutura_pasta: null, hash_integridade: null,
-    criado_por: null, criado_em: ts, atualizado_em: ts,
+    criado_por: null, criado_em: ts, atualizado_em: ts, responsavel: null, localizacao: null,
   })),
-  { id: "demo-cofre-1", empresa_cnpj: DEMO_CNPJ, tipo: "COFRE", identificador: "Cofre-RH", descricao: "Cofre Cryptomator do RH", protegido: true, provedor_nuvem: "Google Drive", estrutura_pasta: "/RH/folha\n/RH/contratos", hash_integridade: "c0ffee".padEnd(64, "0"), criado_por: null, criado_em: ts, atualizado_em: ts },
+  { id: "demo-cofre-1", empresa_cnpj: DEMO_CNPJ, tipo: "COFRE", identificador: "Cofre-RH", descricao: "Cofre Cryptomator do RH", protegido: true, provedor_nuvem: "Google Drive", estrutura_pasta: "/RH/folha\n/RH/contratos", hash_integridade: "c0ffee".padEnd(64, "0"), criado_por: null, criado_em: ts, atualizado_em: ts, responsavel: null, localizacao: null },
 ];
 
 type Tables = Database["public"]["Tables"];
