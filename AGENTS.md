@@ -9,11 +9,11 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- The product brand is Privacium (official domain: privacium.com.br); "PRIVA 2EC" is discontinued terminology. Why: keep product identity consistent across documentation and the interface.
+- Brand: Privacium (privacium.com.br), never "PRIVA 2EC"; consistent identity.
 
-- Shared BLLOCO progress is stored per CNPJ in `workspace_empresa` (one JSON row per company, realtime); active CNPJ and role choice stay in localStorage. Why: blueprint ties progress to each CNPJ.
+- BLLOCO: realtime `workspace_empresa` JSON per CNPJ; localStorage holds active CNPJ/role to preserve company-bound progress.
 - Audit entries are only written via the `registrar_trilha` security-definer RPC into `trilha_auditoria_sistema` (server-side SHA-256 chain incl. CNPJ, no update/delete grants); checked with `verificar_trilha`; opening screens with personal data logs a SELECT. Why: blueprint forensic traceability. `audit_log`/`workspace_state` are deprecated.
-- Roles live in `user_roles`; first signup becomes ADMIN_SISTEMA+DPO_OPERACIONAL, later signups have no role until an admin grants one. Why: least privilege.
+- `user_roles`: first signup ADMIN_SISTEMA+DPO_OPERACIONAL, later signups roleless until admin assignment; least privilege.
 - `empresas` (contract/plan/status per CNPJ, auto-synced from `workspace_empresa` inserts) and `usuarios` (1:1 with profiles; `perfil_acesso` = primary role synced from `user_roles`, which remains the source of truth for multi-role RBAC). Why: blueprint data model without breaking existing progress storage.
 - Audit writes go through `registrar_acesso` (forensic columns: usuario_id, acao_executada, tabela_afetada, campo_mascarado_acessado, ip_origem from request headers, timestamp_evento, hash_integridade_sha256) alongside the legacy hash chain; `registrar_trilha` wraps it. Masked-field eye clicks always log. Why: ISO 27037 accountability.
 - `/painel` renders a role-specific dashboard (ADMIN: contracts/volumetria; DPO: BLLOCO onboarding; C_SUITE: ERM map, no raw personal data). Login is email/password only.
@@ -26,3 +26,4 @@
 - ROT field 7 is split: `hipotese_tratamento` = 7A (art. 7º, dado pessoal, always required) and `hipotese_sensivel` = 7B (art. 11, required only when a dado pessoal sensível is listed, cleared otherwise); legacy rows with art. 11 in 7A are migrated on edit. Rules live in `src/lib/priva/rot.ts` and the DB trigger. Why: LGPD separates arts. 7º and 11.
 - DPO public contact is stored per company in `encarregado_dpo`, separately from login credentials; changes are audited by trigger. ANPD submissions use `enviar_comunicacao_anpd` to validate ROT categories, tenant, contact and response steps and append the audit atomically. Why: prevent forged contacts and incomplete or unaudited communications.
 - Block 4 reads one CNPJ snapshot through useEstadoBloco4 and derives incident state exclusively through carregarEstadoIncidente; step evidence and closure use audited transactional RPCs. PI-04 signatures follow incident closure, never precede it. Why: prevent conflicting states, unaudited closure and circular BLLOCO prerequisites.
+- External incident DTOs use authenticated read-only functions, RLS checks and edge cache (bounded memory fallback); comparison stays local, panels outside PIOutput. Never connect to audit, persistence, PDF, hash or progress: third-party context is not evidence.
