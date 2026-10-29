@@ -70,7 +70,7 @@ function Manual() {
           {BLOCKS.map((b) => (
             <Panel key={b.n} title={`Bloco ${b.n} · (${b.letter}) ${b.title}`}>
               <table className="w-full text-sm"><tbody>
-                {GUIAS[b.n].map(([k, v]) => (
+                {(GUIAS[b.n] ?? []).map(([k, v]) => (
                   <tr key={k} className="border-b last:border-0"><th className="w-28 py-2 pr-4 text-left align-top font-mono text-xs uppercase text-muted-foreground">{k}</th><td className="py-2">{v}</td></tr>
                 ))}
               </tbody></table>
