@@ -31,4 +31,4 @@
 
 - ANPD has a standalone authenticated incident-ID route (un-nested from Block 4) and shared pending links; risk selections are DB-canonicalized with required case details, while vector suggestions never prove completed actions. Why: reliable crisis navigation, normative traceability and no false evidence.
 - Shared navigation collapses below the desktop breakpoint and long action labels wrap. Why: the crisis form must remain accessible without horizontal overflow on narrow screens.
-- Siglas e indicadores usam `src/lib/priva/glossario.ts` como fonte única (tooltips por clique `<Sigla>`, página /glossario, cards em `Indicadores.tsx`). Por quê: nenhuma sigla isolada e todo indicador com definição, fórmula e ação.
+- Glossary terms and dashboard indicators come from one shared glossary module. Why: no bare acronyms; every metric shows definition, formula and action.
