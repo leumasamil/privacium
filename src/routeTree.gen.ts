@@ -20,6 +20,7 @@ import { Route as AuthenticatedBloco4RouteImport } from './routes/_authenticated
 import { Route as AuthenticatedBloco5RouteImport } from './routes/_authenticated/bloco-5'
 import { Route as AuthenticatedEnterpriseRouteImport } from './routes/_authenticated/enterprise'
 import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated/kanban'
+import { Route as AuthenticatedManualRouteImport } from './routes/_authenticated/manual'
 import { Route as AuthenticatedMembrosRouteImport } from './routes/_authenticated/membros'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 
@@ -77,6 +78,11 @@ const AuthenticatedKanbanRoute = AuthenticatedKanbanRouteImport.update({
   path: '/kanban',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedManualRoute = AuthenticatedManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMembrosRoute = AuthenticatedMembrosRouteImport.update({
   id: '/membros',
   path: '/membros',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/bloco-5': typeof AuthenticatedBloco5Route
   '/enterprise': typeof AuthenticatedEnterpriseRoute
   '/kanban': typeof AuthenticatedKanbanRoute
+  '/manual': typeof AuthenticatedManualRoute
   '/membros': typeof AuthenticatedMembrosRoute
   '/painel': typeof AuthenticatedPainelRoute
 }
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/bloco-5': typeof AuthenticatedBloco5Route
   '/enterprise': typeof AuthenticatedEnterpriseRoute
   '/kanban': typeof AuthenticatedKanbanRoute
+  '/manual': typeof AuthenticatedManualRoute
   '/membros': typeof AuthenticatedMembrosRoute
   '/painel': typeof AuthenticatedPainelRoute
 }
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/_authenticated/bloco-5': typeof AuthenticatedBloco5Route
   '/_authenticated/enterprise': typeof AuthenticatedEnterpriseRoute
   '/_authenticated/kanban': typeof AuthenticatedKanbanRoute
+  '/_authenticated/manual': typeof AuthenticatedManualRoute
   '/_authenticated/membros': typeof AuthenticatedMembrosRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
 }
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/bloco-5'
     | '/enterprise'
     | '/kanban'
+    | '/manual'
     | '/membros'
     | '/painel'
   fileRoutesByTo: FileRoutesByTo
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/bloco-5'
     | '/enterprise'
     | '/kanban'
+    | '/manual'
     | '/membros'
     | '/painel'
   id:
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bloco-5'
     | '/_authenticated/enterprise'
     | '/_authenticated/kanban'
+    | '/_authenticated/manual'
     | '/_authenticated/membros'
     | '/_authenticated/painel'
   fileRoutesById: FileRoutesById
@@ -263,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKanbanRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/manual': {
+      id: '/_authenticated/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof AuthenticatedManualRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/membros': {
       id: '/_authenticated/membros'
       path: '/membros'
@@ -289,6 +308,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBloco5Route: typeof AuthenticatedBloco5Route
   AuthenticatedEnterpriseRoute: typeof AuthenticatedEnterpriseRoute
   AuthenticatedKanbanRoute: typeof AuthenticatedKanbanRoute
+  AuthenticatedManualRoute: typeof AuthenticatedManualRoute
   AuthenticatedMembrosRoute: typeof AuthenticatedMembrosRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
 }
@@ -302,6 +322,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBloco5Route: AuthenticatedBloco5Route,
   AuthenticatedEnterpriseRoute: AuthenticatedEnterpriseRoute,
   AuthenticatedKanbanRoute: AuthenticatedKanbanRoute,
+  AuthenticatedManualRoute: AuthenticatedManualRoute,
   AuthenticatedMembrosRoute: AuthenticatedMembrosRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
 }

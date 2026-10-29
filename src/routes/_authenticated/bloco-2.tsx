@@ -1,11 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { AlertTriangle, Pencil, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, BookOpen, Lightbulb, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { DEPARTMENTS, HIPOTESES, VERBS } from "@/lib/priva/data";
-import { DADOS, INFRA, SALVAGUARDAS, SENSIVEIS, TITULARES, isRisky, validateRot, type RotInput, type RotRow } from "@/lib/priva/rot";
+import { DEPARTMENTS, VERBS } from "@/lib/priva/data";
+import { DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, SALVAGUARDAS, SENSIVEIS, TITULARES, hasSensivel, isRisky, normalizeHipoteses, sugerir, validateRot, type RotInput, type RotRow } from "@/lib/priva/rot";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ROT } from "@/lib/priva/demo";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
@@ -29,11 +29,11 @@ export const Route = createFileRoute("/_authenticated/bloco-2")({
 });
 
 const HEADS = ["ID Processo", "Gênero Verbo", "Categoria de Titulares", "Dados Pessoais", "Dados Pessoais Sensíveis", "Finalidade Específica",
-  "Hipótese de Tratamento", "Tempo de Retenção", "Base do Prazo", "Compartilhamento / Destinatários", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
+  "7A. Hipótese art. 7º (dado pessoal)", "7B. Hipótese art. 11 (dado pessoal sensível)", "Tempo de Retenção", "Base do Prazo", "Compartilhamento / Destinatários", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
 
 const empty = (cnpj: string): RotInput => ({
   empresa_cnpj: cnpj, setor: "RH", genero_verbo: "Coletar", categoria_titulares: [], dados_pessoais: [], dados_sensiveis: ["N/A"],
-  finalidade_especifica: "", hipotese_tratamento: "", tempo_retencao: "", base_prazo: "", compartilhamento: "Não Compartilhado",
+  finalidade_especifica: "", hipotese_tratamento: "", hipotese_sensivel: null, tempo_retencao: "", base_prazo: "", compartilhamento: "Não Compartilhado",
   salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null,
 });
 
@@ -67,9 +67,9 @@ function Bloco2() {
 
   const save = async () => {
     if (!edit) return;
-    const err = validateRot(edit.form);
+    const err = validateRot(normalizeHipoteses(edit.form));
     if (err) { toast.error(err); return; }
-    const payload = { ...edit.form, justificativa_mitigacao: isRisky(edit.form) ? edit.form.justificativa_mitigacao : null };
+    const payload = { ...normalizeHipoteses(edit.form), justificativa_mitigacao: isRisky(edit.form) ? edit.form.justificativa_mitigacao : null };
     const { data, error } = edit.id
       ? await supabase.from("registro_operacoes").update(payload).eq("id", edit.id).select("codigo").single()
       : await supabase.from("registro_operacoes").insert(payload).select("codigo").single();
@@ -93,17 +93,18 @@ function Bloco2() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 2 · (R) Ciclo Privacium Semestral · Art. 37 LGPD" title="Registrar as Operações de Tratamento">
-        Planilha mestre do ROT. Linhas com menores de idade ou dados pessoais sensíveis recebem tarja vermelha e exigem justificativa das medidas mitigadoras.
+        Inventário em 12 campos (campo 7 dividido em 7A — art. 7º, dado pessoal — e 7B — art. 11, dado pessoal sensível). Linhas com menores de idade ou dado pessoal sensível recebem tarja vermelha e exigem justificativa das medidas mitigadoras.{" "}
+        <Link to="/manual" className="inline-flex items-center gap-1 font-medium text-primary underline"><BookOpen className="h-3 w-3" /> Manual de Uso</Link>
       </PageHeader>
 
       <Panel title={`Planilha mestre · ${rows.length} processos · ${riskyCount} em alerta`} action={canEdit && (
         <Button size="sm" onClick={() => setEdit({ id: null, form: empty(cnpj) })}><Plus className="h-4 w-4" /> Novo processo</Button>
       )}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1800px] text-xs">
+          <table className="w-full min-w-[2000px] text-xs">
             <thead>
               <tr className="border-b text-left">
-                {HEADS.map((h, i) => <th key={h} className="px-2 py-2 font-mono font-medium uppercase tracking-wider text-muted-foreground">{i + 1}. {h}</th>)}
+                {HEADS.map((h, i) => <th key={h} className="px-2 py-2 font-mono font-medium uppercase tracking-wider text-muted-foreground">{i < 6 ? `${i + 1}. ` : i > 7 ? `${i}. ` : ""}{h}</th>)}
                 <th />
               </tr>
             </thead>
@@ -121,7 +122,8 @@ function Bloco2() {
                     <td className="px-2 py-2"><Tags items={r.dados_pessoais} /></td>
                     <td className="px-2 py-2"><Tags items={r.dados_sensiveis} safe="N/A" /></td>
                     <td className="max-w-64 px-2 py-2">{r.finalidade_especifica}</td>
-                    <td className="px-2 py-2">{r.hipotese_tratamento}</td>
+                    <td className="px-2 py-2">{r.hipotese_tratamento.startsWith("Art. 7") ? r.hipotese_tratamento : "—"}</td>
+                    <td className="px-2 py-2">{r.hipotese_sensivel ?? (r.hipotese_tratamento.startsWith("Art. 11") ? r.hipotese_tratamento : "N/A")}</td>
                     <td className="px-2 py-2">{r.tempo_retencao}</td>
                     <td className="px-2 py-2">{r.base_prazo}</td>
                     <td className="px-2 py-2">{r.compartilhamento}</td>
@@ -131,7 +133,7 @@ function Bloco2() {
                       {canEdit && <>
                         <button aria-label="Editar" className="mr-2" onClick={() => {
                           const { id, codigo: _c, criado_por: _p, criado_em: _e, atualizado_em: _a, ...form } = r;
-                          setEdit({ id, form });
+                          setEdit({ id, form: normalizeHipoteses(form) });
                         }}><Pencil className="h-3 w-3 text-muted-foreground" /></button>
                         <button aria-label="Excluir" onClick={() => void remove(r)}><Trash2 className="h-3 w-3 text-muted-foreground" /></button>
                       </>}
@@ -139,7 +141,7 @@ function Bloco2() {
                   </tr>
                 );
               })}
-              {!rows.length && <tr><td colSpan={13} className="py-8 text-center text-muted-foreground">Nenhum processo cadastrado.</td></tr>}
+              {!rows.length && <tr><td colSpan={14} className="py-8 text-center text-muted-foreground">Nenhum processo cadastrado.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -151,7 +153,7 @@ function Bloco2() {
         <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico.</p>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           {rows.map((r) => (
-            <li key={r.id}><b>{r.codigo}</b> — {r.genero_verbo} {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento: {r.hipotese_tratamento}. Retenção: {r.tempo_retencao} ({r.base_prazo}).{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}</li>
+            <li key={r.id}><b>{r.codigo}</b> — {r.genero_verbo} {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção: {r.tempo_retencao} ({r.base_prazo}).{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}</li>
           ))}
         </ul>
       </PIOutput>
@@ -190,7 +192,9 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
   const f = edit.form;
   const up = (p: Partial<RotInput>) => setEdit({ ...edit, form: { ...f, ...p } });
   const risk = isRisky(f);
-  const sensitive = f.dados_sensiveis.some((s) => s !== "N/A");
+  const sensitive = hasSensivel(f);
+  const dicas = sugerir(f);
+  const erro = validateRot(f);
   return (
     <Dialog open onOpenChange={(o) => !o && setEdit(null)}>
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
@@ -210,13 +214,20 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
           </Field>
           <Field label="3. Categoria de Titulares" wide><Chips options={TITULARES} value={f.categoria_titulares} onChange={(v) => up({ categoria_titulares: v })} /></Field>
           <Field label="4. Dados Pessoais" wide><Chips options={DADOS} value={f.dados_pessoais} onChange={(v) => up({ dados_pessoais: v })} /></Field>
-          <Field label="5. Dados Pessoais Sensíveis" wide><Chips options={SENSIVEIS} value={f.dados_sensiveis} exclusive="N/A" onChange={(v) => up({ dados_sensiveis: v, hipotese_tratamento: "" })} /></Field>
+          <Field label="5. Dados Pessoais Sensíveis" wide><Chips options={SENSIVEIS} value={f.dados_sensiveis} exclusive="N/A" onChange={(v) => up({ dados_sensiveis: v, hipotese_sensivel: v.some((x) => x !== "N/A") ? f.hipotese_sensivel : null })} /></Field>
           <Field label="6. Finalidade Específica" wide><Textarea value={f.finalidade_especifica} onChange={(e) => up({ finalidade_especifica: e.target.value })} /></Field>
-          <Field label="7. Hipótese de Tratamento" wide>
+          <Field label="7A. Hipótese de Tratamento — art. 7º (dado pessoal, art. 5º, I)" wide>
             <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.hipotese_tratamento} onChange={(e) => up({ hipotese_tratamento: e.target.value })}>
               <option value="">Selecione…</option>
-              {HIPOTESES.filter((h) => (sensitive ? h.startsWith("Art. 11") : h.startsWith("Art. 7"))).map((h) => <option key={h}>{h}</option>)}
+              {HIPOTESES_7A.map((h) => <option key={h}>{h}</option>)}
             </select>
+          </Field>
+          <Field label="7B. Hipótese de Tratamento — art. 11 (dado pessoal sensível, art. 5º, II)" wide>
+            <select disabled={!sensitive} className="w-full rounded-sm border bg-background px-2 py-2 text-sm disabled:opacity-50" value={f.hipotese_sensivel ?? ""} onChange={(e) => up({ hipotese_sensivel: e.target.value || null })}>
+              <option value="">{sensitive ? "Selecione…" : "Não se aplica — nenhum dado pessoal sensível no campo 5"}</option>
+              {HIPOTESES_7B.map((h) => <option key={h}>{h}</option>)}
+            </select>
+            {sensitive && <p className="text-[11px] text-muted-foreground">Obrigatório: o campo 7A cobre os dados pessoais e o 7B cobre o dado pessoal sensível.</p>}
           </Field>
           <Field label="8. Tempo de Retenção"><Input value={f.tempo_retencao} placeholder="5 anos pós-rescisão" onChange={(e) => up({ tempo_retencao: e.target.value })} /></Field>
           <Field label="9. Base do Prazo"><Input value={f.base_prazo} placeholder="Art. 206 do Código Civil" onChange={(e) => up({ base_prazo: e.target.value })} /></Field>
@@ -235,9 +246,18 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
             </div>
           )}
         </div>
+        {dicas.length > 0 && (
+          <div className="rounded-sm border bg-muted/50 p-3">
+            <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary"><Lightbulb className="h-3 w-3" /> Sugestões automáticas</p>
+            <div className="flex flex-wrap gap-2">
+              {dicas.map((d) => <Button key={d.texto} type="button" size="sm" variant="outline" className="h-auto whitespace-normal py-1 text-left text-xs" onClick={() => up(d.patch)}>{d.texto}</Button>)}
+            </div>
+          </div>
+        )}
+        {erro && <p className="text-xs text-destructive">Pendência para salvar: {erro}</p>}
         <DialogFooter>
           <Button variant="outline" onClick={() => setEdit(null)}>Cancelar</Button>
-          <Button onClick={onSave}>Salvar processo</Button>
+          <Button disabled={!!erro} onClick={onSave}>Salvar processo</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
