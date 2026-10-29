@@ -1,4 +1,5 @@
 - [x] Volumetria total na Trilha Forense Master + checar isolamento RLS
-- [ ] Cadastrar contato do encarregado por CNPJ com isolamento e auditoria.
-- [ ] Completar formulário ANPD, validação, envio simulado e SLA congelado.
-- [ ] Conectar pendências e PDFs ao contato real; verificar fluxo autenticado.
+- [x] Cadastrar contato do encarregado por CNPJ com isolamento e auditoria.
+- [x] Completar formulário ANPD, validação, envio simulado e SLA congelado.
+- [x] Conectar pendências e PDFs ao contato real; verificar fluxo autenticado.
+- [ ] Conectar contato à política gerada: bloqueado porque não existe gerador de política no aplicativo atual.
