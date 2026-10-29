@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { validarANPD, restanteANPD, type ComunicacaoANPD } from "@/lib/priva/anpd";
-const valido: ComunicacaoANPD = { natureza: "Ransomware", categorias: ["Nome"], titulares: "1", riscos: "R".repeat(30), medidas: "M".repeat(30) };
+const valido: ComunicacaoANPD = { natureza: "Ransomware com criptografia de ativos", categorias: ["Nome"], titulares: "1", riscos: "R".repeat(30), medidas: "M".repeat(30) };
 const etapas = [true, true, true, true, true, false];
 describe("Comunicação ANPD", () => {
   it("exige categoria do ROT", () => expect(validarANPD({ ...valido, categorias: [] }, "contato@exemplo.org", etapas).map(x => x.campo)).toContain("categorias"));
