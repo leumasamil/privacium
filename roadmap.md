@@ -16,7 +16,7 @@
 - [x] Integrar categorias ROT e catálogo padrão, fontes e criticidade.
 - [x] Completar foco, progresso, pendências destacadas e cores semânticas.
 - [x] Verificar persistência e fluxo autenticado da Parte 4.
-- [ ] Completar referências existentes e monitor conservador de fornecedores.
-- [ ] Persistir monitor por CNPJ, decisões auditadas e cooldown sem copiar evidências externas.
-- [ ] Integrar alertas no Bloco 4, badges no ROT e próximo passo secundário.
-- [ ] Verificar isolamento, decisões e fluxo autenticado da Parte 5.
+- [x] Completar referências existentes e monitor conservador de fornecedores.
+- [x] Persistir monitor por CNPJ, decisões auditadas e cooldown sem copiar evidências externas.
+- [x] Integrar alertas no Bloco 4, badges no ROT e próximo passo secundário.
+- [x] Verificar isolamento, decisões e fluxo autenticado da Parte 5.
