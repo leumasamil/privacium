@@ -2,13 +2,14 @@ import { FormularioANPD } from "@/components/priva/FormularioANPD";
 import { restanteANPD } from "@/lib/priva/anpd";
 import { linhasNaturezas } from "@/lib/priva/naturezasIncidente";
 import { linhasMedidas } from '@/lib/priva/medidasIncidente';
+import { linhasCategorias } from '@/lib/priva/categoriasANPD';
 import { useEncarregado } from "@/lib/priva/useEncarregado";
 import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
 import { AJUDA } from "@/lib/priva/ajuda";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, FileDown, Hash, Lock, Play, Timer } from "lucide-react";
+import { CheckCircle2, Circle, Clock, AlertTriangle, OctagonAlert, FileDown, Hash, Lock, Play, Timer } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
@@ -88,6 +89,7 @@ function Bloco4() {
         {encerrado && <p className="mt-2"><b>Incidente encerrado:</b> declarado em {new Date(encerrado.iniciado_em).toLocaleString("pt-BR")}, comunicado à ANPD em {new Date(encerrado.enviado_anpd_em ?? "").toLocaleString("pt-BR")}.</p>}
         {encerrado && linhasNaturezas(encerrado.comunicacao).map(linha => <p key={linha} className="mt-2">{linha}</p>)}
         {encerrado && linhasMedidas(encerrado.comunicacao).map(linha => <p key={linha} className="mt-2">{linha}</p>)}
+        {encerrado && linhasCategorias(encerrado.comunicacao).map(linha => <p key={linha} className="mt-2">{linha}</p>)}
       </PIOutput>
       {/* Dado de terceiro não é evidência própria: referências ficam fora do
           PIOutput, docRef, PDFs, dossiê, trilha e hashes de todas as chancelas. */}
@@ -148,7 +150,7 @@ function ConsolePgAudit({ cnpj, lotes, incidentes, canEdit, refresh }: { cnpj: s
     for (const linha of corpo) { if (y > 270) { doc.addPage(); y = 16; } doc.text(linha, 14, y); y += 3.6; }
     doc.setFont("helvetica", "normal"); doc.setFontSize(9);
     for (const incidente of incidentes.filter(i => i.enviado_anpd_em?.slice(0, 7) === l.mes_referencia)) {
-      const linhas = doc.splitTextToSize([`Incidente: ${incidente.id}`, ...linhasNaturezas(incidente.comunicacao), ...linhasMedidas(incidente.comunicacao)].join("\n"), 180) as string[];
+      const linhas = doc.splitTextToSize([`Incidente: ${incidente.id}`, ...linhasNaturezas(incidente.comunicacao), ...linhasMedidas(incidente.comunicacao), ...linhasCategorias(incidente.comunicacao)].join("\n"), 180) as string[];
       for (const linha of linhas) { if (y > 260) { doc.addPage(); y = 20; } doc.text(linha, 14, y); y += 4; }
       y += 4;
     }
@@ -203,9 +205,9 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
   const tom = !ativo ? "neutro" : restante === 0 ? "vencido" : restante < 24 * 3600000 ? "atencao" : "andamento";
   const TOM_SLA = {
     neutro: { caixa: "", texto: "text-primary", rotulo: "Nenhum incidente ativo" },
-    andamento: { caixa: "border-andamento-border bg-andamento-bg", texto: "text-andamento", rotulo: "Em andamento · mais de 24h" },
-    atencao: { caixa: "border-atencao-border bg-atencao-bg", texto: "text-atencao", rotulo: "Atenção · menos de 24h" },
-    vencido: { caixa: "border-vencido-border bg-vencido-bg", texto: "text-vencido", rotulo: "Vencido" },
+    andamento: { caixa: "border-l-4 border-l-andamento-border", texto: "text-andamento", rotulo: "Em andamento · mais de 24h" },
+    atencao: { caixa: "border-l-4 border-l-atencao-border", texto: "text-atencao", rotulo: "Atenção · menos de 24h" },
+    vencido: { caixa: "border-l-4 border-l-vencido-border", texto: "text-vencido", rotulo: "Vencido" },
   }[tom];
 
   const registrarEtapa = async (i: number, concluida: boolean) => {
@@ -268,13 +270,13 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
           const bloqueado = !ativo || (!feito && !corrente);
           return (
             <li id={`incidente-etapa-${i + 1}`} key={s.t} data-step={i} className={cn("relative scroll-mt-6 rounded-md border p-3 text-xs transition-all duration-300",
-              feito && "border-concluido-border bg-concluido-bg",
-              corrente && "border-2 border-pendencia-border bg-pendencia-bg shadow-md",
-              bloqueado && "border-bloqueado-border bg-bloqueado-bg opacity-80")}>
+              feito && "border-l-4 border-l-concluido-border",
+              corrente && "border-l-4 border-l-pendencia-border",
+              bloqueado && "border-l-4 border-l-bloqueado-border")}>
               <div className="flex items-center gap-2">
                 <span className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-semibold",
-                  feito ? "bg-concluido text-primary-foreground" : corrente ? "bg-pendencia text-primary-foreground" : "bg-muted text-bloqueado")}>
-                  {feito ? <Check className="h-3.5 w-3.5" aria-hidden /> : bloqueado ? <Lock className="h-3 w-3" aria-hidden /> : i + 1}
+                  feito ? "bg-concluido-bg text-concluido" : corrente ? "bg-pendencia-bg text-pendencia" : "bg-bloqueado-bg text-bloqueado")}>
+                  {feito ? <CheckCircle2 className="h-3.5 w-3.5" aria-hidden /> : bloqueado ? <Lock className="h-3 w-3" aria-hidden /> : <Circle className="h-3.5 w-3.5" aria-hidden />}
                 </span>
                 <span className={cn("font-semibold", feito ? "text-concluido" : corrente ? "text-pendencia" : "text-bloqueado")}>{s.t}</span>
               </div>
@@ -299,7 +301,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
       {/* SLA com contexto */}
       <div className={cn("grid gap-4 rounded-md border p-4 md:grid-cols-[220px_1fr]", TOM_SLA.caixa)}>
         <div className="text-center">
-          <Timer className={cn("mx-auto h-5 w-5", TOM_SLA.texto)} aria-hidden />
+          {tom === 'vencido' ? <OctagonAlert className="mx-auto h-5 w-5 text-vencido" aria-hidden /> : tom === 'atencao' ? <AlertTriangle className="mx-auto h-5 w-5 text-atencao" aria-hidden /> : tom === 'andamento' ? <Clock className="mx-auto h-5 w-5 text-andamento" aria-hidden /> : <Timer className="mx-auto h-5 w-5" aria-hidden />}
           <p className={cn("mt-1 font-mono text-3xl font-semibold", TOM_SLA.texto)}>{fmt(restante)}</p>
           <p className={cn("mt-1 text-xs font-semibold uppercase", TOM_SLA.texto)}>{ativo?.enviado_anpd_em ? (ativo.comunicacao_atrasada ? "Comunicado em atraso" : "Prazo de envio cumprido") : TOM_SLA.rotulo}</p>
           {ativo?.enviado_anpd_em && <div className="mt-2"><Tag tone="success">ANPD comunicada</Tag></div>}

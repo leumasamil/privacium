@@ -15,5 +15,5 @@ export const ESTADO: Record<Estado, { rotulo: string; texto: string; badge: stri
 
 export function EstadoBadge({ estado }: { estado: Estado }) {
   const e = ESTADO[estado];
-  return <span className={cn("inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide", e.badge)}>{e.rotulo}</span>;
+  return <span className={cn("inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide", e.badge)}>{e.icone('h-3 w-3')}{e.rotulo}</span>;
 }

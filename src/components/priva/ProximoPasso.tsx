@@ -9,10 +9,10 @@ import { cn } from "@/lib/utils";
 import { useDadosBloco } from "./TelaBloqueio";
 
 const TOM: Record<Passo["tipo"], { caixa: string; icone: React.ReactNode; rotulo: string }> = {
-  acao: { caixa: "border-andamento-border bg-andamento-bg", icone: <Navigation className="h-4 w-4 text-andamento" aria-hidden />, rotulo: "Próximo passo" },
-  travado: { caixa: "border-pendencia-border bg-pendencia-bg", icone: <Lock className="h-4 w-4 text-pendencia" aria-hidden />, rotulo: "Próximo passo · bloco anterior" },
-  aguardando: { caixa: "border-bloqueado-border bg-bloqueado-bg", icone: <Hourglass className="h-4 w-4 text-bloqueado" aria-hidden />, rotulo: "Aguardando outro perfil" },
-  concluido: { caixa: "border-concluido-border bg-concluido-bg", icone: <CheckCircle2 className="h-4 w-4 text-concluido" aria-hidden />, rotulo: "Etapa concluída" },
+  acao: { caixa: "border-l-andamento-border", icone: <Navigation className="h-4 w-4 text-andamento" aria-hidden />, rotulo: "Próximo passo" },
+  travado: { caixa: "border-l-pendencia-border", icone: <Lock className="h-4 w-4 text-pendencia" aria-hidden />, rotulo: "Próximo passo · bloco anterior" },
+  aguardando: { caixa: "border-l-bloqueado-border", icone: <Hourglass className="h-4 w-4 text-bloqueado" aria-hidden />, rotulo: "Aguardando outro perfil" },
+  concluido: { caixa: "border-l-concluido-border", icone: <CheckCircle2 className="h-4 w-4 text-concluido" aria-hidden />, rotulo: "Etapa concluída" },
 };
 
 /** Faixa única de condução, exibida no topo de todas as telas autenticadas. */
