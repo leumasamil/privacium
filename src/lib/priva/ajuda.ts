@@ -149,7 +149,7 @@ export const AJUDA_KANBAN: Ajuda5W2H = {
     p("Preencher os 7 campos", "Complete no cartão: por quê, quem, onde, quando, como e quanto.", "O cartão mostra responsável e prazo.", "Cartão sem responsável ou prazo aparece como pendência nesta ajuda."),
     p("Vincular ao bloco", "Indique o bloco de origem da ação.", "O cartão mostra o número do bloco.", "Sem vínculo, a ação perde rastreabilidade."),
     p("Mover conforme executa", "Clique em [Avançar →] ou [←] para mudar o cartão de coluna.", "O cartão muda de coluna e a mudança fica na trilha.", "\"Em Execução\" aceita no máximo 3 cartões."),
-    p("Fechar com evidência", "Em \"Revisão do DPO/Compliance\", gere o hash da evidência e avance para \"Produto Concluído (PI)\".", "O cartão fica concluído com o hash da evidência.", "Sem hash, o cartão não passa da revisão."),
+    p("Fechar com evidência", "Clique em [Avançar →] até \"Revisão do DPO/Compliance\" — o hash SHA-256 da evidência é gerado nesse momento — e avance para \"Produto Concluído (PI)\".", "O cartão fica em \"Produto Concluído (PI)\" com o hash da evidência.", "Sem passar pela revisão, o cartão não recebe hash."),
     p("Revisar semanalmente", "Toda semana, percorra as colunas e redistribua os cartões parados.", "Nenhum cartão fica parado mais de 7 dias.", "Cartão parado indica responsável sobrecarregado — redistribua."),
   ],
   errosComuns: ["Criar cartão sem responsável.", "Duplicar ação já existente.", "Fechar cartão sem evidência."],

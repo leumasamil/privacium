@@ -29,7 +29,7 @@ export const PI_INFO: Record<number, { codigo: string; nome: string; explica: st
 };
 
 /** PI-01 tem assinatura única do DPO; PI-02 a PI-04 exigem DPO + Diretoria. */
-export const PI_DUPLO: Record<number, boolean> = { 1: false, 2: true, 3: true, 4: true };
+export const PI_DUPLO: Record<number, boolean> = { 1: false, 2: true, 3: true, 4: true, 5: true };
 
 export type DadosBloco =
   | { n: 1; perguntas: number; respondidas: number; naos: number }
@@ -116,4 +116,29 @@ export function montarChecklist(d: DadosBloco, sigs: Record<string, Signature>):
 export function proximoPasso(itens: Pendencia[], roles: string[]): Pendencia | null {
   const abertos = itens.filter((i) => i.estado !== "ok" && i.estado !== "bloqueado" || (i.estado === "bloqueado" && !i.id.startsWith("sig")));
   return abertos.find((i) => roles.includes(i.responsavel) || roles.includes("ADMIN_SISTEMA") && i.responsavel !== "C_SUITE") ?? abertos[0] ?? null;
+}
+
+const ORDEM: Record<Estado, number> = { critico: 0, atencao: 1, andamento: 2, pendente: 3, bloqueado: 4, ok: 5 };
+/** Vencidas primeiro, depois atenção, em andamento, não iniciadas, aguardando; concluídas por último. */
+export const ordenar = (itens: Pendencia[]) => [...itens].sort((a, b) => ORDEM[a.estado] - ORDEM[b.estado]);
+
+/** Bloco 5: RIPD (sistema, Escudo Digital, mitigação por risco) + duas assinaturas do PI-05. */
+export function pendenciasBloco5(d: { sistema: string; escudo: string; riscos: { label: string; mitig: string }[] }, sigs: Record<string, Signature>): Pendencia[] {
+  const it: Pendencia[] = [];
+  it.push({ id: "sis", titulo: "Descrever o sistema avaliado", exige: d.sistema.trim().length > 2 ? "Sistema descrito." : "Campo do sistema avaliado vazio.", responsavel: "DPO_OPERACIONAL", estado: d.sistema.trim().length > 2 ? "ok" : "pendente", bloco: 5, ancora: "ripd", acao: "Descrever o sistema avaliado", sugestao: "Preencha o campo do sistema avaliado no topo do RIPD; ele é salvo ao sair do campo." });
+  const esc = d.escudo.trim().length;
+  it.push({ id: "esc", titulo: "Escrever o Escudo Digital", exige: esc > 20 ? "Escudo Digital escrito." : `${esc} de 21 caracteres mínimos.`, responsavel: "DPO_OPERACIONAL", estado: esc > 20 ? "ok" : esc ? "andamento" : "pendente", bloco: 5, ancora: "ripd", acao: "Escrever o Escudo Digital", sugestao: "Explique no Escudo Digital por que o tratamento é necessário e por que não há alternativa menos invasiva." });
+  const sem = d.riscos.filter((r) => r.mitig.trim().length <= 10);
+  it.push({ id: "mitig", titulo: "Mitigar cada risco de IA", exige: sem.length ? `Faltam ${sem.length} de ${d.riscos.length} riscos: ${sem.map((r) => r.label).join(", ")}.` : `${d.riscos.length} de ${d.riscos.length} riscos mitigados.`, responsavel: "DPO_OPERACIONAL", estado: sem.length === 0 ? "ok" : sem.length < d.riscos.length ? "andamento" : "pendente", bloco: 5, ancora: "ripd", acao: sem.length ? `Mitigar o risco "${sem[0]!.label}"` : "Ver riscos", sugestao: sem.length ? `Abra o risco "${sem[0]!.label}" e preencha "Medidas de mitigação…" com mais de 10 caracteres.` : undefined });
+  const base = it.every((x) => x.estado === "ok");
+  return [...it, ...assinaturas(5, sigs, base)];
+}
+
+/** Kanban: cartão aberto sem responsável ou sem prazo é pendência. */
+export function pendenciasKanban(cards: { id: string; what: string; who: string; when: string; column: string }[]): Pendencia[] {
+  const abertos = cards.filter((c) => c.column !== "done");
+  const incompletos = abertos.filter((c) => !c.who.trim() || !c.when.trim());
+  const it: Pendencia[] = incompletos.map((c) => ({ id: `card-${c.id}`, titulo: `Completar o cartão "${c.what}"`, exige: [!c.who.trim() && "sem responsável", !c.when.trim() && "sem prazo"].filter(Boolean).join(" e ") + ".", responsavel: "DPO_OPERACIONAL", estado: "pendente", bloco: 0, ancora: "quadro", acao: `Completar o cartão "${c.what}"`, sugestao: `Abra o cartão "${c.what}" e preencha quem executa e até quando.` }));
+  if (abertos.length && !incompletos.length) it.push({ id: "cards-ok", titulo: "Cartões abertos com responsável e prazo", exige: `${abertos.length} cartão(ões) em execução completos.`, responsavel: "DPO_OPERACIONAL", estado: "ok", bloco: 0, ancora: "quadro", acao: "Ver quadro" });
+  return it;
 }

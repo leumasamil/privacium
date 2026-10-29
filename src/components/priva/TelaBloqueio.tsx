@@ -14,7 +14,7 @@ import { ESTADO, EstadoBadge } from "./estado";
 
 const ROTULO: Record<string, string> = { DPO_OPERACIONAL: "DPO_OPERACIONAL", C_SUITE: "Diretoria (C_SUITE)", ADMIN_SISTEMA: "ADMIN_SISTEMA" };
 
-function useDadosBloco(n: number, cnpj: string | null) {
+export function useDadosBloco(n: number, cnpj: string | null) {
   return useQuery({
     queryKey: ["pendencias", n, cnpj],
     enabled: !!cnpj,
