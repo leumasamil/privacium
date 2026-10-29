@@ -134,6 +134,13 @@
       "when": 1793308174666,
       "tag": "0018_proteger_campos_envio_anpd",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793308307786,
+      "tag": "0019_auditoria_eventos_anpd",
+      "breakpoints": true
     }
   ]
 }

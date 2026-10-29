@@ -1,0 +1,4 @@
+ALTER TABLE public.trilha_auditoria_sistema DROP CONSTRAINT trilha_auditoria_sistema_acao_executada_check;
+ALTER TABLE public.trilha_auditoria_sistema ADD CONSTRAINT trilha_auditoria_sistema_acao_executada_check CHECK (acao_executada IN ('SELECT','INSERT','UPDATE','DELETE','LOGIN_FALHA','COMUNICACAO_ANPD','DESCUMPRIMENTO_SLA'));
+ALTER TABLE public.trilha_auditoria_sistema DROP CONSTRAINT trilha_auditoria_sistema_op_check;
+ALTER TABLE public.trilha_auditoria_sistema ADD CONSTRAINT trilha_auditoria_sistema_op_check CHECK (op IN ('SELECT','INSERT','UPDATE','DELETE','LOGIN_FALHA','COMUNICACAO_ANPD','DESCUMPRIMENTO_SLA'));
