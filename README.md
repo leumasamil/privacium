@@ -1,6 +1,6 @@
 # Privacium
 
-Implement exactly the screenshot and nothing else
+Plataforma de governança de privacidade pelo Método BLLOCO.
 
 This project was built with [Lovable](https://lovable.dev).
 
@@ -24,3 +24,9 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Arquivos de ambiente e histórico público
+
+O `.gitignore` gerenciado pelo ambiente está somente leitura e ainda não ignora `.env` e `.env.*`. Essas duas linhas precisam ser acrescentadas no repositório externo. Isso não remove arquivos já rastreados nem versões antigas. A chave publishable é pública por natureza: a proteção dos dados depende de autenticação, permissões e RLS, não de escondê-la.
+
+A remoção de versões antigas exige `git filter-repo` em uma cópia isolada, por exemplo `git filter-repo --path .env --path-glob '.env.*' --invert-paths`. Não execute no projeto conectado: reescrever o histórico publicado pode apagar o histórico do Lovable. Planeje a limpeza e a reconexão antes de qualquer envio forçado. Esta atualização não reescreveu o histórico nem alterou o arquivo de ambiente gerenciado.
