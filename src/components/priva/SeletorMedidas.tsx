@@ -40,7 +40,7 @@ export function SeletorMedidas({ form, onChange, editavel, estado }: { form: Com
         <span className="min-w-0 break-words">{m.valor}<span className="block text-xs text-muted-foreground">{m.fonte_normativa}</span>{editavel && sugeridas.includes(m.valor) && selecionadas.includes(m.valor) && <span className="mt-1 block text-xs font-medium text-andamento">Sugerido a partir das etapas concluídas</span>}</span>
       </div>)}</div>
     </fieldset>)}</div></TooltipProvider>}
-    {!legado && <div><label htmlFor="anpd-outras-medidas">Outras medidas adotadas (opcional)</label><Textarea id="anpd-outras-medidas" value={form.outrasMedidas ?? ''} readOnly={!editavel} rows={3} onChange={e => alterar(selecionadas, e.target.value)} /></div>}
+    {!legado && <div><label htmlFor="anpd-outras-medidas">Outras medidas adotadas (opcional)</label><Textarea id="anpd-outras-medidas" placeholder="Ex.: comunicação espontânea aos clientes por e-mail e abertura de canal de dúvidas." value={form.outrasMedidas ?? ''} readOnly={!editavel} rows={3} onChange={e => alterar(selecionadas, e.target.value)} /><p className="text-xs text-muted-foreground">{(form.outrasMedidas ?? '').trim().length} caracteres · complemento opcional</p></div>}
     <div className="space-y-2"><div className="flex items-center justify-between gap-2"><label htmlFor="anpd-medidas-texto">{legado ? 'Medidas registradas' : 'Texto final das medidas'}</label><Button type="button" variant="outline" size="sm" disabled={!form.medidas} onClick={() => void copiar()}><Copy className="h-3.5 w-3.5" />Copiar</Button></div><Textarea id="anpd-medidas-texto" rows={5} value={form.medidas} readOnly /><p className="text-xs text-muted-foreground">{form.medidas.trim().length} caracteres · mínimo 30</p></div>
   </fieldset>;
 }

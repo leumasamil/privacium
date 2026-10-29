@@ -172,3 +172,5 @@
 }
 
 html { scroll-behavior: smooth; }
+.anpd-destaque { outline: 2px solid var(--pendencia); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

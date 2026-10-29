@@ -840,6 +840,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      catalogo_categorias_anpd: {
+        Args: never
+        Returns: {
+          fonte_normativa: string
+          sensivel: boolean
+          valor: string
+        }[]
+      }
       catalogo_medidas_anpd: {
         Args: never
         Returns: {
