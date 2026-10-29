@@ -141,3 +141,24 @@ export const AJUDA: Record<number, Ajuda5W2H> = {
     ],
   },
 };
+
+/** Ajuda do quadro transversal (bloco 0 = Kanban). */
+export const AJUDA_KANBAN: Ajuda5W2H = {
+  bloco: 0,
+  titulo: "Usar o quadro transversal",
+  oQue: "Organizar as ações de conformidade em quadro 5W2H vinculado aos blocos.",
+  porQue: "Transformar pendências em ações com responsável e prazo.",
+  quem: "DPO_OPERACIONAL cria e distribui; gestores executam.",
+  onde: "Kanban 5W2H, no menu lateral.",
+  quando: "Continuamente, com revisão semanal.",
+  quanto: "Toda ação aberta deve ter responsável e prazo definidos.",
+  passos: [
+    "Abra o Kanban e crie um cartão por pendência identificada em qualquer bloco.",
+    "Preencha os 7 campos 5W2H do cartão, sempre com responsável e prazo.",
+    "Vincule o cartão ao bloco e ao processo ou ativo correspondente.",
+    "Mova o cartão entre as colunas conforme a execução avança.",
+    "Registre a evidência ao concluir e feche o cartão.",
+    "Revise semanalmente os cartões parados há mais de 7 dias.",
+  ],
+  errosComuns: ["Criar cartão sem responsável.", "Duplicar ação já existente.", "Fechar cartão sem evidência."],
+};
