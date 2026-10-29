@@ -23,7 +23,8 @@
 - [x] Corrigir acesso por ID ao formulário ANPD em faixa, checklist e PI-04.
 - [x] Integrar 11 riscos assistidos e sugestões de medidas por vetor, com fontes e preservação das escolhas do DPO.
 - [x] Validar riscos e medidas atomicamente e verificar fluxo autenticado e PDF.
-- [ ] Verificar RPCs e executar etapas/encerramento com sessão real.
-- [ ] Explicar bloqueio no modo demonstração com saída acessível.
-- [ ] Proteger arquivos de ambiente e auditar isolamento RLS por tabela.
-- [ ] Criar página 404 explícita e verificar navegação.
+- [x] Verificar RPCs e executar etapas/encerramento com sessão real.
+- [x] Explicar bloqueio no modo demonstração com saída acessível.
+- [x] Auditar e corrigir isolamento RLS por tabela; documentar limpeza do histórico.
+- [ ] Ignorar .env e .env.*: bloqueado pelo .gitignore gerenciado somente leitura; requer edição no repositório externo.
+- [x] Criar página 404 explícita e verificar navegação.

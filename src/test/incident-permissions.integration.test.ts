@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { describe, it, expect } from 'vitest';
 
-const sessionText = process.env.LOVABLE_BROWSER_SUPABASE_SESSION_JSON;
-const url = import.meta.env.VITE_SUPABASE_URL;
-const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const sessionText = process.env['LOVABLE_BROWSER_SUPABASE_SESSION_JSON'];
+const url = import.meta.env['VITE_SUPABASE_URL'];
+const key = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'];
 describe.skipIf(!sessionText || !url || !key)('authenticated incident permissions', () => {
   it('allows declaring an incident and records step evidence through RPC', async () => {
     if (!sessionText) throw new Error('Authenticated test session unavailable');
