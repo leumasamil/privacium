@@ -62,7 +62,8 @@ function Bloco4() {
   const incs = { rows: consulta.data?.incidentes ?? [], refresh: consulta.refresh };
   const ativo = incs.rows.find((i) => !i.encerrado_em) ?? null;
   const estado = consulta.data?.estados.find(e => e.incidente.id === ativo?.id) ?? null;
-  const encerrado = consulta.data?.estados.find(e => e.incidente.encerrado_em && e.etapas.concluidas === 6 && e.anpd.enviado)?.incidente;
+  const encerradoId = consulta.data?.estados.find(e => e.incidente.encerrado_em && e.etapas.concluidas === 6 && e.anpd.enviado)?.incidente.id;
+  const encerrado = incs.rows.find(i => i.id === encerradoId);
 
   useEffect(() => { if (cnpj) log("SELECT", "lotes_pgaudit", "Abertura do console forense do Bloco 4"); }, [cnpj, log]);
 

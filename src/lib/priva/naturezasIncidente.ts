@@ -56,13 +56,13 @@ export function linhasNaturezas(comunicacao: unknown): string[] {
   if (!comunicacao || typeof comunicacao !== "object") return [];
   const c = comunicacao as Record<string, unknown>;
   const linhas: string[] = [];
-  const principal = c.natureza_principal as Partial<NaturezaVinculada> | undefined;
+  const principal = c["natureza_principal"] as Partial<NaturezaVinculada> | undefined;
   // Comunicações anteriores não recebem fonte retroativa nem são reclassificadas.
   if (principal?.valor) linhas.push(`Natureza: ${principal.valor} (${principal.fonte_normativa || "Fonte não registrada"})`);
-  else if (typeof c.natureza === "string" && c.natureza) linhas.push(`Natureza: ${c.natureza} (Fonte não registrada na comunicação original)`);
-  if (Array.isArray(c.naturezas_secundarias)) for (const n of c.naturezas_secundarias) {
+  else if (typeof c["natureza"] === "string" && c["natureza"]) linhas.push(`Natureza: ${c["natureza"]} (Fonte não registrada na comunicação original)`);
+  if (Array.isArray(c["naturezas_secundarias"])) for (const n of c["naturezas_secundarias"]) {
     if (n && typeof n === "object" && typeof n.valor === "string") linhas.push(`Natureza secundária: ${n.valor} (${n.fonte_normativa || "Fonte não registrada"})`);
   }
-  if (typeof c.natureza_outro === "string" && c.natureza_outro.trim()) linhas.push(`Descrição própria do DPO: ${c.natureza_outro.trim()}`);
+  if (typeof c["natureza_outro"] === "string" && c["natureza_outro"].trim()) linhas.push(`Descrição própria do DPO: ${c["natureza_outro"].trim()}`);
   return linhas;
 }
