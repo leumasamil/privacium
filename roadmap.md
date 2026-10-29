@@ -13,3 +13,6 @@
 - [x] Integrar 24 medidas ANPD, sugestões por etapa e texto automático copiável.
 - [x] Persistir fontes canônicas e incluir medidas no PI-04 sem alterar registros anteriores.
 - [x] Verificar regras e fluxo autenticado das medidas.
+- [ ] Integrar categorias ROT e catálogo padrão, fontes e criticidade.
+- [ ] Completar foco, progresso, pendências destacadas e cores semânticas.
+- [ ] Verificar persistência e fluxo autenticado da Parte 4.
