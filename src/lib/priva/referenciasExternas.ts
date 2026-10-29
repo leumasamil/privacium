@@ -27,6 +27,10 @@ export function casosSemelhantes(casos: CasoPublico[], natureza: string, categor
   const termos = normalizar([natureza, ...categorias].join(' '));
   return casos.map(caso => {
     const texto = normalizar([caso.descricao, ...caso.categorias].join(' '));
+    const vetor = grupos.slice(0, 2).filter(g => g.some(t => normalizar(natureza).includes(t)));
+    if (!vetor.length || !vetor.some(g => g.some(t => texto.includes(t)))) return { caso, score: 0 };
+    const dados = normalizar(categorias.join(' '));
+    if (!grupos.slice(2).some(g => g.some(t => dados.includes(t)) && g.some(t => normalizar(caso.categorias.join(' ')).includes(t)))) return { caso, score: 0 };
     let score = grupos.reduce((n, grupo) => n + (grupo.some(t => termos.includes(t)) && grupo.some(t => texto.includes(t)) ? 1 : 0), 0);
     if (setor && texto.includes(normalizar(setor))) score += 1;
     return { caso, score };

@@ -39,6 +39,6 @@ function Casos({ cnpj, natureza, categorias }: { cnpj: string; natureza: string;
     <a href={c.url} target="_blank" rel="noopener noreferrer" className="flex items-start justify-between gap-2 font-semibold underline underline-offset-4">{c.nome}<ExternalLink className="mt-1 h-3 w-3 shrink-0" aria-hidden /></a>
     <p className="mt-2 text-xs text-muted-foreground">{new Date(`${c.data}T12:00:00Z`).toLocaleDateString('pt-BR')} · {c.contas.toLocaleString('pt-BR')} contas</p>
     <p className="my-2 break-words text-xs">Dados pessoais comprometidos: {c.categorias.join(', ')}</p>
-    <span className="text-xs text-muted-foreground">Referência externa · não integra o dossiê</span>
+    <SeloReferencia />
   </li>)}</ul>;
 }

@@ -7,6 +7,7 @@ import { montarChecklist, pendenciasKanban } from "@/lib/priva/pendencias";
 import { blocoCorrente, calcularProximoPasso, type Passo } from "@/lib/priva/proximoPasso";
 import { cn } from "@/lib/utils";
 import { useDadosBloco } from "./TelaBloqueio";
+import { FornecedoresProximoPasso } from './AlertaFornecedorVazado';
 
 const TOM: Record<Passo["tipo"], { caixa: string; icone: React.ReactNode; rotulo: string }> = {
   acao: { caixa: "border-l-andamento-border", icone: <Navigation className="h-4 w-4 text-andamento" aria-hidden />, rotulo: "Próximo passo" },
@@ -45,6 +46,7 @@ export function ProximoPasso() {
   };
 
   return (
+    <>
     <section aria-live="polite" className={cn("mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border border-l-4 p-4 transition-colors", t.caixa)}>
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.icone} {t.rotulo}</p>
@@ -59,5 +61,7 @@ export function ProximoPasso() {
         <Button asChild><Link to={passo.link.to as "/painel"} {...(passo.link.hash ? { hash: passo.link.hash } : {})} onClick={ir}>{passo.botao} <ArrowRight className="h-4 w-4" /></Link></Button>
       )}
     </section>
+    <FornecedoresProximoPasso />
+    </>
   );
 }
