@@ -50,7 +50,7 @@ export function ProximoPasso() {
         <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.icone} {t.rotulo}</p>
         <p className="mt-1 text-sm font-medium text-primary">{passo.frase}</p>
         {passo.pendentes > 1 && (
-          <Link to={`/bloco-${passo.bloco}` as "/bloco-1"} hash="guia" className="text-xs text-muted-foreground underline underline-offset-2">Ver todos os pendentes ({passo.pendentes})</Link>
+          <Link to={`/bloco-${passo.bloco}` as "/bloco-1"} className="text-xs text-muted-foreground underline underline-offset-2">Ver todos os pendentes ({passo.pendentes})</Link>
         )}
       </div>
       {passo.tipo === "aguardando" ? (
