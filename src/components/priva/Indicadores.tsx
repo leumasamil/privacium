@@ -25,7 +25,7 @@ export function Indicador({ nome, valor, definicao, formula, acao, extra }: {
       {extra && <div className="mt-3">{extra}</div>}
       <div className="mt-auto pt-3 text-xs">
         {acao ? (
-          <Link to={acao.to as "/painel"} hash={acao.hash} className="inline-flex items-center gap-1 font-medium text-pendencia hover:underline">
+          <Link to={acao.to as "/painel"} {...(acao.hash ? { hash: acao.hash } : {})} className="inline-flex items-center gap-1 font-medium text-pendencia hover:underline">
             {acao.texto} <ArrowRight className="h-3 w-3" />
           </Link>
         ) : (
@@ -47,7 +47,7 @@ export function EscalaGM({ gm }: { gm: number }) {
       </div>
       <div className="mt-1 grid grid-cols-4 gap-0.5 text-[10px] leading-tight text-muted-foreground">
         {FAIXAS_GM.map((x, i) => {
-          const de = i === 0 ? 0 : FAIXAS_GM[i - 1].ate + 1;
+          const de = i === 0 ? 0 : FAIXAS_GM[i - 1]!.ate + 1;
           return <span key={x.nome} className={cn(i === f.indice && "font-semibold text-primary")}>{de}–{x.ate}% {x.nome}</span>;
         })}
       </div>
@@ -98,7 +98,7 @@ export function CardPIs({ signatures, enterprise }: { signatures: Record<string,
             return (
               <li key={n} className="flex items-start gap-1.5">
                 {ok ? <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-concluido" /> : <Circle className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />}
-                <span className="flex-1">{PIS[n].codigo} · {PIS[n].nome}
+                <span className="flex-1">{PIS[n]!.codigo} · {PIS[n]!.nome}
                   {!ok && (livre
                     ? <> — <Link to={`/bloco-${n}` as "/bloco-1"} className="font-medium text-pendencia hover:underline">Emitir →</Link></>
                     : <span className="text-muted-foreground"> — aguarda o PI anterior</span>)}
@@ -108,7 +108,7 @@ export function CardPIs({ signatures, enterprise }: { signatures: Record<string,
           })}
         </ul>
       }
-      acao={pend ? { to: `/bloco-${pend}`, texto: `Emitir o ${PIS[pend].codigo}` } : null}
+      acao={pend ? { to: `/bloco-${pend}`, texto: `Emitir o ${PIS[pend]!.codigo}` } : null}
     />
   );
 }

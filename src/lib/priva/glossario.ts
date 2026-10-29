@@ -52,5 +52,5 @@ export const FAIXAS_GM = [
 export function faixaGM(gm: number) {
   const i = FAIXAS_GM.findIndex((f) => gm <= f.ate);
   const idx = i < 0 ? 3 : i;
-  return { indice: idx, nome: FAIXAS_GM[idx].nome, proxima: FAIXAS_GM[idx + 1]?.nome ?? null };
+  return { indice: idx, nome: FAIXAS_GM[idx]!.nome, proxima: FAIXAS_GM[idx + 1]?.nome ?? null };
 }
