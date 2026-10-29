@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, BookOpen, CheckCircle2, Circle, Loader2, Lock, XCircle } from "lucide-react";
+import { ArrowRight, BookOpen, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { usePriva } from "@/lib/priva/store";
 import { montarChecklist, PI_INFO, proximoPasso, type DadosBloco, type Estado, type Pendencia } from "@/lib/priva/pendencias";
 import type { RotInput } from "@/lib/priva/rot";
 import { cn } from "@/lib/utils";
+import { ESTADO, EstadoBadge } from "./estado";
 
 const ROTULO: Record<string, string> = { DPO_OPERACIONAL: "DPO_OPERACIONAL", C_SUITE: "Diretoria (C_SUITE)", ADMIN_SISTEMA: "ADMIN_SISTEMA" };
 
@@ -51,13 +52,6 @@ function useDadosBloco(n: number, cnpj: string | null) {
   });
 }
 
-const ICONE: Record<Estado, ReactNode> = {
-  ok: <CheckCircle2 className="h-5 w-5 text-success" aria-label="Concluído" />,
-  andamento: <Loader2 className="h-5 w-5 text-warning" aria-label="Em andamento" />,
-  pendente: <Circle className="h-5 w-5 text-muted-foreground" aria-label="Não iniciado" />,
-  bloqueado: <XCircle className="h-5 w-5 text-destructive" aria-label="Bloqueado" />,
-};
-
 function linkDe(p: Pendencia) {
   return { to: `/bloco-${p.bloco}` as "/bloco-1", hash: p.ancora };
 }
@@ -73,7 +67,15 @@ export function TelaBloqueio({ n }: { n: number }) {
   const soAssinatura = itens.length > 0 && itens.filter((i) => !i.id.startsWith("sig")).every((i) => i.estado === "ok");
   const prox = proximoPasso(itens, roles);
   const sigFaltando = itens.filter((i) => i.id.startsWith("sig") && i.estado !== "ok");
-  const dependeOutro = itens.filter((i) => i.estado !== "ok" && !roles.includes(i.responsavel) && !(roles.includes("ADMIN_SISTEMA") && i.responsavel !== "C_SUITE"));
+  const pode = (i: Pendencia) => roles.includes(i.responsavel) || (roles.includes("ADMIN_SISTEMA") && i.responsavel !== "C_SUITE");
+  const dependeOutro = itens.filter((i) => i.estado !== "ok" && !pode(i));
+  const solicitar = (i: Pendencia) => {
+    log("INSERT", "solicitacao_assinatura", `Solicitada ação de ${i.responsavel} no ${pi.codigo}: ${i.titulo}`);
+    toast.success(`Solicitação registrada na trilha de auditoria. Avise ${ROTULO[i.responsavel]} para acessar o Bloco ${ant}.`);
+  };
+  const visiveis = itens.filter((i) => !soAssinatura || i.id.startsWith("sig"));
+  const abertos = visiveis.filter((i) => i.estado !== "ok");
+  const concluidos = visiveis.filter((i) => i.estado === "ok");
 
   const textoBotao = prox
     ? prox.id.startsWith("sig") && sigFaltando.length ? `${prox.acao} (falta${sigFaltando.length > 1 ? "m" : ""} ${sigFaltando.length} assinatura${sigFaltando.length > 1 ? "s" : ""})` : prox.acao
@@ -103,33 +105,51 @@ export function TelaBloqueio({ n }: { n: number }) {
           <p className="text-sm text-muted-foreground">Lendo o estado do CNPJ…</p>
         ) : (
           <>
-            {soAssinatura && <p className="mb-3 rounded-sm border border-success/40 bg-success/10 p-3 text-sm">Todas as etapas foram concluídas. Falta apenas a assinatura digital.</p>}
-            <ul className="divide-y">
-              {itens.filter((i) => !soAssinatura || i.id.startsWith("sig")).map((i) => (
-                <li key={i.id} className="flex items-start gap-3 py-3">
-                  <span className="mt-0.5 shrink-0">{ICONE[i.estado]}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className={cn("text-sm font-medium", i.estado === "ok" ? "text-muted-foreground line-through" : "text-primary")}>{i.titulo}</p>
-                    <p className="text-xs text-muted-foreground">{i.exige}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">Responsável: <b>{ROTULO[i.responsavel]}</b></p>
-                  </div>
-                  {i.estado !== "ok" && i.estado !== "bloqueado" && (
-                    <Link {...linkDe(i)} className="shrink-0 text-xs font-medium text-primary underline-offset-2 hover:underline">Resolver →</Link>
-                  )}
-                </li>
-              ))}
+            {soAssinatura && <p className="mb-3 rounded-sm border border-l-4 border-l-concluido-border p-3 text-sm text-concluido">Todas as etapas foram concluídas. Falta apenas a assinatura digital.</p>}
+            <ul className="space-y-2">
+              {abertos.map((i) => {
+                const e = ESTADO[i.estado];
+                return (
+                  <li key={i.id} className={cn("flex items-start gap-3 rounded-sm border border-l-4 bg-card p-3", e.borda)}>
+                    <span className="mt-0.5 shrink-0">{e.icone()}</span>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2"><p className="text-sm font-medium text-primary">{i.titulo}</p><EstadoBadge estado={i.estado} /></div>
+                      <p className={cn("text-xs", i.estado === "critico" ? e.texto : "text-muted-foreground")}>{i.exige}</p>
+                      <p className="text-xs text-muted-foreground">Responsável: <b>{ROTULO[i.responsavel]}</b></p>
+                      {i.estado !== "bloqueado" && (pode(i) ? (
+                        <>
+                          {i.sugestao && <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Próxima ação sugerida:</span> {i.sugestao}</p>}
+                          <Link {...linkDe(i)} className="inline-block text-xs font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2">{i.acao} →</Link>
+                        </>
+                      ) : (
+                        <p className="text-xs text-bloqueado">Depende de {ROTULO[i.responsavel]}.{" "}
+                          <button className="font-semibold underline underline-offset-2" onClick={() => solicitar(i)}>Solicitar a {ROTULO[i.responsavel]} →</button>
+                        </p>
+                      ))}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
+            {concluidos.length > 0 && (
+              <details className="mt-3 rounded-sm border border-concluido-border/50 p-2 text-sm">
+                <summary className="cursor-pointer text-xs font-semibold text-concluido">Já concluído ({concluidos.length})</summary>
+                <ul className="mt-2 space-y-1">
+                  {concluidos.map((i) => <li key={i.id} className="flex items-center gap-2 text-xs text-muted-foreground">{ESTADO.ok.icone("h-4 w-4")} {i.titulo} — {i.exige}</li>)}
+                </ul>
+              </details>
+            )}
             <div className="mt-4">
               <p className="mb-1 text-sm">Bloco {ant} concluído: {feitos} de {itens.length} itens ({pct}%)</p>
-              <Progress value={pct} />
+              <Progress value={pct} aria-label={`${pct}% concluído`} className={cn("bg-muted", pct === 100 ? "[&>div]:bg-concluido-border" : "[&>div]:bg-pendencia-border")} />
             </div>
           </>
         )}
       </section>
 
       <div className="flex flex-wrap gap-3">
-        {prox && <Button asChild><Link {...linkDe(prox)}>{textoBotao} <ArrowRight className="h-4 w-4" /></Link></Button>}
-        <Button asChild variant="outline"><Link to="/manual" search={{ aba: "guias" }}><BookOpen className="h-4 w-4" /> Ver o que falta neste bloco em detalhes</Link></Button>
+        {prox && pode(prox) && <Button asChild><Link {...linkDe(prox)}>{textoBotao} <ArrowRight className="h-4 w-4" /></Link></Button>}
+        <Button asChild variant="outline"><Link to="/manual" search={{ aba: "guias" }} hash={`bloco-${ant}-guia`}><BookOpen className="h-4 w-4" /> Ver o que falta neste bloco em detalhes</Link></Button>
       </div>
 
       {cnpj && !isLoading && (
