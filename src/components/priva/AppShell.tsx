@@ -9,6 +9,7 @@ import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { FollowUpBanner, FollowUpBell } from "@/components/priva/FollowUp";
+import { ProximoPasso } from "@/components/priva/ProximoPasso";
 
 const ROLE_ACCESS: Record<Role, string[]> = {
   ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/membros", "/manual"],
@@ -211,7 +212,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <p className="mt-4 font-semibold text-primary">Acesso suspenso</p>
             <p className="mt-1 text-sm text-muted-foreground">O contrato deste CNPJ está INATIVO. Entre em contato com a Privacium para reativar.</p>
           </div>
-        ) : allowed ? children : (
+        ) : allowed ? <><ProximoPasso />{children}</> : (
           <div className="rounded-md border border-dashed bg-card p-16 text-center">
             <Lock className="mx-auto h-8 w-8 text-muted-foreground" />
             <p className="mt-4 font-semibold text-primary">Acesso negado pelo princípio do privilégio mínimo</p>
