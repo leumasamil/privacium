@@ -100,7 +100,7 @@ export function CardPIs({ signatures, enterprise }: { signatures: Record<string,
                 {ok ? <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-concluido" /> : <Circle className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />}
                 <span className="flex-1">{PIS[n].codigo} · {PIS[n].nome}
                   {!ok && (livre
-                    ? <> — <Link to={`/bloco-${n}` as "/bloco-1"} hash="saida" className="font-medium text-pendencia hover:underline">Emitir →</Link></>
+                    ? <> — <Link to={`/bloco-${n}` as "/bloco-1"} className="font-medium text-pendencia hover:underline">Emitir →</Link></>
                     : <span className="text-muted-foreground"> — aguarda o PI anterior</span>)}
                 </span>
               </li>

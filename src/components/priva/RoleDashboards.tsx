@@ -189,7 +189,6 @@ export function CSuiteDashboard() {
   const answers = useRespostas(cnpj);
   const questions = useQuestions();
   const { gm, score, bankMax } = computeGM(answers, questions);
-  const zone = riskZone(gm);
   useEffect(() => { log("SELECT", "relatorio_erm", "Abertura do painel C_SUITE"); }, [log]);
 
   const risks = DEPARTMENTS.map((d) => {
