@@ -1,0 +1,19 @@
+CREATE OR REPLACE FUNCTION public.minha_empresa_cnpj() RETURNS text LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT e.cnpj::text FROM public.empresas e WHERE e.id = public.minha_empresa_id() $$;
+REVOKE ALL ON FUNCTION public.minha_empresa_cnpj() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.minha_empresa_cnpj() TO authenticated, service_role;
+
+DO $$ DECLARE t text; col text; BEGIN
+ FOR t,col IN SELECT * FROM (VALUES ('registro_operacoes','empresa_cnpj'),('ativos_seguranca','empresa_cnpj'),('incidentes_seguranca','empresa_cnpj'),('lotes_pgaudit','empresa_cnpj'),('ripd_ia','empresa_cnpj'),('ciclos_priva','empresa_cnpj'),('respostas_diagnostico','empresa_cnpj'),('encarregado_dpo','empresa_cnpj'),('monitor_fornecedores','empresa_cnpj'),('monitor_verificacoes','empresa_cnpj')) AS v(t,col) LOOP
+  EXECUTE format('CREATE POLICY isolamento_cnpj ON public.%I AS RESTRICTIVE FOR ALL TO authenticated USING (public.has_role(auth.uid(), ''ADMIN_SISTEMA'') OR %I::text = public.minha_empresa_cnpj()) WITH CHECK (public.has_role(auth.uid(), ''ADMIN_SISTEMA'') OR %I::text = public.minha_empresa_cnpj())',t,col,col);
+ END LOOP;
+END $$;
+CREATE POLICY isolamento_empresa_leitura ON public.empresas AS RESTRICTIVE FOR SELECT TO authenticated USING (public.has_role(auth.uid(),'ADMIN_SISTEMA') OR id = public.minha_empresa_id());
+CREATE POLICY isolamento_workspace_leitura ON public.workspace_empresa AS RESTRICTIVE FOR SELECT TO authenticated USING (public.has_role(auth.uid(),'ADMIN_SISTEMA') OR cnpj = public.minha_empresa_cnpj());
+CREATE POLICY isolamento_workspace_edicao ON public.workspace_empresa AS RESTRICTIVE FOR UPDATE TO authenticated USING (public.has_role(auth.uid(),'ADMIN_SISTEMA') OR cnpj = public.minha_empresa_cnpj()) WITH CHECK (public.has_role(auth.uid(),'ADMIN_SISTEMA') OR cnpj = public.minha_empresa_cnpj());
+CREATE POLICY isolamento_workspace_criacao ON public.workspace_empresa AS RESTRICTIVE FOR INSERT TO authenticated WITH CHECK (public.has_role(auth.uid(),'ADMIN_SISTEMA') OR public.minha_empresa_id() IS NULL);
+CREATE POLICY vinculo_usuario_somente_admin ON public.usuarios AS RESTRICTIVE FOR UPDATE TO authenticated USING (public.has_role(auth.uid(),'ADMIN_SISTEMA') OR id = auth.uid()) WITH CHECK (public.has_role(auth.uid(),'ADMIN_SISTEMA') OR (id = auth.uid() AND empresa_id IS NOT DISTINCT FROM public.minha_empresa_id()));
+CREATE POLICY isolamento_chaves_empresa ON public.chaves_recuperacao AS RESTRICTIVE FOR ALL TO authenticated USING (public.has_role(auth.uid(),'ADMIN_SISTEMA') OR EXISTS (SELECT 1 FROM public.ativos_seguranca a WHERE a.id=ativo_id AND a.empresa_cnpj::text=public.minha_empresa_cnpj())) WITH CHECK (public.has_role(auth.uid(),'ADMIN_SISTEMA') OR EXISTS (SELECT 1 FROM public.ativos_seguranca a WHERE a.id=ativo_id AND a.empresa_cnpj::text=public.minha_empresa_cnpj()));
+CREATE POLICY isolamento_trilha_cnpj ON public.trilha_auditoria_sistema AS RESTRICTIVE FOR SELECT TO authenticated USING (public.has_role(auth.uid(),'ADMIN_SISTEMA') OR cnpj = public.minha_empresa_cnpj());
+CREATE POLICY auditoria_legada_apenas_admin ON public.audit_log AS RESTRICTIVE FOR SELECT TO authenticated USING (public.has_role(auth.uid(),'ADMIN_SISTEMA'));
+CREATE POLICY workspace_legado_apenas_admin ON public.workspace_state AS RESTRICTIVE FOR ALL TO authenticated USING (public.has_role(auth.uid(),'ADMIN_SISTEMA')) WITH CHECK (public.has_role(auth.uid(),'ADMIN_SISTEMA'));
+DO $$ DECLARE t text; BEGIN FOR t IN SELECT tablename FROM pg_tables WHERE schemaname='public' LOOP EXECUTE format('REVOKE ALL ON TABLE public.%I FROM anon',t); END LOOP; END $$;

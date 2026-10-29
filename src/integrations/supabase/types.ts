@@ -1036,6 +1036,7 @@ export type Database = {
         }[]
       }
       meu_cpf: { Args: never; Returns: string }
+      minha_empresa_cnpj: { Args: never; Returns: string }
       minha_empresa_id: { Args: never; Returns: string }
       registrar_acesso: {
         Args: {
