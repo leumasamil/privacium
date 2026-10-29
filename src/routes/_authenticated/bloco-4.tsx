@@ -1,6 +1,7 @@
 import { FormularioANPD } from "@/components/priva/FormularioANPD";
 import { restanteANPD } from "@/lib/priva/anpd";
 import { linhasNaturezas } from "@/lib/priva/naturezasIncidente";
+import { linhasMedidas } from '@/lib/priva/medidasIncidente';
 import { useEncarregado } from "@/lib/priva/useEncarregado";
 import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
 import { AJUDA } from "@/lib/priva/ajuda";
@@ -86,6 +87,7 @@ function Bloco4() {
         <ul className="list-disc pl-5 font-mono text-xs">{lotesComHash.map((l) => <li key={l.id}>{l.mes_referencia} · {l.linhas} linhas · {l.hash_sha256}</li>)}</ul>
         {encerrado && <p className="mt-2"><b>Incidente encerrado:</b> declarado em {new Date(encerrado.iniciado_em).toLocaleString("pt-BR")}, comunicado à ANPD em {new Date(encerrado.enviado_anpd_em ?? "").toLocaleString("pt-BR")}.</p>}
         {encerrado && linhasNaturezas(encerrado.comunicacao).map(linha => <p key={linha} className="mt-2">{linha}</p>)}
+        {encerrado && linhasMedidas(encerrado.comunicacao).map(linha => <p key={linha} className="mt-2">{linha}</p>)}
       </PIOutput>
       {/* Dado de terceiro não é evidência própria: referências ficam fora do
           PIOutput, docRef, PDFs, dossiê, trilha e hashes de todas as chancelas. */}
@@ -146,7 +148,7 @@ function ConsolePgAudit({ cnpj, lotes, incidentes, canEdit, refresh }: { cnpj: s
     for (const linha of corpo) { if (y > 270) { doc.addPage(); y = 16; } doc.text(linha, 14, y); y += 3.6; }
     doc.setFont("helvetica", "normal"); doc.setFontSize(9);
     for (const incidente of incidentes.filter(i => i.enviado_anpd_em?.slice(0, 7) === l.mes_referencia)) {
-      const linhas = doc.splitTextToSize([`Incidente: ${incidente.id}`, ...linhasNaturezas(incidente.comunicacao)].join("\n"), 180) as string[];
+      const linhas = doc.splitTextToSize([`Incidente: ${incidente.id}`, ...linhasNaturezas(incidente.comunicacao), ...linhasMedidas(incidente.comunicacao)].join("\n"), 180) as string[];
       for (const linha of linhas) { if (y > 260) { doc.addPage(); y = 20; } doc.text(linha, 14, y); y += 4; }
       y += 4;
     }

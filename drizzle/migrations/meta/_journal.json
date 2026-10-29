@@ -155,6 +155,13 @@
       "when": 1793310953626,
       "tag": "0021_classificacao_naturezas_anpd",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793311341485,
+      "tag": "0022_medidas_catalogo_anpd",
+      "breakpoints": true
     }
   ]
 }

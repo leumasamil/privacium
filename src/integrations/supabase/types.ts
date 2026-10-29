@@ -840,6 +840,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      catalogo_medidas_anpd: {
+        Args: never
+        Returns: {
+          fonte_normativa: string
+          ordem: number
+          valor: string
+        }[]
+      }
       cnpj_liberado: { Args: { _cnpj: string }; Returns: boolean }
       cnpj_valido: { Args: { _c: string }; Returns: boolean }
       cpf_valido: { Args: { _c: string }; Returns: boolean }
