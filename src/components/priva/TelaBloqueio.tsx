@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, BookOpen, CheckCircle2, Circle, Loader2, Lock, XCircle } from "lucide-react";
@@ -50,7 +51,7 @@ function useDadosBloco(n: number, cnpj: string | null) {
   });
 }
 
-const ICONE: Record<Estado, JSX.Element> = {
+const ICONE: Record<Estado, ReactNode> = {
   ok: <CheckCircle2 className="h-5 w-5 text-success" aria-label="Concluído" />,
   andamento: <Loader2 className="h-5 w-5 text-warning" aria-label="Em andamento" />,
   pendente: <Circle className="h-5 w-5 text-muted-foreground" aria-label="Não iniciado" />,
