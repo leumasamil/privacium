@@ -68,6 +68,12 @@
   --color-critico: var(--critico);
   --color-critico-bg: var(--critico-bg);
   --color-critico-border: var(--critico-border);
+  --color-andamento: var(--andamento);
+  --color-andamento-bg: var(--andamento-bg);
+  --color-andamento-border: var(--andamento-border);
+  --color-vencido: var(--vencido);
+  --color-vencido-bg: var(--vencido-bg);
+  --color-vencido-border: var(--vencido-border);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
@@ -127,6 +133,12 @@
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   /* Estados semânticos (texto · fundo · borda) */
+  --vencido: #B91C1C;
+  --vencido-bg: #FEE2E2;
+  --vencido-border: #EF4444;
+  --andamento: #1D4ED8;
+  --andamento-bg: #DBEAFE;
+  --andamento-border: #3B82F6;
   --pendencia: #B45309;
   --pendencia-bg: #FEF3C7;
   --pendencia-border: #F59E0B;
