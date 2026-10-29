@@ -1,4 +1,9 @@
-# Blueprint de Arquitetura Contínua - PRIVA 2EC SaaS
+# Blueprint de Arquitetura Contínua - Privacium SaaS
+
+## 0. Identidade da Marca
+
+- Marca do produto: Privacium (domínio oficial: privacium.com.br)
+- Metodologia proprietária: Método BLLOCO (inalterada)
 
 ## 1. Pilares de Desenvolvimento e Tecnologias
 
