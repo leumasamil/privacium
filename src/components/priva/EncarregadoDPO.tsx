@@ -24,11 +24,13 @@ export function EncarregadoDPO() {
   const salvar = async () => {
     if (!editavel || motivos.length || !cnpj || busy) return;
     setBusy(true);
-    const { error } = await supabase.from("encarregado_dpo").upsert({ ...form, empresa_cnpj: cnpj });
-    setBusy(false);
-    if (error) { toast.error("Não foi possível salvar o encarregado deste CNPJ."); return; }
-    await qc.invalidateQueries({ queryKey: ["encarregado_dpo", cnpj] }); setSalvo(true);
-    toast.success("Contato do encarregado salvo.");
+    try {
+      const { error } = await supabase.from("encarregado_dpo").upsert({ ...form, empresa_cnpj: cnpj });
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["encarregado_dpo", cnpj] }); setSalvo(true);
+      toast.success("Contato do encarregado salvo.");
+    } catch (error) { console.error('Falha ao salvar contato do encarregado', error); toast.error("Não foi possível salvar o encarregado deste CNPJ."); }
+    finally { setBusy(false); }
   };
   return <Panel title="Encarregado (DPO)">
     <section aria-live="polite" className="mb-4 flex flex-wrap items-center justify-between gap-3 border-l-4 border-andamento-border bg-andamento-bg p-4">
