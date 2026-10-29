@@ -128,7 +128,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
             <DialogTitle>{pi}</DialogTitle>
             <DialogDescription>Emitido pelo Ecossistema de Governança Privacium · ISO/IEC 27701</DialogDescription>
           </DialogHeader>
-          <div ref={docRef} className="max-h-[50vh] overflow-auto rounded-sm border bg-background p-6 text-sm leading-relaxed">{children}{["PI-01", "PI-02", "PI-04"].includes(code) && <p className="mt-4 border-t pt-3"><b>Encarregado (DPO):</b> {encarregado.data ? `${encarregado.data.nome} · ${encarregado.data.email}${encarregado.data.telefone ? ` · ${encarregado.data.telefone}` : ""}` : "Contato não cadastrado"}</p>}</div>
+          <div ref={docRef} className="max-h-[50vh] overflow-auto rounded-sm border bg-background p-6 text-sm leading-relaxed">{children}{["PI-01", "PI-02", "PI-04"].includes(code) && <p className="mt-4 border-t pt-3"><b>Encarregado (DPO):</b> {encarregado.data ? `${encarregado.data.nome} · ${encarregado.data.email}${encarregado.data.telefone ? ` · ${encarregado.data.telefone}` : ""}${encarregado.data.endereco ? ` · ${encarregado.data.endereco}` : ""}` : "Contato não cadastrado"}</p>}</div>
           <DialogFooter>
             {sig ? (
               <div className="flex w-full flex-wrap items-center justify-between gap-2">

@@ -1,5 +1,6 @@
 import { FormularioANPD } from "@/components/priva/FormularioANPD";
 import { restanteANPD } from "@/lib/priva/anpd";
+import { useEncarregado } from "@/lib/priva/useEncarregado";
 import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
 import { AJUDA } from "@/lib/priva/ajuda";
 import { createFileRoute } from "@tanstack/react-router";
@@ -80,6 +81,7 @@ function Bloco4() {
 
 function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes: Lote[]; canEdit: boolean; refresh: () => void }) {
   const { log } = usePriva();
+  const encarregado = useEncarregado();
   const [busy, setBusy] = useState(false);
   const [sel, setSel] = useState<string | null>(null);
   const atual = lotes.find((l) => l.id === sel) ?? lotes[0];
@@ -126,6 +128,10 @@ function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes
     let y = 52;
     for (const linha of corpo) { if (y > 270) { doc.addPage(); y = 16; } doc.text(linha, 14, y); y += 3.6; }
     doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+    const contato = encarregado.data;
+    const contatoLinhas = doc.splitTextToSize(contato ? `Encarregado (DPO): ${contato.nome} · ${contato.email}${contato.telefone ? ` · ${contato.telefone}` : ""}${contato.endereco ? ` · ${contato.endereco}` : ""}` : "Encarregado (DPO): Contato não cadastrado", 180) as string[];
+    if (y + contatoLinhas.length * 4 > 240) { doc.addPage(); y = 20; }
+    doc.text(contatoLinhas, 14, y + 4); y += contatoLinhas.length * 4 + 8;
     if (y > 250) { doc.addPage(); y = 20; }
     doc.text(["", "Assinatura do DPO (Gov.br): ______________________________", "", "Assinatura da Diretoria (Gov.br): ______________________________"], 14, y + 8);
     doc.save(`PI-04_${l.mes_referencia}.pdf`);
