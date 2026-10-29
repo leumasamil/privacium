@@ -5,3 +5,5 @@
 - [ ] Conectar contato à política gerada: bloqueado porque não existe gerador de política no aplicativo atual.
 - [x] Unificar estado do incidente, pendências e encerramento com feedback.
 - [x] Registrar etapas e encerramento atomicamente; verificar fluxo autenticado e testes.
+- [ ] Acrescentar referências públicas semelhantes, consulta às bases e cinco notícias no Bloco 4, isoladas de documentos e auditoria.
+- [ ] Verificar fontes, cache, regras de isolamento e consulta autenticada das referências.
