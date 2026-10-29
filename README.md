@@ -84,6 +84,14 @@ Na tabela abaixo, **Sim** significa que existe política permissiva aplicável a
 
 Esta auditoria verifica políticas e privilégios atuais, não substitui testes de todas as operações com duas contas DPO de empresas distintas nem uma revisão completa das funções com privilégios elevados.
 
+### Busca por credenciais privadas — 29/10/2026
+
+Busca local em 195 arquivos `.ts`, `.tsx`, `.json` e `.env*`, incluindo arquivos ocultos e excluindo metadados Git, dependências e saídas geradas: **zero ocorrências de `service_role` ou `eyJ`, zero candidatos JWT e zero candidatos de chave privada `sb_secret_`**. Valores de arquivos de ambiente não foram exibidos.
+
+A árvore pública atual do GitHub contém `.env`; 195 arquivos elegíveis não ambientais foram verificados sem ocorrências de `service_role`/`eyJ`. O conteúdo remoto de `.env` não foi buscado. Portanto, não se afirma que o histórico, forks, arquivos excluídos ou o `.env` remoto estejam livres de credenciais privadas. Esta varredura não é uma auditoria do histórico completo.
+
+**Pendências:** acrescentar `.env` e `.env.*` ao `.gitignore` no repositório externo (arquivo bloqueado neste ambiente), realizar a limpeza coordenada do histórico se desejada e decidir sobre a rotação preventiva recomendada. Apenas README e roadmap foram alterados nesta auditoria; nenhuma chave nem dado do banco foi modificado.
+
 ## Verificação de ações e acesso — 29/10/2026
 
 As RPCs `registrar_etapa_incidente` e `encerrar_incidente` já existiam. O teste autenticado encontrou falta de `INSERT` para declarar incidentes; a permissão foi corrigida mantendo as políticas de acesso. Cinco chamadas de etapa retornaram HTTP 204; encerramento incompleto retornou `encerrado: false` e duas pendências; depois do envio simulado, retornou HTTP 200 e `encerrado: true`. Releitura confirmou seis evidências, encerramento e oito eventos com hashes SHA-256. O incidente de teste foi removido; os eventos de teste ficaram na trilha imutável. O incidente original não foi alterado.

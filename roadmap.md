@@ -29,4 +29,4 @@
 - [ ] Ignorar .env e .env.*: bloqueado pelo .gitignore gerenciado somente leitura; requer edição no repositório externo.
 - [x] Criar página 404 explícita e verificar navegação.
 - [x] Extrair AvisoModoDemo com AlertTriangle no topo das telas e ajustar texto da página 404; verificar saída e rotas inexistentes.
-- [ ] Revalidar exclusões de ambiente, credenciais privadas e RLS das 23 tabelas; documentar limpeza do histórico e recomendação de rotação.
+- [x] Revalidar exclusões de ambiente, credenciais privadas e RLS das 23 tabelas; documentar limpeza do histórico e recomendação de rotação (exclusão bloqueada conforme pendência acima).
