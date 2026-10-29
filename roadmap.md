@@ -7,3 +7,6 @@
 - [x] Registrar etapas e encerramento atomicamente; verificar fluxo autenticado e testes.
 - [x] Acrescentar referências públicas semelhantes, consulta às bases e cinco notícias no Bloco 4, isoladas de documentos e auditoria.
 - [x] Verificar fontes, cache, regras de isolamento e consulta autenticada das referências.
+- [ ] Acrescentar catálogo de naturezas do incidente, seleção assistida e fonte normativa na comunicação ANPD.
+- [ ] Exibir natureza e fonte no PI-04 e PDFs, preservando comunicações anteriores.
+- [ ] Validar persistência, seleção e documentos com testes e navegação autenticada.
