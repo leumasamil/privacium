@@ -28,3 +28,4 @@
 - [x] Auditar e corrigir isolamento RLS por tabela; documentar limpeza do histórico.
 - [ ] Ignorar .env e .env.*: bloqueado pelo .gitignore gerenciado somente leitura; requer edição no repositório externo.
 - [x] Criar página 404 explícita e verificar navegação.
+- [x] Extrair AvisoModoDemo com AlertTriangle no topo das telas e ajustar texto da página 404; verificar saída e rotas inexistentes.

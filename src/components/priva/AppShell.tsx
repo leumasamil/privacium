@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { FollowUpBanner, FollowUpBell } from "@/components/priva/FollowUp";
 import { ProximoPasso } from "@/components/priva/ProximoPasso";
+import { AvisoModoDemo } from "@/components/priva/AvisoModoDemo";
 
 const ROLE_ACCESS: Record<Role, string[]> = {
   ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/membros", "/manual", "/glossario"],
@@ -190,14 +191,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <main className="relative min-w-0 flex-1 px-4 py-8 sm:px-10">
+        <AvisoModoDemo />
         {(role === "DPO_OPERACIONAL" || role === "C_SUITE") && !demo && <FollowUpBanner />}
         {(role === "DPO_OPERACIONAL" || role === "C_SUITE") && <div className="mb-4 flex justify-end"><FollowUpBell /></div>}
-        {demo && (
-          <div role="status" className="sticky top-0 z-40 mb-6 flex flex-wrap items-center justify-between gap-3 border border-warning bg-warning px-4 py-3 text-sm text-warning-foreground">
-            <span className="flex min-w-0 flex-1 items-start gap-2 font-medium"><Presentation className="h-4 w-4 shrink-0" /> Modo demonstração — as ações estão desativadas. Desative o modo demo no menu para operar.</span>
-            <Button variant="outline" className="h-auto whitespace-normal" onClick={() => setDemo(false)}><X className="h-4 w-4" /> Sair do modo demonstração</Button>
-          </div>
-        )}
         <AlertDialog open={demoAsk} onOpenChange={setDemoAsk}>
           <AlertDialogContent>
             <AlertDialogHeader>
