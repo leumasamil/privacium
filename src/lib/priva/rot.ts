@@ -10,7 +10,7 @@ export const SALVAGUARDAS = ["Criptografia", "BitLocker", "Acesso Restrito RBAC"
 export const INFRA = ["Servidor Local", "Nuvem Corporativa", "Arquivo Físico"] as const;
 
 /** Campo 7A — art. 7º da LGPD (dado pessoal), 10 hipóteses. */
-export const HIPOTESES_7A = [
+export const HIPOTESES_7A: string[] = [
   "Art. 7º, I – Consentimento do titular",
   "Art. 7º, II – Cumprimento de obrigação legal ou regulatória",
   "Art. 7º, III – Execução de políticas públicas (administração pública)",
@@ -24,7 +24,7 @@ export const HIPOTESES_7A = [
 ];
 
 /** Campo 7B — art. 11 da LGPD (dado pessoal sensível). */
-export const HIPOTESES_7B = [
+export const HIPOTESES_7B: string[] = [
   "Art. 11, I – Consentimento específico e destacado",
   "Art. 11, II, a – Cumprimento de obrigação legal ou regulatória",
   "Art. 11, II, b – Execução de políticas públicas",
@@ -79,19 +79,19 @@ export function sugerir(r: RotInput): Sugestao[] {
   const s: Sugestao[] = [];
   const sens = r.dados_sensiveis;
   if (!r.hipotese_tratamento) {
-    if (r.categoria_titulares.includes("Colaboradores")) s.push({ texto: "Colaboradores: art. 7º, II (obrigações trabalhistas)", patch: { hipotese_tratamento: HIPOTESES_7A[1] } });
-    else if (r.categoria_titulares.includes("Clientes") || r.categoria_titulares.includes("Fornecedores")) s.push({ texto: "Clientes/fornecedores: art. 7º, V (contrato)", patch: { hipotese_tratamento: HIPOTESES_7A[4] } });
-    else if (r.genero_verbo === "Compartilhar" && r.categoria_titulares.length) s.push({ texto: "Compartilhamento sem contrato: avalie art. 7º, I (consentimento)", patch: { hipotese_tratamento: HIPOTESES_7A[0] } });
+    if (r.categoria_titulares.includes("Colaboradores")) s.push({ texto: "Colaboradores: art. 7º, II (obrigações trabalhistas)", patch: { hipotese_tratamento: HIPOTESES_7A[1]! } });
+    else if (r.categoria_titulares.includes("Clientes") || r.categoria_titulares.includes("Fornecedores")) s.push({ texto: "Clientes/fornecedores: art. 7º, V (contrato)", patch: { hipotese_tratamento: HIPOTESES_7A[4]! } });
+    else if (r.genero_verbo === "Compartilhar" && r.categoria_titulares.length) s.push({ texto: "Compartilhamento sem contrato: avalie art. 7º, I (consentimento)", patch: { hipotese_tratamento: HIPOTESES_7A[0]! } });
   }
   if (hasSensivel(r) && !r.hipotese_sensivel) {
-    if (sens.includes("Prontuário de Saúde")) s.push({ texto: "Prontuário de Saúde: art. 11, II, f (tutela da saúde)", patch: { hipotese_sensivel: HIPOTESES_7B[6] } });
-    else if (sens.includes("Biometria")) s.push({ texto: "Biometria: art. 11, II, g (prevenção à fraude)", patch: { hipotese_sensivel: HIPOTESES_7B[7] } });
-    else if (sens.includes("Filiação Sindical")) s.push({ texto: "Filiação Sindical: art. 11, II, a (obrigação legal)", patch: { hipotese_sensivel: HIPOTESES_7B[1] } });
-    else s.push({ texto: "Sem outra hipótese aplicável: art. 11, I (consentimento específico e destacado)", patch: { hipotese_sensivel: HIPOTESES_7B[0] } });
+    if (sens.includes("Prontuário de Saúde")) s.push({ texto: "Prontuário de Saúde: art. 11, II, f (tutela da saúde)", patch: { hipotese_sensivel: HIPOTESES_7B[6]! } });
+    else if (sens.includes("Biometria")) s.push({ texto: "Biometria: art. 11, II, g (prevenção à fraude)", patch: { hipotese_sensivel: HIPOTESES_7B[7]! } });
+    else if (sens.includes("Filiação Sindical")) s.push({ texto: "Filiação Sindical: art. 11, II, a (obrigação legal)", patch: { hipotese_sensivel: HIPOTESES_7B[1]! } });
+    else s.push({ texto: "Sem outra hipótese aplicável: art. 11, I (consentimento específico e destacado)", patch: { hipotese_sensivel: HIPOTESES_7B[0]! } });
   }
-  if (!r.tempo_retencao && r.hipotese_tratamento === HIPOTESES_7A[1] && r.categoria_titulares.includes("Colaboradores"))
+  if (!r.tempo_retencao && r.hipotese_tratamento === HIPOTESES_7A[1]! && r.categoria_titulares.includes("Colaboradores"))
     s.push({ texto: "Retenção trabalhista: 5 anos após a rescisão (CF, art. 7º, XXIX)", patch: { tempo_retencao: "5 anos após a rescisão", base_prazo: "CF, art. 7º, XXIX" } });
-  if (!r.tempo_retencao && r.hipotese_tratamento === HIPOTESES_7A[0]) s.push({ texto: "Consentimento: reter até a revogação (art. 8º, §5º)", patch: { tempo_retencao: "Até a revogação", base_prazo: "LGPD, art. 8º, §5º" } });
+  if (!r.tempo_retencao && r.hipotese_tratamento === HIPOTESES_7A[0]!) s.push({ texto: "Consentimento: reter até a revogação (art. 8º, §5º)", patch: { tempo_retencao: "Até a revogação", base_prazo: "LGPD, art. 8º, §5º" } });
   if (r.categoria_titulares.includes("Menores de Idade") && !(r.justificativa_mitigacao ?? "").includes("art. 14"))
     s.push({ texto: "Menores de idade: registre o consentimento do responsável (art. 14)", patch: { justificativa_mitigacao: `${r.justificativa_mitigacao ?? ""} Consentimento específico de ao menos um dos pais ou responsável legal (art. 14).`.trim() } });
   if (hasSensivel(r) && !r.salvaguardas.includes("Criptografia")) s.push({ texto: "Dado pessoal sensível: adicionar Criptografia às salvaguardas", patch: { salvaguardas: [...r.salvaguardas, "Criptografia"] } });
