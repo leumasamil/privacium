@@ -10,3 +10,6 @@
 - [x] Acrescentar catálogo de naturezas do incidente, seleção assistida e fonte normativa na comunicação ANPD.
 - [x] Exibir natureza e fonte no PI-04 e PDFs, preservando comunicações anteriores.
 - [x] Validar persistência, seleção e documentos com testes e navegação autenticada.
+- [ ] Integrar 24 medidas ANPD, sugestões por etapa e texto automático copiável.
+- [ ] Persistir fontes canônicas e incluir medidas no PI-04 sem alterar registros anteriores.
+- [ ] Verificar regras e fluxo autenticado das medidas.
