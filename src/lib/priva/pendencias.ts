@@ -14,7 +14,7 @@ export type Pendencia = {
   ancora: string;
   acao: string;
   /** Linha "Próxima ação sugerida" explicando por que e, se houver, a sequência de passos. */
-  sugestao?: string;
+  sugestao?: string | undefined;
 };
 
 const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
