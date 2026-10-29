@@ -1,23 +1,23 @@
+import { FormularioANPD } from "@/components/priva/FormularioANPD";
+import { restanteANPD } from "@/lib/priva/anpd";
+import { useEncarregado } from "@/lib/priva/useEncarregado";
 import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
 import { AJUDA } from "@/lib/priva/ajuda";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, FileDown, Hash, Lock, Play, Send, Timer } from "lucide-react";
+import { Check, FileDown, Hash, Lock, Play, Timer } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
-import type { Database, Json } from "@/integrations/supabase/types";
+import type { Database } from "@/integrations/supabase/types";
 import { maskCNPJ, sha256 } from "@/lib/priva/data";
-import { slaRestante } from "@/lib/priva/dosimetria";
 import { cn } from "@/lib/utils";
 import { usePriva } from "@/lib/priva/store";
 import { useCnpjRows } from "@/lib/priva/useCnpjRows";
 import { DEMO_SLA_MS } from "@/lib/priva/demo";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 type Lote = Database["public"]["Tables"]["lotes_pgaudit"]["Row"];
 type Incidente = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
@@ -44,16 +44,6 @@ const STEPS = [
   { t: "Validação", d: "Conferir hashes de integridade dos dados restaurados e encerrar a contenção." },
   { t: "Reporte", d: "Comunicar a ANPD e os titulares (Res. CD/ANPD nº 15/2024) dentro do prazo de 72h." },
 ];
-
-const FORM = [
-  { k: "incidente", l: "Número do incidente", ph: "Ex.: a54ac7 (copie do console forense acima)", h: "Identificador curto do incidente ativo; use o botão ao lado para preencher." },
-  { k: "natureza", l: "Natureza do incidente", ph: "Ex.: ransomware com criptografia do servidor de arquivos", h: "Descreva o tipo de ataque ou falha e o sistema atingido." },
-  { k: "categorias", l: "Categorias de dados pessoais afetados", ph: "Selecione os campos 4 e 5 registrados no ROT deste processo.", h: "Liste o dado pessoal e o dado pessoal sensível atingidos, conforme o ROT." },
-  { k: "titulares", l: "Número aproximado de titulares afetados", ph: "Ex.: 1240", h: "Estimativa numérica; pode ser revisada depois na comunicação complementar." },
-  { k: "riscos", l: "Riscos e consequências aos titulares", ph: "Ex.: Risco de acesso não autorizado a dados pessoais e indisponibilidade temporária. Dados restaurados de backup íntegro, sem indício de exfiltração.", h: "O que pode acontecer aos titulares e o que já foi constatado." },
-  { k: "medidas", l: "Medidas técnicas e de segurança adotadas", ph: "Ex.: Isolamento de endpoints, contenção em sandbox, restauração por backup íntegro com validação de hash SHA-256.", h: "Ações de contenção e recuperação executadas nas etapas 1 a 5." },
-  { k: "encarregado", l: "Contato do Encarregado (DPO)", ph: "Ex.: dpo@empresa.com.br", h: "E-mail do DPO_OPERACIONAL cadastrado em Membros." },
-] as const;
 
 const mesAtual = () => new Date().toISOString().slice(0, 7);
 const fmt = (ms: number) => { const s = Math.floor(ms / 1000); return `${String(Math.floor(s / 3600)).padStart(2, "0")}:${String(Math.floor((s % 3600) / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };
@@ -91,6 +81,7 @@ function Bloco4() {
 
 function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes: Lote[]; canEdit: boolean; refresh: () => void }) {
   const { log } = usePriva();
+  const encarregado = useEncarregado();
   const [busy, setBusy] = useState(false);
   const [sel, setSel] = useState<string | null>(null);
   const atual = lotes.find((l) => l.id === sel) ?? lotes[0];
@@ -137,6 +128,10 @@ function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes
     let y = 52;
     for (const linha of corpo) { if (y > 270) { doc.addPage(); y = 16; } doc.text(linha, 14, y); y += 3.6; }
     doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+    const contato = encarregado.data;
+    const contatoLinhas = doc.splitTextToSize(contato ? `Encarregado (DPO): ${contato.nome} · ${contato.email}${contato.telefone ? ` · ${contato.telefone}` : ""}${contato.endereco ? ` · ${contato.endereco}` : ""}` : "Encarregado (DPO): Contato não cadastrado", 180) as string[];
+    if (y + contatoLinhas.length * 4 > 240) { doc.addPage(); y = 20; }
+    doc.text(contatoLinhas, 14, y + 4); y += contatoLinhas.length * 4 + 8;
     if (y > 250) { doc.addPage(); y = 20; }
     doc.text(["", "Assinatura do DPO (Gov.br): ______________________________", "", "Assinatura da Diretoria (Gov.br): ______________________________"], 14, y + 8);
     doc.save(`PI-04_${l.mes_referencia}.pdf`);
@@ -169,24 +164,17 @@ function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes
 }
 
 function CriseRansomware({ cnpj, ativo, canEdit, refresh }: { cnpj: string; ativo: Incidente | null; canEdit: boolean; refresh: () => void }) {
-  const { log, demo, email, roles } = usePriva();
+  const { log, demo } = usePriva();
   const qc = useQueryClient();
   const [now, setNow] = useState(Date.now());
-  const [form, setForm] = useState<Record<string, string>>({});
-  const formRef = useRef<HTMLDivElement>(null);
   const stepsRef = useRef<HTMLOListElement>(null);
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
-  const dpoEmail = roles.includes("DPO_OPERACIONAL") ? email ?? "" : "";
-  useEffect(() => {
-    const salvo = (ativo?.comunicacao ?? {}) as Record<string, string>;
-    setForm({ ...salvo, encarregado: salvo["encarregado"] || dpoEmail });
-  }, [ativo?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const ref = ativo ? ativo.id.slice(0, 6) : "";
   const passos = ativo?.passos ?? [false, false, false, false, false, false];
   const atual = passos.findIndex((p) => !p);
-  const restante = demo ? DEMO_SLA_MS : slaRestante(ativo?.iniciado_em ?? null, now);
-  const tom = !ativo ? "neutro" : restante === 0 && !ativo.enviado_anpd_em ? "vencido" : restante < 24 * 3600000 ? "atencao" : "andamento";
+  const restante = demo ? DEMO_SLA_MS : (ativo ? restanteANPD(ativo.iniciado_em, ativo.enviado_anpd_em, now) : 72 * 3600000);
+  const tom = !ativo ? "neutro" : restante === 0 ? "vencido" : restante < 24 * 3600000 ? "atencao" : "andamento";
   const TOM_SLA = {
     neutro: { caixa: "", texto: "text-primary", rotulo: "Nenhum incidente ativo" },
     andamento: { caixa: "border-andamento-border bg-andamento-bg", texto: "text-andamento", rotulo: "Em andamento · mais de 24h" },
@@ -211,29 +199,17 @@ function CriseRansomware({ cnpj, ativo, canEdit, refresh }: { cnpj: string; ativ
     qc.invalidateQueries({ queryKey: ["pendencias"] });
   };
   const concluirEtapa = async (i: number) => {
-    if (!ativo) return;
-    const ok = await upd({ passos: ativo.passos.map((x, j) => (j === i ? true : x)) }, `Passo ${i + 1} (${STEPS[i]!.t}) concluído`);
-    if (ok) setTimeout(() => (i + 1 < 5 ? stepsRef.current?.querySelector(`[data-step="${i + 1}"]`) : formRef.current)?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
+    const etapa = STEPS[i];
+    if (!ativo || !etapa) return;
+    const ok = await upd({ passos: ativo.passos.map((x, j) => (j === i ? true : x)) }, `Passo ${i + 1} (${etapa.t}) concluído`);
+    if (ok) setTimeout(() => (i + 1 < 5 ? stepsRef.current?.querySelector(`[data-step="${i + 1}"]`) : document.getElementById("anpd"))?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
   };
-
-  const faltam = FORM.filter((f) => (form[f.k] ?? "").trim().length <= 2);
-  const etapasOk = passos.slice(0, 5).every(Boolean);
-  const podeEditarForm = canEdit && !!ativo && !ativo.enviado_anpd_em;
-
-  // Foco automático no primeiro campo obrigatório vazio quando o formulário é liberado.
-  useEffect(() => {
-    if (!podeEditarForm || !etapasOk) return;
-    const k = FORM.find((f) => (form[f.k] ?? "").trim().length <= 2)?.k;
-    if (k) document.getElementById(`anpd-${k}`)?.focus({ preventScroll: true });
-  }, [podeEditarForm, etapasOk, ativo?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const irPara = (k: string) => { const el = document.getElementById(`anpd-${k}`); el?.scrollIntoView({ behavior: "smooth", block: "center" }); el?.focus({ preventScroll: true }); };
 
   return (
     <Panel id="incidentes" title="Gerenciamento de Crise Cibernética · Ransomware" action={canEdit && (ativo
       ? <Button size="sm" variant="outline" disabled={!ativo.passos.every(Boolean) || !ativo.enviado_anpd_em} onClick={() => upd({ encerrado_em: new Date().toISOString() }, "Incidente encerrado")}>Encerrar incidente</Button>
       : <Button size="sm" variant="outline" onClick={declarar}>Declarar incidente</Button>)}>
-      {ativo && <p className="mb-3 text-sm">Incidente ativo: <span className="font-mono font-semibold text-primary">#{ref}</span></p>}
+      {ativo && <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><p className="text-sm">Incidente ativo: <span className="font-mono font-semibold text-primary">#{ref}</span></p>{!ativo.enviado_anpd_em && <div><Button variant="outline" disabled={!passos.slice(0, 5).every(Boolean)} onClick={() => document.getElementById("anpd")?.scrollIntoView({ behavior: "smooth" })}>Comunicar à ANPD</Button>{!passos.slice(0, 5).every(Boolean) && <p className="mt-1 text-xs text-atencao">Conclua as etapas {passos.slice(0, 5).map((p, i) => p ? null : i + 1).filter(Boolean).join(", ")} para comunicar.</p>}</div>}</div>}
 
       {/* Barra de etapas */}
       <ol ref={stepsRef} className="mb-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-6" aria-label="Etapas do incidente">
@@ -276,61 +252,17 @@ function CriseRansomware({ cnpj, ativo, canEdit, refresh }: { cnpj: string; ativ
         <div className="text-center">
           <Timer className={cn("mx-auto h-5 w-5", TOM_SLA.texto)} aria-hidden />
           <p className={cn("mt-1 font-mono text-3xl font-semibold", TOM_SLA.texto)}>{fmt(restante)}</p>
-          <p className={cn("mt-1 text-xs font-semibold uppercase", TOM_SLA.texto)}>{TOM_SLA.rotulo}</p>
+          <p className={cn("mt-1 text-xs font-semibold uppercase", TOM_SLA.texto)}>{ativo?.enviado_anpd_em ? (ativo.comunicacao_atrasada ? "Comunicado em atraso" : "Prazo de envio cumprido") : TOM_SLA.rotulo}</p>
           {ativo?.enviado_anpd_em && <div className="mt-2"><Tag tone="success">ANPD comunicada</Tag></div>}
         </div>
         <ul className="space-y-1 text-xs text-foreground">
           <li><b>O que mede:</b> Prazo de comunicação à ANPD — Res. CD/ANPD nº 15/2024. Vinculado à etapa 6 (Reporte).</li>
           <li><b>Ao zerar:</b> Após o prazo, o incidente é marcado como comunicado em atraso e a trilha registra o descumprimento.</li>
-          <li><b>Pausas:</b> nenhuma ação pausa o contador — é prazo legal.</li>
+          <li><b>Contador:</b> não pausa durante a resposta; após a comunicação simulada, congela no instante de envio.</li>
         </ul>
       </div>
 
-      {ativo && (
-        <div ref={formRef} id="anpd" className="mt-6 scroll-mt-6 rounded-md border p-4">
-          <p className="font-semibold text-primary">Comunicação de Incidente de Segurança à ANPD (simulação)</p>
-          {!etapasOk && <p className="mt-1 text-xs text-pendencia">Conclua as etapas 1 a 5 acima para liberar o envio. Você já pode adiantar o preenchimento.</p>}
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            {FORM.map((f) => {
-              const props = {
-                id: `anpd-${f.k}`, disabled: !podeEditarForm, placeholder: f.ph, value: form[f.k] ?? "",
-                "aria-describedby": `anpd-${f.k}-h`,
-                onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [f.k]: e.target.value }),
-                onBlur: () => upd({ comunicacao: form as Json }, `Formulário ANPD: ${f.l}`),
-              };
-              return (
-                <div key={f.k} className={f.k === "riscos" || f.k === "medidas" ? "md:col-span-2" : ""}>
-                  <label htmlFor={`anpd-${f.k}`} className="text-xs font-medium text-foreground">{f.l} *</label>
-                  <div className="mt-1 flex gap-2">
-                    {f.k === "riscos" || f.k === "medidas" ? <Textarea rows={2} {...props} /> : <Input {...props} />}
-                    {f.k === "incidente" && podeEditarForm && form["incidente"] !== ref && (
-                      <Button type="button" size="sm" variant="outline" onClick={() => { const n = { ...form, incidente: ref }; setForm(n); upd({ comunicacao: n as Json }, "Formulário ANPD: número do incidente"); }}>Usar #{ref}</Button>
-                    )}
-                  </div>
-                  <p id={`anpd-${f.k}-h`} className="mt-1 text-[11px] text-muted-foreground">{f.h}</p>
-                  {f.k === "encarregado" && !dpoEmail && !(form["encarregado"] ?? "").trim() && (
-                    <p className="mt-1 text-[11px] text-atencao">Nenhum DPO identificado nesta sessão. <Link to="/membros" className="underline">Cadastre o DPO em Membros</Link>.</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          {!ativo.enviado_anpd_em && faltam.length > 0 && (
-            <p className="mt-3 text-xs text-pendencia">
-              Faltam {faltam.length} campo{faltam.length > 1 ? "s" : ""}: {faltam.map((f) => f.l).join(", ")}.{" "}
-              <button className="font-semibold underline" onClick={() => irPara(faltam[0]!.k)}>Ir para o primeiro campo vazio</button>
-            </p>
-          )}
-          {!ativo.enviado_anpd_em && faltam.length === 0 && !etapasOk && <p className="mt-3 text-xs text-pendencia">Faltam as etapas {passos.slice(0, 5).map((p, i) => (p ? null : i + 1)).filter(Boolean).join(", ")} do incidente.</p>}
-          <Button className="mt-3" variant="outline" disabled={!podeEditarForm || faltam.length > 0 || !etapasOk}
-            onClick={async () => {
-              const ok = await upd({ comunicacao: form as Json, enviado_anpd_em: new Date().toISOString(), passos: ativo.passos.map((x, j) => (j === 5 ? true : x)) }, "Comunicação enviada à ANPD (simulado)");
-              if (ok) toast.success("Comunicação registrada. Próximo passo: encerrar o incidente e assinar o PI-04.");
-            }}>
-            <Send className="h-4 w-4" /> {ativo.enviado_anpd_em ? `Enviado em ${new Date(ativo.enviado_anpd_em).toLocaleString("pt-BR")}` : "Realizar a comunicação à ANPD (simulação)"}
-          </Button>
-        </div>
-      )}
+      {ativo && <FormularioANPD key={ativo.id} incidente={ativo} canEdit={canEdit} refresh={refresh} />}
     </Panel>
   );
 }

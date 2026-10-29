@@ -5,6 +5,7 @@ import { ROLE_LABEL, type Role } from "@/lib/priva/data";
 import { usePriva } from "@/lib/priva/store";
 import { PageHeader, Panel, Tag } from "@/components/priva/ui";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EncarregadoDPO } from "@/components/priva/EncarregadoDPO";
 
 export const Route = createFileRoute("/_authenticated/membros")({
   head: () => ({
@@ -13,6 +14,8 @@ export const Route = createFileRoute("/_authenticated/membros")({
       { name: "description", content: "Atribuição de cargos com privilégio mínimo (RBAC)." },
       { property: "og:title", content: "Membros e cargos — Privacium" },
       { property: "og:description", content: "Atribuição de cargos com privilégio mínimo (RBAC)." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Membros,
@@ -22,7 +25,8 @@ type Member = { id: string; email: string | null; display_name: string | null; r
 const ALL: Role[] = ["ADMIN_SISTEMA", "DPO_OPERACIONAL", "C_SUITE"];
 
 function Membros() {
-  const { userId, log } = usePriva();
+  const { userId, log, roles, role, demo } = usePriva();
+  const admin = roles.includes("ADMIN_SISTEMA") && role === "ADMIN_SISTEMA" && !demo;
   const [members, setMembers] = useState<Member[]>([]);
   const [emps, setEmps] = useState<{ id: string; razao_social: string }[]>([]);
   const [vinc, setVinc] = useState<Record<string, string | null>>({});
@@ -36,7 +40,7 @@ function Membros() {
     setEmps(e ?? []);
     setVinc(Object.fromEntries((u ?? []).map((x) => [x.id, x.empresa_id])));
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { if (admin) void load(); }, [load, admin]);
 
   const toggle = async (m: Member, r: Role, on: boolean) => {
     if (m.id === userId && r === "ADMIN_SISTEMA" && !on) return;
@@ -59,7 +63,8 @@ function Membros() {
       <PageHeader eyebrow="Painel do Administrador" title="Membros e cargos">
         Novas contas entram sem acesso. Conceda apenas os cargos necessários (need-to-know). Toda concessão é registrada na trilha de auditoria.
       </PageHeader>
-      <Panel title={`${members.length} membros`}>
+      <EncarregadoDPO />
+      {admin && <Panel title={`${members.length} membros`}>
         <table className="w-full text-sm">
           <thead><tr className="border-b text-left font-mono text-xs uppercase text-muted-foreground"><th className="py-2">Membro</th>{ALL.map((r) => <th key={r}>{ROLE_LABEL[r]}</th>)}<th>Empresa</th><th>Status</th></tr></thead>
           <tbody>
@@ -75,7 +80,7 @@ function Membros() {
             ))}
           </tbody>
         </table>
-      </Panel>
+      </Panel>}
     </div>
   );
 }

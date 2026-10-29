@@ -120,6 +120,27 @@
       "when": 1793299975931,
       "tag": "0016_rot_hipotese_7b",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793307842582,
+      "tag": "0017_encarregado_e_comunicacao_anpd",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793308174666,
+      "tag": "0018_proteger_campos_envio_anpd",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793308307786,
+      "tag": "0019_auditoria_eventos_anpd",
+      "breakpoints": true
     }
   ]
 }

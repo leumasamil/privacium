@@ -192,6 +192,44 @@ export type Database = {
         }
         Relationships: []
       }
+      encarregado_dpo: {
+        Row: {
+          atualizado_em: string
+          email: string
+          empresa_cnpj: string
+          endereco: string | null
+          nome: string
+          publicar_contato: boolean
+          telefone: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          email: string
+          empresa_cnpj: string
+          endereco?: string | null
+          nome: string
+          publicar_contato?: boolean
+          telefone?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          email?: string
+          empresa_cnpj?: string
+          endereco?: string | null
+          nome?: string
+          publicar_contato?: boolean
+          telefone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "encarregado_dpo_empresa_cnpj_fkey"
+            columns: ["empresa_cnpj"]
+            isOneToOne: true
+            referencedRelation: "empresas"
+            referencedColumns: ["cnpj"]
+          },
+        ]
+      }
       faturamento_saas: {
         Row: {
           criado_em: string
@@ -233,6 +271,7 @@ export type Database = {
       incidentes_seguranca: {
         Row: {
           comunicacao: Json
+          comunicacao_atrasada: boolean
           criado_por: string | null
           empresa_cnpj: string
           encerrado_em: string | null
@@ -240,9 +279,11 @@ export type Database = {
           id: string
           iniciado_em: string
           passos: boolean[]
+          processo_id: string | null
         }
         Insert: {
           comunicacao?: Json
+          comunicacao_atrasada?: boolean
           criado_por?: string | null
           empresa_cnpj: string
           encerrado_em?: string | null
@@ -250,9 +291,11 @@ export type Database = {
           id?: string
           iniciado_em?: string
           passos?: boolean[]
+          processo_id?: string | null
         }
         Update: {
           comunicacao?: Json
+          comunicacao_atrasada?: boolean
           criado_por?: string | null
           empresa_cnpj?: string
           encerrado_em?: string | null
@@ -260,8 +303,17 @@ export type Database = {
           id?: string
           iniciado_em?: string
           passos?: boolean[]
+          processo_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "incidentes_seguranca_processo_id_fkey"
+            columns: ["processo_id"]
+            isOneToOne: false
+            referencedRelation: "registro_operacoes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lotes_pgaudit: {
         Row: {
@@ -789,6 +841,10 @@ export type Database = {
       cnpj_valido: { Args: { _c: string }; Returns: boolean }
       cpf_valido: { Args: { _c: string }; Returns: boolean }
       empresa_ativa: { Args: { _cnpj: string }; Returns: boolean }
+      enviar_comunicacao_anpd: {
+        Args: { _form: Json; _incidente: string; _processo: string }
+        Returns: string
+      }
       has_any_role: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {

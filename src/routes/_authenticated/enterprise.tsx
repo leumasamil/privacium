@@ -14,6 +14,8 @@ export const Route = createFileRoute("/_authenticated/enterprise")({
       { name: "description", content: "Módulos C-Suite, DRP, SDLC seguro, higiene de dados, RH e BCR." },
       { property: "og:title", content: "Privacium Enterprise" },
       { property: "og:description", content: "Módulos C-Suite, DRP, SDLC seguro, higiene de dados, RH e BCR." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Enterprise,
