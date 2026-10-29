@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { usePriva } from './store';
@@ -8,6 +8,7 @@ import { carregarEstadoIncidente } from './estadoIncidente';
 export function useEstadoBloco4(cnpj: string | null) {
   const { demo, signatures } = usePriva();
   const qc = useQueryClient();
+  const subscriber = useId();
   const q = useQuery({
     queryKey: ['estado-bloco-4', cnpj, demo], enabled: !!cnpj,
     refetchInterval: demo ? false : 5000,
@@ -24,11 +25,11 @@ export function useEstadoBloco4(cnpj: string | null) {
   });
   useEffect(() => {
     if (!cnpj || demo) return;
-    const ch = supabase.channel(`estado-incidentes-${cnpj}`);
+    const ch = supabase.channel(`estado-incidentes-${cnpj}-${subscriber}`);
     for (const table of ['incidentes_seguranca', 'lotes_pgaudit']) ch.on('postgres_changes', { event: '*', schema: 'public', table, filter: `empresa_cnpj=eq.${cnpj}` }, () => void qc.invalidateQueries({ queryKey: ['estado-bloco-4', cnpj] }));
     ch.subscribe();
     return () => { void supabase.removeChannel(ch); };
-  }, [cnpj, demo, qc]);
+  }, [cnpj, demo, qc, subscriber]);
   const fonte = q.data ? { ...q.data, assinaturas: signatures, agora: Date.now() } : null;
   return { ...q, data: fonte ? { n: 4 as const, ...fonte, estados: fonte.incidentes.map(i => carregarEstadoIncidente(i.id, fonte)) } : undefined,
     refresh: () => qc.invalidateQueries({ queryKey: ['estado-bloco-4', cnpj] }) };
