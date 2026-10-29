@@ -55,21 +55,21 @@ export function lerFeed(xml: string, veiculo: string): NoticiaPublica[] {
     const link = i['link'];
     const url = typeof link === 'string' ? link : String((Array.isArray(link) ? link[0] : link)?.['@_href'] ?? '');
     const source = i['source'];
-    return { titulo: String(i['title'] ?? ''), veiculo: typeof source === 'object' && source ? String((source as Record<string, unknown>)['#text'] ?? veiculo) : veiculo, data: String(i['pubDate'] ?? i['published'] ?? i['updated'] ?? ''), url };
+    return { titulo: String(i['title'] ?? ''), veiculo: typeof source === 'string' ? source : typeof source === 'object' && source ? String((source as Record<string, unknown>)['#text'] ?? veiculo) : veiculo, data: String(i['pubDate'] ?? i['published'] ?? i['updated'] ?? ''), url };
   }).filter(i => i.titulo && i.url).map(i => ({ ...i, data: Number.isFinite(Date.parse(i.data)) ? new Date(i.data).toISOString() : '' }));
 }
 
 async function noticias(): Promise<NoticiaPublica[]> {
   const fontes = await Promise.allSettled([
     ler('https://haveibeenpwned.com/api/v3/latestbreach').then(r => r.json()).then((b: Breach) => [{ titulo: `Vazamento público: ${b.Title}`, veiculo: 'Have I Been Pwned', data: b.AddedDate, url: caso(b).url }]),
-    ler('https://www.cert.br/feeds/alertas-rss.xml').then(r => r.text()).then(xml => lerFeed(xml, 'CERT.br')),
+    ler('https://cert.br/rss/certbr-rss.xml').then(r => r.text()).then(xml => lerFeed(xml, 'CERT.br')),
   ]);
   let itens = fontes.flatMap(f => f.status === 'fulfilled' ? f.value : []);
   // Busca pública server-side, sem chave e sem dados da empresa, somente quando
   // as fontes primárias não oferecem cinco itens recentes.
   if (cincoNoticias(itens.filter(i => Date.parse(i.data) >= Date.now() - 72 * 3600000)).length < 5) {
     const busca = 'https://news.google.com/rss/search?q=' + encodeURIComponent('("vazamento de dados" OR "incidente de segurança") when:3d') + '&hl=pt-BR&gl=BR&ceid=BR:pt-419';
-    try { itens = [...itens, ...lerFeed(await (await ler(busca)).text(), 'Google Notícias')]; } catch { /* Mantém as fontes primárias. */ }
+    try { itens = [...itens, ...lerFeed(await (await ler(busca)).text(), 'Google Notícias').filter(i => Date.parse(i.data) >= Date.now() - 72 * 3600000 && Date.parse(i.data) <= Date.now())]; } catch { /* Mantém as fontes primárias. */ }
   }
   const resultado = cincoNoticias(itens);
   if (resultado.length !== 5) throw new Error('Não há cinco notícias disponíveis');

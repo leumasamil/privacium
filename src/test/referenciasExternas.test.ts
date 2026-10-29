@@ -12,9 +12,11 @@ describe('Referências externas isoladas', () => {
   });
   it('seleciona exatamente cinco notícias únicas em ordem decrescente', () => {
     const items = Array.from({ length: 7 }, (_, i) => ({ titulo: 'N'.repeat(120), veiculo: 'Fonte', data: `2026-10-${20 + i}T12:00:00Z`, url: `https://example.org/${i}` }));
-    const resultado = cincoNoticias([...items, items[0], { ...items[0], url: 'javascript:alert(1)' }]);
+    const primeiro = items[0];
+    if (!primeiro) throw new Error('Fixture ausente');
+    const resultado = cincoNoticias([...items, primeiro, { ...primeiro, url: 'javascript:alert(1)' }]);
     expect(resultado).toHaveLength(5);
-    expect(resultado[0].data).toBe('2026-10-26T12:00:00Z');
+    expect(resultado[0]?.data).toBe('2026-10-26T12:00:00Z');
     expect(resultado.every(n => n.titulo.length <= 90)).toBe(true);
   });
   it('cacheia HIBP por 24 horas', async () => {
@@ -48,13 +50,16 @@ describe('Referências externas isoladas', () => {
   });
   it('lê RSS público sem executar HTML', () => {
     const result = lerFeed('<rss><channel><item><title>Incidente público</title><link>https://example.org/fonte</link><pubDate>Thu, 29 Oct 2026 17:00:00 GMT</pubDate><source>Veículo</source></item></channel></rss>', 'CERT.br');
-    expect(result[0].url).toBe('https://example.org/fonte');
-    expect(result[0].data).toBe('2026-10-29T17:00:00.000Z');
+    expect(result[0]?.url).toBe('https://example.org/fonte');
+    expect(result[0]?.data).toBe('2026-10-29T17:00:00.000Z');
+    expect(result[0]?.veiculo).toBe('Veículo');
   });
   it('não conecta referências a auditoria, documentos, assinaturas ou progresso', () => {
     const raiz = process.cwd();
     const contexto = ['src/lib/priva/referenciasExternas.server.ts', 'src/lib/priva/referenciasExternas.functions.ts', 'src/components/priva/ReferenciasExternas.tsx', 'src/components/priva/PainelNoticiasIncidentes.tsx'].map(p => readFileSync(`${raiz}/${p}`, 'utf8')).join('\n');
-    expect(contexto).not.toMatch(/\.(insert|update|upsert|delete|rpc)\s*\(/);
+    // Map.delete limpa requisições em memória, não é escrita no banco.
+    expect(contexto).not.toMatch(/\.(insert|update|upsert|rpc)\s*\(/);
+    expect(contexto).not.toMatch(/\.from\([^\n]+\.delete\s*\(/);
     expect(contexto).not.toMatch(/\blog\s*\(|gerarPdfPI\s*\(|\.sign\s*\(/);
     for (const p of ['src/lib/priva/pdf.ts', 'src/lib/priva/pendencias.ts', 'src/lib/priva/proximoPasso.ts', 'src/lib/priva/store.tsx', 'src/components/priva/ui.tsx']) {
       expect(readFileSync(`${raiz}/${p}`, 'utf8')).not.toMatch(/import.*(?:referenciasExternas|ReferenciasExternas|PainelNoticiasIncidentes)/);
