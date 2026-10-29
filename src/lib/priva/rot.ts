@@ -59,16 +59,17 @@ export function validateRot(r: RotInput): string | null {
   const texto = [r.finalidade_especifica, r.hipotese_tratamento, r.hipotese_sensivel ?? "", r.tempo_retencao, r.base_prazo, r.compartilhamento, r.justificativa_mitigacao ?? "",
     ...r.categoria_titulares, ...r.dados_pessoais, ...r.dados_sensiveis, ...r.salvaguardas].join(" ");
   if (PROIBIDOS.test(texto)) return 'Termo proibido: use "Hipótese de Tratamento" (terminologia da LGPD).';
-  if (!r.categoria_titulares.length) return "Campo 3: informe a categoria de titulares.";
-  if (!r.dados_pessoais.length) return "Campo 4: informe ao menos um dado pessoal.";
-  if (!r.dados_sensiveis.length) return 'Campo 5: informe o dado pessoal sensível ou "N/A".';
-  if (!r.finalidade_especifica.trim()) return "Campo 6: descreva a finalidade específica.";
-  if (!r.hipotese_tratamento.startsWith("Art. 7º")) return "Campo 7A: selecione a hipótese do art. 7º para o dado pessoal.";
+  if (!r.categoria_titulares.length) return "Preencha o campo 3 (Categoria de Titulares) para salvar — marque ao menos um grupo de pessoas.";
+  if (!r.dados_pessoais.length) return "Preencha o campo 4 (Dados Pessoais) para salvar — marque ao menos um dado pessoal tratado.";
+  if (!r.dados_sensiveis.length) return 'Preencha o campo 5 (Dado Pessoal Sensível) para salvar — marque o dado ou "N/A" se não houver.';
+  if (!r.finalidade_especifica.trim()) return "Preencha o campo 6 (Finalidade Específica) para salvar — descreva para que o dado pessoal é usado.";
+  if (!r.hipotese_tratamento.startsWith("Art. 7º")) return "Selecione o campo 7A (hipótese do art. 7º) para salvar — todo processo com dado pessoal precisa de uma.";
   const b = r.hipotese_sensivel ?? "";
-  if (hasSensivel(r) && !b.startsWith("Art. 11")) return "Campo 7B: dado pessoal sensível exige hipótese do art. 11.";
-  if (!hasSensivel(r) && b) return "Campo 7B só se aplica quando há dado pessoal sensível.";
-  if (!r.tempo_retencao.trim() || !r.base_prazo.trim()) return "Campos 8 e 9: preencha o tempo de retenção e a base do prazo.";
-  if (isRisky(r) && (r.justificativa_mitigacao ?? "").trim().length < 20) return "Linha de risco: justifique as medidas mitigadoras (mínimo 20 caracteres).";
+  if (hasSensivel(r) && !b.startsWith("Art. 11")) return "Selecione o campo 7B (hipótese do art. 11) para salvar — obrigatório porque o campo 5 tem dado pessoal sensível.";
+  if (!hasSensivel(r) && b) return "Limpe o campo 7B para salvar — ele só se aplica quando o campo 5 tem dado pessoal sensível.";
+  if (!r.tempo_retencao.trim()) return "Preencha o campo 8 (Tempo de Retenção) para salvar — informe por quanto tempo o dado pessoal é guardado.";
+  if (!r.base_prazo.trim()) return "Preencha o campo 9 (Base do Prazo) para salvar — ele é obrigatório quando o campo 8 está preenchido.";
+  if (isRisky(r) && (r.justificativa_mitigacao ?? "").trim().length < 20) return "Escreva a justificativa das medidas mitigadoras (mínimo 20 caracteres) para salvar — obrigatória em processos com menores ou dado pessoal sensível. Responsável: DPO.";
   return null;
 }
 

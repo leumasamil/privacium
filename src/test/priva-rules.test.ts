@@ -73,7 +73,7 @@ describe("ROT · travas de risco", () => {
     expect(isRisky({ ...base, dados_sensiveis: ["Biometria"] })).toBe(true);
   });
   it("linha de risco exige justificativa", () => {
-    expect(validateRot({ ...base, categoria_titulares: ["Menores de Idade"] })).toMatch(/justifique/);
+    expect(validateRot({ ...base, categoria_titulares: ["Menores de Idade"] })).toMatch(/justificativa/);
     expect(validateRot({ ...base, categoria_titulares: ["Menores de Idade"], justificativa_mitigacao: "Acesso restrito RBAC e criptografia AES-256" })).toBeNull();
   });
   it("7A exige hipótese do art. 7º", () => {

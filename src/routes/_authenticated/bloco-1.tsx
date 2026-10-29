@@ -149,7 +149,7 @@ function Bloco1() {
           })}
         </nav>
 
-        <Panel title={`${dept} · ${qs.length} perguntas`}>
+        <Panel id="diagnostico" title={`${dept} · ${qs.length} perguntas`}>
           {!questions.length && <p className="text-sm text-muted-foreground">Carregando banco de perguntas…</p>}
           <ul className="space-y-3">
             {qs.map((q) => (

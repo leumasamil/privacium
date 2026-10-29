@@ -45,7 +45,7 @@ const FAQ: [string, string][] = [
   ["Por que o campo 7 é dividido em 7A e 7B?", "A LGPD separa as hipóteses: o art. 7º vale para dado pessoal e o art. 11 para dado pessoal sensível. Um mesmo processo pode tratar os dois tipos, por isso cada um tem seu campo."],
   ["Quando o 7B fica bloqueado?", "Quando o campo 5 está como \"N/A\". Ao marcar qualquer dado pessoal sensível, o 7B passa a ser obrigatório; ao voltar para \"N/A\", ele é limpo automaticamente."],
   ["Posso usar o legítimo interesse para dado pessoal sensível?", "Não. O legítimo interesse (art. 7º, IX) e a proteção do crédito (art. 7º, X) não existem no art. 11."],
-  ["Por que não consigo salvar o processo?", "A validação é bloqueante: a mensagem em vermelho no formulário indica o campo pendente. Linhas com menores de idade ou dado pessoal sensível também exigem justificativa das medidas mitigadoras."],
+  ["Por que não consigo salvar o processo?", "O formulário diz exatamente o que falta: a mensagem em vermelho indica o campo pendente e como preenchê-lo (ex.: \"Preencha o campo 9 (Base do Prazo) para salvar — ele é obrigatório quando o campo 8 está preenchido.\"). Linhas com menores de idade ou dado pessoal sensível também exigem justificativa das medidas mitigadoras."],
   ["As sugestões automáticas são obrigatórias?", "Não. São atalhos com base no que já foi preenchido; o DPO sempre confere e decide."],
   ["Dado anonimizado precisa entrar no ROT?", "Em regra não, pois não é dado pessoal. Registre o processo de anonimização em si, que é tratamento de dado pessoal."],
   ["O que é registrado na trilha de auditoria?", "Toda leitura de tela com dado pessoal, toda alteração e cada clique para revelar um dado mascarado, com hash SHA-256 encadeado."],
