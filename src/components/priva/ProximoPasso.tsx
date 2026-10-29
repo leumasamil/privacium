@@ -7,6 +7,7 @@ import { montarChecklist, pendenciasKanban } from "@/lib/priva/pendencias";
 import { blocoCorrente, calcularProximoPasso, type Passo } from "@/lib/priva/proximoPasso";
 import { cn } from "@/lib/utils";
 import { useDadosBloco } from "./TelaBloqueio";
+import { LinkPendencia } from './LinkPendencia';
 import { FornecedoresProximoPasso } from './AlertaFornecedorVazado';
 
 const TOM: Record<Passo["tipo"], { caixa: string; icone: React.ReactNode; rotulo: string }> = {
@@ -58,7 +59,7 @@ export function ProximoPasso() {
       {passo.tipo === "aguardando" ? (
         <Button variant="outline" onClick={() => { log("INSERT", "solicitacao_assinatura", `Solicitada ação de ${passo.pendencia?.responsavel}: ${passo.pendencia?.titulo}`); toast.success("Solicitação registrada na trilha de auditoria."); }}>{passo.botao}</Button>
       ) : (
-        <Button asChild><Link to={passo.link.to as "/painel"} {...(passo.link.hash ? { hash: passo.link.hash } : {})} onClick={ir}>{passo.botao} <ArrowRight className="h-4 w-4" /></Link></Button>
+        <Button asChild>{passo.pendencia ? <LinkPendencia item={passo.pendencia} onClick={ir}>{passo.botao} <ArrowRight className="h-4 w-4" /></LinkPendencia> : <Link to={passo.link.to as "/painel"} {...(passo.link.hash ? { hash: passo.link.hash } : {})} onClick={ir}>{passo.botao} <ArrowRight className="h-4 w-4" /></Link>}</Button>
       )}
     </section>
     <FornecedoresProximoPasso />

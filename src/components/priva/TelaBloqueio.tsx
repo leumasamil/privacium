@@ -11,6 +11,7 @@ import { montarChecklist, PI_INFO, RISCOS_IA, proximoPasso, type DadosBloco, typ
 import type { RotInput } from "@/lib/priva/rot";
 import { cn } from "@/lib/utils";
 import { ESTADO, EstadoBadge } from "./estado";
+import { LinkPendencia } from './LinkPendencia';
 import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
 
 const ROTULO: Record<string, string> = { DPO_OPERACIONAL: "DPO_OPERACIONAL", C_SUITE: "Diretoria (C_SUITE)", ADMIN_SISTEMA: "ADMIN_SISTEMA" };
@@ -56,9 +57,6 @@ export function useDadosBloco(n: number, cnpj: string | null) {
   return n === 4 ? bloco4 : outros;
 }
 
-function linkDe(p: Pendencia) {
-  return { to: `/bloco-${p.bloco}` as "/bloco-1", hash: p.ancora };
-}
 
 export function TelaBloqueio({ n }: { n: number }) {
   const { cnpj, signatures, roles, role, log } = usePriva();
@@ -123,7 +121,7 @@ export function TelaBloqueio({ n }: { n: number }) {
                       {i.estado !== "bloqueado" && (pode(i) ? (
                         <>
                           {i.sugestao && <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Próxima ação sugerida:</span> {i.sugestao}</p>}
-                          <Link {...linkDe(i)} className="inline-block text-xs font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2">{i.acao} →</Link>
+                          <LinkPendencia item={i} className="inline-block text-xs font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2">{i.acao} →</LinkPendencia>
                         </>
                       ) : (
                         <p className="text-xs text-bloqueado">Depende de {ROTULO[i.responsavel]}.{" "}
@@ -152,7 +150,7 @@ export function TelaBloqueio({ n }: { n: number }) {
       </section>
 
       <div className="flex flex-wrap gap-3">
-        {prox && pode(prox) && <Button asChild><Link {...linkDe(prox)}>{textoBotao} <ArrowRight className="h-4 w-4" /></Link></Button>}
+        {prox && pode(prox) && <Button asChild><LinkPendencia item={prox}>{textoBotao} <ArrowRight className="h-4 w-4" /></LinkPendencia></Button>}
         <Button asChild variant="outline"><Link to="/manual" search={{ aba: "guias" }} hash={`bloco-${ant}-guia`}><BookOpen className="h-4 w-4" /> Ver o que falta neste bloco em detalhes</Link></Button>
       </div>
 

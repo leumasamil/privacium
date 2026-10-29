@@ -49,8 +49,9 @@ export function calcularProximoPasso(a: { blocoTela: number; blocoBase: number; 
       : { tipo: "concluido", bloco: prox, frase: "Etapa concluída.", botao: `Avançar para o Bloco ${prox}`, link: { to: `/bloco-${prox}` }, pendentes: 0 };
   }
   const meu = abertos.find((p) => podeFazer(p, roles));
-  const alvo = meu ?? abertos[0]!;
-  const link = { to: alvo.bloco === 0 ? "/kanban" : `/bloco-${alvo.bloco}`, hash: alvo.ancora };
+  const alvo = meu ?? abertos[0];
+  if (!alvo) throw new Error('Nenhuma pendência disponível');
+  const link = alvo.incidenteId && alvo.ancora === 'anpd' ? { to: `/bloco-4/anpd/${alvo.incidenteId}` } : { to: alvo.bloco === 0 ? "/kanban" : `/bloco-${alvo.bloco}`, hash: alvo.ancora };
   if (!meu) {
     return { tipo: "aguardando", bloco: alvo.bloco, frase: `Aguardando ${alvo.responsavel} — ${alvo.titulo}.`, botao: "Solicitar assinatura", link, pendentes: abertos.length, pendencia: alvo };
   }
