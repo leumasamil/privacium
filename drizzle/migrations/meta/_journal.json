@@ -127,6 +127,13 @@
       "when": 1793307842582,
       "tag": "0017_encarregado_e_comunicacao_anpd",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793308174666,
+      "tag": "0018_proteger_campos_envio_anpd",
+      "breakpoints": true
     }
   ]
 }
