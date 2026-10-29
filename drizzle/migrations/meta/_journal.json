@@ -120,6 +120,13 @@
       "when": 1793299975931,
       "tag": "0016_rot_hipotese_7b",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793307842582,
+      "tag": "0017_encarregado_e_comunicacao_anpd",
+      "breakpoints": true
     }
   ]
 }
