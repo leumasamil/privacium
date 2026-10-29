@@ -1,5 +1,6 @@
 import { FormularioANPD } from "@/components/priva/FormularioANPD";
 import { restanteANPD } from "@/lib/priva/anpd";
+import { linhasNaturezas } from "@/lib/priva/naturezasIncidente";
 import { useEncarregado } from "@/lib/priva/useEncarregado";
 import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
 import { AJUDA } from "@/lib/priva/ajuda";
@@ -61,7 +62,8 @@ function Bloco4() {
   const incs = { rows: consulta.data?.incidentes ?? [], refresh: consulta.refresh };
   const ativo = incs.rows.find((i) => !i.encerrado_em) ?? null;
   const estado = consulta.data?.estados.find(e => e.incidente.id === ativo?.id) ?? null;
-  const encerrado = consulta.data?.estados.find(e => e.incidente.encerrado_em && e.etapas.concluidas === 6 && e.anpd.enviado)?.incidente;
+  const encerradoId = consulta.data?.estados.find(e => e.incidente.encerrado_em && e.etapas.concluidas === 6 && e.anpd.enviado)?.incidente.id;
+  const encerrado = incs.rows.find(i => i.id === encerradoId);
 
   useEffect(() => { if (cnpj) log("SELECT", "lotes_pgaudit", "Abertura do console forense do Bloco 4"); }, [cnpj, log]);
 
@@ -76,13 +78,14 @@ function Bloco4() {
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 4 · (V) Ciclo Privacium Semestral · ISO 27037" title="Vigiar a Privacidade e Processar Incidentes" />
       {AJUDA[4] && <AjudaTarefa {...AJUDA[4]} pendencias={montarChecklist(consulta.data, signatures)} />}
-      <ConsolePgAudit cnpj={cnpj} lotes={lotes.rows} canEdit={canEdit} refresh={lotes.refresh} />
+      <ConsolePgAudit cnpj={cnpj} lotes={lotes.rows} incidentes={incs.rows} canEdit={canEdit} refresh={lotes.refresh} />
       <CriseRansomware cnpj={cnpj} ativo={ativo} estado={estado} canEdit={canEdit} refresh={incs.refresh} />
       <PIOutput pi="PI-04: Dossiê de Auditoria de Logs e Resposta de Célula" ready={pronto} readyHint="Gere ao menos um lote pgAudit com hash e conclua um incidente com os 6 passos e comunicação à ANPD." dual>
         <p><b>CNPJ:</b> {maskCNPJ(cnpj)}</p>
         <p className="mt-2"><b>Lotes com cadeia de custódia:</b></p>
         <ul className="list-disc pl-5 font-mono text-xs">{lotesComHash.map((l) => <li key={l.id}>{l.mes_referencia} · {l.linhas} linhas · {l.hash_sha256}</li>)}</ul>
         {encerrado && <p className="mt-2"><b>Incidente encerrado:</b> declarado em {new Date(encerrado.iniciado_em).toLocaleString("pt-BR")}, comunicado à ANPD em {new Date(encerrado.enviado_anpd_em ?? "").toLocaleString("pt-BR")}.</p>}
+        {encerrado && linhasNaturezas(encerrado.comunicacao).map(linha => <p key={linha} className="mt-2">{linha}</p>)}
       </PIOutput>
       {/* Dado de terceiro não é evidência própria: referências ficam fora do
           PIOutput, docRef, PDFs, dossiê, trilha e hashes de todas as chancelas. */}
@@ -91,7 +94,7 @@ function Bloco4() {
   );
 }
 
-function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes: Lote[]; canEdit: boolean; refresh: () => void }) {
+function ConsolePgAudit({ cnpj, lotes, incidentes, canEdit, refresh }: { cnpj: string; lotes: Lote[]; incidentes: Incidente[]; canEdit: boolean; refresh: () => void }) {
   const { log } = usePriva();
   const encarregado = useEncarregado();
   const [busy, setBusy] = useState(false);
@@ -142,6 +145,11 @@ function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes
     let y = 52;
     for (const linha of corpo) { if (y > 270) { doc.addPage(); y = 16; } doc.text(linha, 14, y); y += 3.6; }
     doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+    for (const incidente of incidentes.filter(i => i.enviado_anpd_em?.slice(0, 7) === l.mes_referencia)) {
+      const linhas = doc.splitTextToSize([`Incidente: ${incidente.id}`, ...linhasNaturezas(incidente.comunicacao)].join("\n"), 180) as string[];
+      for (const linha of linhas) { if (y > 260) { doc.addPage(); y = 20; } doc.text(linha, 14, y); y += 4; }
+      y += 4;
+    }
     const contato = encarregado.data;
     const contatoLinhas = doc.splitTextToSize(contato ? `Encarregado (DPO): ${contato.nome} · ${contato.email}${contato.telefone ? ` · ${contato.telefone}` : ""}${contato.endereco ? ` · ${contato.endereco}` : ""}` : "Encarregado (DPO): Contato não cadastrado", 180) as string[];
     if (y + contatoLinhas.length * 4 > 240) { doc.addPage(); y = 20; }

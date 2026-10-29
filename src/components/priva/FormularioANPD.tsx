@@ -6,7 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { usePriva } from "@/lib/priva/store";
 import { useEncarregado } from "@/lib/priva/useEncarregado";
-import { validarANPD, type ComunicacaoANPD } from "@/lib/priva/anpd";
+import { prepararComunicacaoANPD, validarANPD, type ComunicacaoANPD } from "@/lib/priva/anpd";
+import { naturezaInicial, PADRAO_RANSOMWARE } from "@/lib/priva/naturezasIncidente";
+import { SeletorNatureza } from "./SeletorNatureza";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -21,10 +23,10 @@ export function FormularioANPD({ incidente, estado, encerramento, canEdit, refre
   const [busy, setBusy] = useState(false);
   const [falha, setFalha] = useState("");
   const [processo, setProcesso] = useState(incidente.processo_id ?? "");
-  const [form, setForm] = useState<ComunicacaoANPD>({ natureza: "Ransomware", categorias: [], titulares: "", riscos: "", medidas: "" });
+  const [form, setForm] = useState<ComunicacaoANPD>({ natureza: PADRAO_RANSOMWARE, categorias: [], titulares: "", riscos: "", medidas: "" });
   useEffect(() => {
     const s = incidente.comunicacao as Record<string, Json> | null;
-    setForm({ natureza: String(s?.["natureza"] ?? "Ransomware"), categorias: Array.isArray(s?.["categorias"]) ? s["categorias"].map(String) : [], titulares: String(s?.["titulares"] ?? ""), riscos: String(s?.["riscos"] ?? ""), medidas: String(s?.["medidas"] ?? "") });
+    setForm({ natureza: naturezaInicial(s?.["natureza"], !!incidente.enviado_anpd_em), naturezasSecundarias: Array.isArray(s?.["naturezas_secundarias"]) ? s["naturezas_secundarias"].flatMap(n => n && typeof n === "object" && !Array.isArray(n) && typeof n["valor"] === "string" ? [n["valor"]] : []) : [], naturezaOutro: String(s?.["natureza_outro"] ?? ""), categorias: Array.isArray(s?.["categorias"]) ? s["categorias"].map(String) : [], titulares: String(s?.["titulares"] ?? ""), riscos: String(s?.["riscos"] ?? ""), medidas: String(s?.["medidas"] ?? "") });
     setProcesso(incidente.processo_id ?? "");
   }, [incidente.id, incidente.enviado_anpd_em]);
   const rot = useQuery({ queryKey: ["anpd_rot", incidente.empresa_cnpj, demo], enabled: !demo, queryFn: async () => {
@@ -43,7 +45,7 @@ export function FormularioANPD({ incidente, estado, encerramento, canEdit, refre
     if (!editavel || motivos.length || busy) return;
     setBusy(true); setFalha("");
     try {
-      const { error } = await supabase.rpc("enviar_comunicacao_anpd", { _incidente: incidente.id, _form: form as unknown as Json, _processo: processo });
+      const { error } = await supabase.rpc("enviar_comunicacao_anpd", { _incidente: incidente.id, _form: prepararComunicacaoANPD(form) as unknown as Json, _processo: processo });
       if (error) throw error;
       await refresh();
       await qc.invalidateQueries({ queryKey: ["pendencias"] });
@@ -59,7 +61,8 @@ export function FormularioANPD({ incidente, estado, encerramento, canEdit, refre
     <div aria-live="polite" className="my-4 flex flex-wrap items-center justify-between gap-3 border-l-4 border-andamento-border bg-andamento-bg p-4"><div><p className="text-xs font-semibold uppercase">Próximo passo</p><p className="text-sm">{estado.anpd.enviado ? estado.podeEncerrar ? 'Comunicação registrada. Encerre o incidente para assinar o PI-04.' : estado.motivos_bloqueio[0] : motivos[0]?.mensagem ?? "Envie a comunicação simulada à ANPD."}</p></div>{estado.anpd.enviado ? encerramento : <Button onClick={() => ir(motivos[0]?.campo ?? "envio")}>{motivos.length ? "Resolver pendência" : "Ir para envio"}</Button>}</div>
     {incidente.enviado_anpd_em && <p role="status" className="mb-4 text-success">Enviado em {new Date(incidente.enviado_anpd_em).toLocaleString("pt-BR")} · {incidente.comunicacao_atrasada ? "Comunicação em atraso registrada na trilha." : "Prazo de envio cumprido."}</p>}
     <form onSubmit={e => { e.preventDefault(); void enviar(); }} className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2"><div><label htmlFor="anpd-incidente">Número do incidente</label><Input id="anpd-incidente" value={incidente.id} readOnly /></div><div><label htmlFor="anpd-natureza">Natureza do incidente</label><Input id="anpd-natureza" value={form.natureza} readOnly={!editavel} placeholder="Ex.: Ransomware no servidor de arquivos" onChange={e => setForm({ ...form, natureza: e.target.value })} /></div></div>
+      <div><label htmlFor="anpd-incidente">Número do incidente</label><Input id="anpd-incidente" value={incidente.id} readOnly /></div>
+      <SeletorNatureza form={form} onChange={setForm} editavel={editavel} sugerida={!incidente.comunicacao || (incidente.comunicacao as Record<string, Json>)?.["natureza"] === "Ransomware"} />
       <div><label htmlFor="anpd-processo">Processo ROT afetado</label><select id="anpd-processo" className="mt-1 w-full rounded-sm border bg-background p-2 text-sm focus:ring-2 focus:ring-ring" disabled={!editavel || !!incidente.processo_id} value={processo} onChange={e => { setProcesso(e.target.value); setForm({ ...form, categorias: [] }); }}><option value="">Selecione o processo afetado</option>{rot.data?.map(r => <option key={r.id} value={r.id}>{r.codigo} · {r.finalidade_especifica}</option>)}</select>{rot.isError && <p className="text-atencao">Falha ao carregar o ROT. <Button variant="link" onClick={() => rot.refetch()}>Tentar novamente</Button></p>}{!rot.isLoading && !rot.data?.length && <p className="text-atencao">Nenhum processo disponível. <Link to="/bloco-2" hash="rot" className="underline">Cadastrar processo no ROT</Link></p>}</div>
       <fieldset id="anpd-categorias" tabIndex={-1} className="rounded-sm border p-3 focus:ring-2 focus:ring-ring"><legend className="px-1 text-sm">Categorias de dados pessoais afetados</legend><div className="grid gap-2 md:grid-cols-2">{categorias.map(c => <label key={c} className="flex items-center gap-2 text-sm"><Checkbox checked={form.categorias.includes(c)} disabled={!editavel} onCheckedChange={v => setForm({ ...form, categorias: v === true ? [...form.categorias, c] : form.categorias.filter(x => x !== c) })} />{c}</label>)}</div>{!categorias.length && <p className="text-sm text-atencao">Selecione um processo para carregar as categorias do ROT.</p>}</fieldset>
       <div><label htmlFor="anpd-titulares">Número aproximado de titulares afetados</label><Input id="anpd-titulares" type="number" min={1} step={1} value={form.titulares} readOnly={!editavel} placeholder="Ex.: 1240" onChange={e => setForm({ ...form, titulares: e.target.value })} /></div>
