@@ -11,13 +11,15 @@ import { montarChecklist, PI_INFO, RISCOS_IA, proximoPasso, type DadosBloco, typ
 import type { RotInput } from "@/lib/priva/rot";
 import { cn } from "@/lib/utils";
 import { ESTADO, EstadoBadge } from "./estado";
+import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
 
 const ROTULO: Record<string, string> = { DPO_OPERACIONAL: "DPO_OPERACIONAL", C_SUITE: "Diretoria (C_SUITE)", ADMIN_SISTEMA: "ADMIN_SISTEMA" };
 
 export function useDadosBloco(n: number, cnpj: string | null) {
-  return useQuery({
+  const bloco4 = useEstadoBloco4(n === 4 ? cnpj : null);
+  const outros = useQuery({
     queryKey: ["pendencias", n, cnpj],
-    enabled: !!cnpj,
+    enabled: !!cnpj && n !== 4,
     queryFn: async (): Promise<DadosBloco> => {
       const c = cnpj ?? "";
       if (n === 1) {
@@ -48,13 +50,10 @@ export function useDadosBloco(n: number, cnpj: string | null) {
         const rs = (data?.riscos ?? {}) as Record<string, { mitig?: string }>;
         return { n: 5, sistema: data?.sistema_avaliado ?? "", escudo: data?.escudo_digital ?? "", riscos: RISCOS_IA.map((r) => ({ label: r.label, mitig: rs[r.id]?.mitig ?? "" })) };
       }
-      const [l, i] = await Promise.all([
-        supabase.from("lotes_pgaudit").select("mes_referencia,hash_sha256").eq("empresa_cnpj", c),
-        supabase.from("incidentes_seguranca").select("id,passos,iniciado_em,enviado_anpd_em,encerrado_em").eq("empresa_cnpj", c),
-      ]);
-      return { n: 4, lotes: l.data ?? [], incidentes: i.data ?? [], agora: Date.now() };
+      throw new Error('Bloco sem consulta de pendências');
     },
   });
+  return n === 4 ? bloco4 : outros;
 }
 
 function linkDe(p: Pendencia) {

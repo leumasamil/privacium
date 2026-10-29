@@ -88,7 +88,7 @@ export const DEMO_ROWS: {
   incidentes_seguranca: [{
     id: "demo-inc", empresa_cnpj: DEMO_CNPJ, iniciado_em: ts, passos: [true, true, true, false, false, false],
     comunicacao: { natureza: "Ransomware no servidor de arquivos", categorias: "Nome, CPF", titulares: "1.250", riscos: "Fraude de identidade", medidas: "Isolamento e restauração de backup", encarregado: "dpo@cenografica.com.br" },
-    enviado_anpd_em: null, encerrado_em: null, criado_por: null, processo_id: null, comunicacao_atrasada: false,
+    enviado_anpd_em: null, encerrado_em: null, criado_por: null, processo_id: null, comunicacao_atrasada: false, etapas_registro: {},
   }],
   ripd_ia: [{
     empresa_cnpj: DEMO_CNPJ, sistema_avaliado: "Assistente LLM de triagem de currículos e atendimento", atualizado_por: null, atualizado_em: ts,

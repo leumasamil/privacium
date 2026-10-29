@@ -14,10 +14,13 @@ import type { Database } from "@/integrations/supabase/types";
 import { maskCNPJ, sha256 } from "@/lib/priva/data";
 import { cn } from "@/lib/utils";
 import { usePriva } from "@/lib/priva/store";
-import { useCnpjRows } from "@/lib/priva/useCnpjRows";
 import { DEMO_SLA_MS } from "@/lib/priva/demo";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
+import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
+import { montarChecklist } from '@/lib/priva/pendencias';
+import type { EstadoIncidente } from '@/lib/priva/estadoIncidente';
+import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
 
 type Lote = Database["public"]["Tables"]["lotes_pgaudit"]["Row"];
 type Incidente = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
@@ -49,16 +52,20 @@ const mesAtual = () => new Date().toISOString().slice(0, 7);
 const fmt = (ms: number) => { const s = Math.floor(ms / 1000); return `${String(Math.floor(s / 3600)).padStart(2, "0")}:${String(Math.floor((s % 3600) / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };
 
 function Bloco4() {
-  const { cnpj, roles, log, demo } = usePriva();
+  const { cnpj, roles, log, demo, signatures } = usePriva();
   const canEdit = !demo && (roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA"));
-  const lotes = useCnpjRows("lotes_pgaudit", cnpj, "mes_referencia");
-  const incs = useCnpjRows("incidentes_seguranca", cnpj, "iniciado_em");
+  const consulta = useEstadoBloco4(cnpj);
+  const lotes = { rows: consulta.data?.lotes ?? [], refresh: consulta.refresh };
+  const incs = { rows: consulta.data?.incidentes ?? [], refresh: consulta.refresh };
   const ativo = incs.rows.find((i) => !i.encerrado_em) ?? null;
-  const encerrado = incs.rows.find((i) => i.encerrado_em && i.passos.every(Boolean) && i.enviado_anpd_em);
+  const estado = consulta.data?.estados.find(e => e.incidente.id === ativo?.id) ?? null;
+  const encerrado = consulta.data?.estados.find(e => e.incidente.encerrado_em && e.etapas.concluidas === 6 && e.anpd.enviado)?.incidente;
 
   useEffect(() => { if (cnpj) log("SELECT", "lotes_pgaudit", "Abertura do console forense do Bloco 4"); }, [cnpj, log]);
 
   if (!cnpj) return <Panel title="Vigilância"><p className="text-sm text-muted-foreground">Selecione um CNPJ no menu lateral.</p></Panel>;
+  if (consulta.isError) return <Panel title="Vigilância"><p role="alert">Não foi possível ler o estado dos incidentes.</p><Button onClick={() => consulta.refetch()}>Tentar novamente</Button></Panel>;
+  if (!consulta.data) return <p role="status">Lendo o estado dos incidentes…</p>;
 
   const lotesComHash = lotes.rows.filter((l) => l.hash_sha256);
   const pronto = lotesComHash.length > 0 && !!encerrado;
@@ -66,9 +73,9 @@ function Bloco4() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 4 · (V) Ciclo Privacium Semestral · ISO 27037" title="Vigiar a Privacidade e Processar Incidentes" />
-      <AjudaTarefa {...AJUDA[4]!} />
+      {AJUDA[4] && <AjudaTarefa {...AJUDA[4]} pendencias={montarChecklist(consulta.data, signatures)} />}
       <ConsolePgAudit cnpj={cnpj} lotes={lotes.rows} canEdit={canEdit} refresh={lotes.refresh} />
-      <CriseRansomware cnpj={cnpj} ativo={ativo} canEdit={canEdit} refresh={incs.refresh} />
+      <CriseRansomware cnpj={cnpj} ativo={ativo} estado={estado} canEdit={canEdit} refresh={incs.refresh} />
       <PIOutput pi="PI-04: Dossiê de Auditoria de Logs e Resposta de Célula" ready={pronto} readyHint="Gere ao menos um lote pgAudit com hash e conclua um incidente com os 6 passos e comunicação à ANPD." dual>
         <p><b>CNPJ:</b> {maskCNPJ(cnpj)}</p>
         <p className="mt-2"><b>Lotes com cadeia de custódia:</b></p>
@@ -163,15 +170,17 @@ function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes
   );
 }
 
-function CriseRansomware({ cnpj, ativo, canEdit, refresh }: { cnpj: string; ativo: Incidente | null; canEdit: boolean; refresh: () => void }) {
+function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: string; ativo: Incidente | null; estado: EstadoIncidente | null; canEdit: boolean; refresh: () => Promise<unknown> }) {
   const { log, demo } = usePriva();
   const qc = useQueryClient();
   const [now, setNow] = useState(Date.now());
+  const [busy, setBusy] = useState(false);
+  const [bloqueios, setBloqueios] = useState<string[]>([]);
   const stepsRef = useRef<HTMLOListElement>(null);
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
 
   const ref = ativo ? ativo.id.slice(0, 6) : "";
-  const passos = ativo?.passos ?? [false, false, false, false, false, false];
+  const passos = estado?.etapas.itens.map(i => i.concluida) ?? [false, false, false, false, false, false];
   const atual = passos.findIndex((p) => !p);
   const restante = demo ? DEMO_SLA_MS : (ativo ? restanteANPD(ativo.iniciado_em, ativo.enviado_anpd_em, now) : 72 * 3600000);
   const tom = !ativo ? "neutro" : restante === 0 ? "vencido" : restante < 24 * 3600000 ? "atencao" : "andamento";
@@ -182,15 +191,33 @@ function CriseRansomware({ cnpj, ativo, canEdit, refresh }: { cnpj: string; ativ
     vencido: { caixa: "border-vencido-border bg-vencido-bg", texto: "text-vencido", rotulo: "Vencido" },
   }[tom];
 
-  const upd = async (patch: Database["public"]["Tables"]["incidentes_seguranca"]["Update"], detail: string) => {
-    if (!ativo) return false;
-    const { error } = await supabase.from("incidentes_seguranca").update(patch).eq("id", ativo.id);
-    if (error) { toast.error("Falha ao salvar."); return false; }
-    log("UPDATE", "incidentes_seguranca", detail);
-    refresh();
-    qc.invalidateQueries({ queryKey: ["pendencias"] });
-    return true;
+  const registrarEtapa = async (i: number, concluida: boolean) => {
+    if (!ativo || busy || !canEdit) return false;
+    setBusy(true);
+    try {
+      const { error } = await supabase.rpc('registrar_etapa_incidente', { _incidente: ativo.id, _etapa: i + 1, _concluida: concluida });
+      if (error) throw error;
+      await refresh();
+      toast.success(concluida ? 'Etapa registrada com data e responsável.' : 'Etapa reaberta.');
+      return true;
+    } catch (error) { console.error('Falha ao registrar etapa', error); toast.error('Não foi possível salvar a etapa. Tente novamente.'); return false; }
+    finally { setBusy(false); }
   };
+  const encerrar = async () => {
+    if (!ativo || !estado || busy || !canEdit) return;
+    if (!estado.podeEncerrar) { setBloqueios(estado.motivos_bloqueio); return; }
+    setBusy(true); setBloqueios([]);
+    try {
+      const { data, error } = await supabase.rpc('encerrar_incidente', { _incidente: ativo.id });
+      if (error) throw error;
+      const resultado = data as { encerrado?: boolean; motivos_bloqueio?: string[] } | null;
+      if (!resultado?.encerrado) { setBloqueios(resultado?.motivos_bloqueio ?? ['Confira as pendências do incidente.']); await refresh(); return; }
+      await refresh();
+      toast.success('Incidente encerrado. Trilha de auditoria registrada.');
+    } catch (error) { console.error('Falha ao encerrar incidente', error); toast.error('Não foi possível encerrar. Tente novamente.'); }
+    finally { setBusy(false); }
+  };
+  const encerramento = estado && canEdit ? <EncerrarIncidente estado={estado} busy={busy} onClick={() => void encerrar()} /> : null;
   const declarar = async () => {
     const { error } = await supabase.from("incidentes_seguranca").insert({ empresa_cnpj: cnpj });
     if (error) { toast.error("Falha ao declarar."); return; }
@@ -201,16 +228,20 @@ function CriseRansomware({ cnpj, ativo, canEdit, refresh }: { cnpj: string; ativ
   const concluirEtapa = async (i: number) => {
     const etapa = STEPS[i];
     if (!ativo || !etapa) return;
-    const ok = await upd({ passos: ativo.passos.map((x, j) => (j === i ? true : x)) }, `Passo ${i + 1} (${etapa.t}) concluído`);
+    const ok = await registrarEtapa(i, true);
     if (ok) setTimeout(() => (i + 1 < 5 ? stepsRef.current?.querySelector(`[data-step="${i + 1}"]`) : document.getElementById("anpd"))?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
   };
 
   return (
     <Panel id="incidentes" title="Gerenciamento de Crise Cibernética · Ransomware" action={canEdit && (ativo
-      ? <Button size="sm" variant="outline" disabled={!ativo.passos.every(Boolean) || !ativo.enviado_anpd_em} onClick={() => upd({ encerrado_em: new Date().toISOString() }, "Incidente encerrado")}>Encerrar incidente</Button>
+      ? encerramento
       : <Button size="sm" variant="outline" onClick={declarar}>Declarar incidente</Button>)}>
       {ativo && <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><p className="text-sm">Incidente ativo: <span className="font-mono font-semibold text-primary">#{ref}</span></p>{!ativo.enviado_anpd_em && <div><Button variant="outline" disabled={!passos.slice(0, 5).every(Boolean)} onClick={() => document.getElementById("anpd")?.scrollIntoView({ behavior: "smooth" })}>Comunicar à ANPD</Button>{!passos.slice(0, 5).every(Boolean) && <p className="mt-1 text-xs text-atencao">Conclua as etapas {passos.slice(0, 5).map((p, i) => p ? null : i + 1).filter(Boolean).join(", ")} para comunicar.</p>}</div>}</div>}
 
+      {estado && <div id="encerramento" aria-live="polite" className="mb-4 space-y-2">
+        <p className="text-sm">Etapas concluídas: {estado.etapas.concluidas} de {estado.etapas.total}</p>
+        {(estado.motivos_bloqueio.length > 0 || bloqueios.length > 0) && <><p className="font-semibold text-atencao">Não é possível encerrar. Pendências:</p><ul className="space-y-1 text-sm text-atencao">{estado.correcoes.map(c => <li key={c.mensagem}>{c.mensagem} <a className="underline" href={`#${c.ancora}`}>{c.acao} →</a></li>)}{bloqueios.map(m => <li key={m}>{m}</li>)}</ul></>}
+      </div>}
       {/* Barra de etapas */}
       <ol ref={stepsRef} className="mb-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-6" aria-label="Etapas do incidente">
         {STEPS.map((s, i) => {
@@ -218,7 +249,7 @@ function CriseRansomware({ cnpj, ativo, canEdit, refresh }: { cnpj: string; ativ
           const corrente = !!ativo && i === atual;
           const bloqueado = !ativo || (!feito && !corrente);
           return (
-            <li key={s.t} data-step={i} className={cn("relative rounded-md border p-3 text-xs transition-all duration-300",
+            <li id={`incidente-etapa-${i + 1}`} key={s.t} data-step={i} className={cn("relative scroll-mt-6 rounded-md border p-3 text-xs transition-all duration-300",
               feito && "border-concluido-border bg-concluido-bg",
               corrente && "border-2 border-pendencia-border bg-pendencia-bg shadow-md",
               bloqueado && "border-bloqueado-border bg-bloqueado-bg opacity-80")}>
@@ -236,12 +267,12 @@ function CriseRansomware({ cnpj, ativo, canEdit, refresh }: { cnpj: string; ativ
                 <>
                   <p className="mt-1 text-muted-foreground">{s.d}</p>
                   {i === 5 ? <p className="mt-1 text-pendencia">Consome o SLA de 72h · preencha o formulário abaixo.</p>
-                    : canEdit && <Button size="sm" variant="outline" className="mt-2 h-7 w-full" onClick={() => concluirEtapa(i)}>Marcar como concluída</Button>}
+                    : canEdit && <Button size="sm" variant="outline" disabled={busy} className="mt-2 h-auto min-h-7 w-full whitespace-normal" onClick={() => concluirEtapa(i)}>Marcar como concluída</Button>}
                 </>
               )}
-              {feito && canEdit && ativo && !ativo.enviado_anpd_em && i < 5 && passos[i + 1] === false && (
-                <button className="mt-1 text-[10px] text-muted-foreground underline" onClick={() => upd({ passos: ativo.passos.map((x, j) => (j === i ? false : x)) }, `Passo ${i + 1} (${s.t}) reaberto`)}>Reabrir</button>
-              )}
+              {feito && i < 5 && estado && <p className="mt-1 text-muted-foreground">{estado.etapas.itens[i]?.responsavel && estado.etapas.itens[i]?.data ? `Responsável registrado · ${new Date(estado.etapas.itens[i]?.data ?? '').toLocaleString('pt-BR')}` : 'Data e responsável não registrados'}</p>}
+              {feito && canEdit && i < 5 && (!estado?.etapas.itens[i]?.responsavel || !estado?.etapas.itens[i]?.data) && <Button size="sm" variant="outline" disabled={busy} className="mt-2 h-auto whitespace-normal" onClick={() => registrarEtapa(i, true)}>Confirmar conclusão</Button>}
+              {feito && canEdit && ativo && !ativo.enviado_anpd_em && i < 5 && passos[i + 1] === false && <Button variant="link" disabled={busy} className="h-auto p-0 text-xs" onClick={() => registrarEtapa(i, false)}>Reabrir</Button>}
             </li>
           );
         })}
@@ -262,7 +293,7 @@ function CriseRansomware({ cnpj, ativo, canEdit, refresh }: { cnpj: string; ativ
         </ul>
       </div>
 
-      {ativo && <FormularioANPD key={ativo.id} incidente={ativo} canEdit={canEdit} refresh={refresh} />}
+      {ativo && estado && <FormularioANPD key={ativo.id} incidente={ativo} estado={estado} encerramento={encerramento} canEdit={canEdit} refresh={refresh} />}
     </Panel>
   );
 }

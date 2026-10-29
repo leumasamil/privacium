@@ -276,6 +276,7 @@ export type Database = {
           empresa_cnpj: string
           encerrado_em: string | null
           enviado_anpd_em: string | null
+          etapas_registro: Json
           id: string
           iniciado_em: string
           passos: boolean[]
@@ -288,6 +289,7 @@ export type Database = {
           empresa_cnpj: string
           encerrado_em?: string | null
           enviado_anpd_em?: string | null
+          etapas_registro?: Json
           id?: string
           iniciado_em?: string
           passos?: boolean[]
@@ -300,6 +302,7 @@ export type Database = {
           empresa_cnpj?: string
           encerrado_em?: string | null
           enviado_anpd_em?: string | null
+          etapas_registro?: Json
           id?: string
           iniciado_em?: string
           passos?: boolean[]
@@ -841,6 +844,7 @@ export type Database = {
       cnpj_valido: { Args: { _c: string }; Returns: boolean }
       cpf_valido: { Args: { _c: string }; Returns: boolean }
       empresa_ativa: { Args: { _cnpj: string }; Returns: boolean }
+      encerrar_incidente: { Args: { _incidente: string }; Returns: Json }
       enviar_comunicacao_anpd: {
         Args: { _form: Json; _incidente: string; _processo: string }
         Returns: string
@@ -900,6 +904,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      registrar_etapa_incidente: {
+        Args: { _concluida?: boolean; _etapa: number; _incidente: string }
+        Returns: undefined
       }
       registrar_falha_login: { Args: { _email: string }; Returns: undefined }
       registrar_trilha: {
