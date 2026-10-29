@@ -35,6 +35,7 @@ export type DadosBloco =
   | { n: 1; perguntas: number; respondidas: number; naos: number }
   | { n: 2; rot: RotInput[] }
   | { n: 3; endpoints: { protegido: boolean }[]; cofres: { hash_integridade: string | null }[]; chaves: number | null }
+  | { n: 5; sistema: string; escudo: string; riscos: { label: string; mitig: string }[] }
   | { n: 4; lotes: { mes_referencia: string; hash_sha256: string | null }[]; incidentes: { id: string; passos: boolean[]; iniciado_em: string; enviado_anpd_em: string | null; encerrado_em: string | null }[]; agora: number };
 
 const est = (feitos: number, total: number): Estado => (total > 0 && feitos >= total ? "ok" : feitos > 0 ? "andamento" : "pendente");
@@ -54,6 +55,7 @@ function assinaturas(n: number, sigs: Record<string, Signature>, base: boolean):
 
 /** Monta o checklist do bloco anterior (n) a partir do estado real do CNPJ. Itens sem pendência aplicável são omitidos. */
 export function montarChecklist(d: DadosBloco, sigs: Record<string, Signature>): Pendencia[] {
+  if (d.n === 5) return pendenciasBloco5(d, sigs);
   const it: Pendencia[] = [];
   const n = d.n;
   if (d.n === 1) {
@@ -121,6 +123,12 @@ export function proximoPasso(itens: Pendencia[], roles: string[]): Pendencia | n
 const ORDEM: Record<Estado, number> = { critico: 0, atencao: 1, andamento: 2, pendente: 3, bloqueado: 4, ok: 5 };
 /** Vencidas primeiro, depois atenção, em andamento, não iniciadas, aguardando; concluídas por último. */
 export const ordenar = (itens: Pendencia[]) => [...itens].sort((a, b) => ORDEM[a.estado] - ORDEM[b.estado]);
+
+export const RISCOS_IA = [
+  { id: "vazamento", label: "Vazamento por prompts" },
+  { id: "vies", label: "Vieses discriminatórios (RH/Crédito)" },
+  { id: "injecao", label: "Injeção de prompts" },
+];
 
 /** Bloco 5: RIPD (sistema, Escudo Digital, mitigação por risco) + duas assinaturas do PI-05. */
 export function pendenciasBloco5(d: { sistema: string; escudo: string; riscos: { label: string; mitig: string }[] }, sigs: Record<string, Signature>): Pendencia[] {

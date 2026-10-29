@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { usePriva } from "@/lib/priva/store";
-import { montarChecklist, PI_INFO, proximoPasso, type DadosBloco, type Estado, type Pendencia } from "@/lib/priva/pendencias";
+import { montarChecklist, PI_INFO, RISCOS_IA, proximoPasso, type DadosBloco, type Estado, type Pendencia } from "@/lib/priva/pendencias";
 import type { RotInput } from "@/lib/priva/rot";
 import { cn } from "@/lib/utils";
 import { ESTADO, EstadoBadge } from "./estado";
@@ -42,6 +42,11 @@ export function useDadosBloco(n: number, cnpj: string | null) {
           chaves = k.error ? null : k.count ?? 0;
         }
         return { n: 3, endpoints: ends, cofres: a.filter((x) => x.tipo === "COFRE"), chaves };
+      }
+      if (n === 5) {
+        const { data } = await supabase.from("ripd_ia").select("sistema_avaliado,escudo_digital,riscos").eq("empresa_cnpj", c).maybeSingle();
+        const rs = (data?.riscos ?? {}) as Record<string, { mitig?: string }>;
+        return { n: 5, sistema: data?.sistema_avaliado ?? "", escudo: data?.escudo_digital ?? "", riscos: RISCOS_IA.map((r) => ({ label: r.label, mitig: rs[r.id]?.mitig ?? "" })) };
       }
       const [l, i] = await Promise.all([
         supabase.from("lotes_pgaudit").select("mes_referencia,hash_sha256").eq("empresa_cnpj", c),
