@@ -1,12 +1,13 @@
 import { FormularioANPD } from "@/components/priva/FormularioANPD";
 import { restanteANPD } from "@/lib/priva/anpd";
 import { linhasNaturezas } from "@/lib/priva/naturezasIncidente";
+import { linhasRiscos } from '@/lib/priva/riscosIncidente';
 import { linhasMedidas } from '@/lib/priva/medidasIncidente';
 import { linhasCategorias } from '@/lib/priva/categoriasANPD';
 import { useEncarregado } from "@/lib/priva/useEncarregado";
 import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
 import { AJUDA } from "@/lib/priva/ajuda";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Circle, Clock, AlertTriangle, OctagonAlert, FileDown, Hash, Lock, Play, Timer } from "lucide-react";
@@ -90,6 +91,7 @@ function Bloco4() {
         <ul className="list-disc pl-5 font-mono text-xs">{lotesComHash.map((l) => <li key={l.id}>{l.mes_referencia} · {l.linhas} linhas · {l.hash_sha256}</li>)}</ul>
         {encerrado && <p className="mt-2"><b>Incidente encerrado:</b> declarado em {new Date(encerrado.iniciado_em).toLocaleString("pt-BR")}, comunicado à ANPD em {new Date(encerrado.enviado_anpd_em ?? "").toLocaleString("pt-BR")}.</p>}
         {encerrado && linhasNaturezas(encerrado.comunicacao).map(linha => <p key={linha} className="mt-2">{linha}</p>)}
+        {encerrado && linhasRiscos(encerrado.comunicacao).map(linha => <p key={linha} className="mt-2">{linha}</p>)}
         {encerrado && linhasMedidas(encerrado.comunicacao).map(linha => <p key={linha} className="mt-2">{linha}</p>)}
         {encerrado && linhasCategorias(encerrado.comunicacao).map(linha => <p key={linha} className="mt-2">{linha}</p>)}
       </PIOutput>
@@ -152,7 +154,7 @@ function ConsolePgAudit({ cnpj, lotes, incidentes, canEdit, refresh }: { cnpj: s
     for (const linha of corpo) { if (y > 270) { doc.addPage(); y = 16; } doc.text(linha, 14, y); y += 3.6; }
     doc.setFont("helvetica", "normal"); doc.setFontSize(9);
     for (const incidente of incidentes.filter(i => i.enviado_anpd_em?.slice(0, 7) === l.mes_referencia)) {
-      const linhas = doc.splitTextToSize([`Incidente: ${incidente.id}`, ...linhasNaturezas(incidente.comunicacao), ...linhasMedidas(incidente.comunicacao), ...linhasCategorias(incidente.comunicacao)].join("\n"), 180) as string[];
+      const linhas = doc.splitTextToSize([`Incidente: ${incidente.id}`, ...linhasNaturezas(incidente.comunicacao), ...linhasRiscos(incidente.comunicacao), ...linhasMedidas(incidente.comunicacao), ...linhasCategorias(incidente.comunicacao)].join("\n"), 180) as string[];
       for (const linha of linhas) { if (y > 260) { doc.addPage(); y = 20; } doc.text(linha, 14, y); y += 4; }
       y += 4;
     }
@@ -257,7 +259,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
     <Panel id="incidentes" title="Gerenciamento de Crise Cibernética · Ransomware" action={canEdit && (ativo
       ? encerramento
       : <Button size="sm" variant="outline" onClick={declarar}>Declarar incidente</Button>)}>
-      {ativo && <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><p className="text-sm">Incidente ativo: <span className="font-mono font-semibold text-primary">#{ref}</span></p>{!ativo.enviado_anpd_em && <div><Button variant="outline" disabled={!passos.slice(0, 5).every(Boolean)} onClick={() => document.getElementById("anpd")?.scrollIntoView({ behavior: "smooth" })}>Comunicar à ANPD</Button>{!passos.slice(0, 5).every(Boolean) && <p className="mt-1 text-xs text-atencao">Conclua as etapas {passos.slice(0, 5).map((p, i) => p ? null : i + 1).filter(Boolean).join(", ")} para comunicar.</p>}</div>}</div>}
+      {ativo && <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><p className="text-sm">Incidente ativo: <span className="font-mono font-semibold text-primary">#{ref}</span></p>{!ativo.enviado_anpd_em && <div><Button variant="outline" asChild><Link to="/bloco-4/anpd/$incidenteId" params={{ incidenteId: ativo.id }}>Abrir formulário ANPD</Link></Button>{!passos.slice(0, 5).every(Boolean) && <p className="mt-1 text-xs text-atencao">Conclua as etapas {passos.slice(0, 5).map((p, i) => p ? null : i + 1).filter(Boolean).join(", ")} para comunicar.</p>}</div>}</div>}
 
       {estado && <div id="encerramento" aria-live="polite" className="mb-4 space-y-2">
         <p className="text-sm">Etapas concluídas: {estado.etapas.concluidas} de {estado.etapas.total}</p>

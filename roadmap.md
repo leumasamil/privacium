@@ -20,3 +20,6 @@
 - [x] Persistir monitor por CNPJ, decisões auditadas e cooldown sem copiar evidências externas.
 - [x] Integrar alertas no Bloco 4, badges no ROT e próximo passo secundário.
 - [x] Verificar isolamento, decisões e fluxo autenticado da Parte 5.
+- [x] Corrigir acesso por ID ao formulário ANPD em faixa, checklist e PI-04.
+- [x] Integrar 11 riscos assistidos e sugestões de medidas por vetor, com fontes e preservação das escolhas do DPO.
+- [x] Validar riscos e medidas atomicamente e verificar fluxo autenticado e PDF.

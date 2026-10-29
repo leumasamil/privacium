@@ -8,6 +8,7 @@ import { montarChecklist, ordenar, type Pendencia } from "@/lib/priva/pendencias
 import { usePriva } from "@/lib/priva/store";
 import { cn } from "@/lib/utils";
 import { ESTADO, EstadoBadge } from "./estado";
+import { LinkPendencia } from './LinkPendencia';
 import { useDadosBloco } from "./TelaBloqueio";
 
 const ROTULO: Record<string, string> = { DPO_OPERACIONAL: "DPO_OPERACIONAL", C_SUITE: "C_SUITE", ADMIN_SISTEMA: "ADMIN_SISTEMA" };
@@ -106,7 +107,7 @@ export function AjudaTarefa(props: Ajuda5W2H & { pendencias?: Pendencia[] }) {
                       {i.estado === "bloqueado" ? null : pode(i) ? (
                         <>
                           <p><span className="font-medium">Sugestão:</span> {i.sugestao ?? `${i.acao}.`}</p>
-                          <a href={`#${i.ancora}`} className={cn("inline-flex items-center gap-1 rounded-sm px-3 py-1.5 font-semibold", selar ? "bg-concluido text-primary-foreground" : "bg-pendencia text-primary-foreground")}>{i.acao} <ArrowRight className="h-3 w-3" /></a>
+                          <LinkPendencia item={i} className={cn("inline-flex items-center gap-1 rounded-sm px-3 py-1.5 font-semibold", selar ? "bg-concluido text-primary-foreground" : "bg-pendencia text-primary-foreground")}>{i.acao} <ArrowRight className="h-3 w-3" /></LinkPendencia>
                         </>
                       ) : (
                         <p className="text-bloqueado">Aguardando {ROTULO[i.responsavel]} —{" "}

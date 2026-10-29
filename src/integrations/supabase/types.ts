@@ -995,6 +995,15 @@ export type Database = {
           valor: string
         }[]
       }
+      catalogo_riscos_anpd: {
+        Args: never
+        Returns: {
+          descricao: string
+          fonte_normativa: string
+          ordem: number
+          valor: string
+        }[]
+      }
       cnpj_liberado: { Args: { _cnpj: string }; Returns: boolean }
       cnpj_valido: { Args: { _c: string }; Returns: boolean }
       cpf_valido: { Args: { _c: string }; Returns: boolean }

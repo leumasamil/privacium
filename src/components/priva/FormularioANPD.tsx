@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, Circle, Clock, Copy } from 'lucide-react';
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,12 +17,15 @@ import { sugerirMedidas, textoMedidas } from '@/lib/priva/medidasIncidente';
 import { Button } from "@/components/ui/button";
 import { Progress } from '@/components/ui/progress';
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { SeletorRiscos } from './SeletorRiscos';
+import { sugerirRiscos, textoRiscos } from '@/lib/priva/riscosIncidente';
+import { medidasDoVetor } from '@/lib/priva/vetoresANPD';
 import type { EstadoIncidente } from '@/lib/priva/estadoIncidente';
 import { CasosPublicosSemelhantes } from './ReferenciasExternas';
 type Incidente = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
 export function FormularioANPD({ incidente, estado, encerramento, canEdit, refresh }: { incidente: Incidente; estado: EstadoIncidente; encerramento: React.ReactNode; canEdit: boolean; refresh: () => void | Promise<unknown> }) {
   const { demo } = usePriva();
+  const navigate = useNavigate();
   const dpo = useEncarregado();
   const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -36,9 +39,15 @@ export function FormularioANPD({ incidente, estado, encerramento, canEdit, refre
     setForm({ natureza: naturezaInicial(s?.["natureza"], !!incidente.enviado_anpd_em), naturezasSecundarias: Array.isArray(s?.["naturezas_secundarias"]) ? s["naturezas_secundarias"].flatMap(n => n && typeof n === "object" && !Array.isArray(n) && typeof n["valor"] === "string" ? [n["valor"]] : []) : [], naturezaOutro: String(s?.["natureza_outro"] ?? ""), categorias: Array.isArray(s?.["categorias"]) ? s["categorias"].map(String) : [], titulares: String(s?.["titulares"] ?? ""), riscos: String(s?.["riscos"] ?? ""), medidas: String(s?.["medidas"] ?? "") });
     const selecionadas = Array.isArray(s?.['medidas_selecionadas']) ? s['medidas_selecionadas'].flatMap(m => m && typeof m === 'object' && !Array.isArray(m) && typeof m['valor'] === 'string' ? [m['valor']] : []) : undefined;
     if (!incidente.enviado_anpd_em || selecionadas !== undefined) {
-      const medidasSelecionadas = selecionadas ?? sugerirMedidas(estado.etapas.itens);
+      const medidasSelecionadas = selecionadas ?? [...new Set([...sugerirMedidas(estado.etapas.itens), ...medidasDoVetor(naturezaInicial(s?.["natureza"], false))])];
       const outrasMedidas = String(s?.['outras_medidas'] ?? (selecionadas === undefined ? s?.['medidas'] ?? '' : ''));
       setForm(atual => ({ ...atual, medidasSelecionadas, outrasMedidas, medidas: incidente.enviado_anpd_em ? String(s?.['medidas'] ?? '') : textoMedidas(medidasSelecionadas, outrasMedidas) }));
+    }
+    const riscosSalvos = Array.isArray(s?.['riscos_selecionados']) ? s['riscos_selecionados'].flatMap(r => r && typeof r === 'object' && !Array.isArray(r) && typeof r['valor'] === 'string' ? [r['valor']] : []) : undefined;
+    if (!incidente.enviado_anpd_em || riscosSalvos !== undefined) {
+      const riscosSelecionados = riscosSalvos ?? sugerirRiscos(naturezaInicial(s?.['natureza'], false), false, false);
+      const riscosDetalhes = String(s?.['riscos_detalhes'] ?? (riscosSalvos === undefined ? s?.['riscos'] ?? '' : ''));
+      setForm(atual => ({ ...atual, riscosSelecionados, riscosDetalhes, riscos: incidente.enviado_anpd_em ? String(s?.['riscos'] ?? '') : textoRiscos(riscosSelecionados, riscosDetalhes) }));
     }
     setProcesso(incidente.processo_id ?? "");
   }, [incidente.id, incidente.enviado_anpd_em]);
@@ -57,6 +66,7 @@ export function FormularioANPD({ incidente, estado, encerramento, canEdit, refre
   const etapasPendentes = motivos.filter(m => m.campo.startsWith('etapa-'));
   const ir = (campo: string) => {
     const el = document.getElementById(campo.startsWith('etapa-') ? `incidente-etapa-${Number(campo.slice(6)) + 1}` : `anpd-${campo}`);
+    if (!el && campo.startsWith('etapa-')) { void navigate({ to: '/bloco-4', hash: `incidente-etapa-${Number(campo.slice(6)) + 1}` }); return; }
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' }); el?.focus({ preventScroll: true });
     el?.classList.remove('anpd-destaque'); requestAnimationFrame(() => el?.classList.add('anpd-destaque')); setTimeout(() => el?.classList.remove('anpd-destaque'), 2000);
   };
@@ -101,7 +111,7 @@ export function FormularioANPD({ incidente, estado, encerramento, canEdit, refre
       <div><label htmlFor="anpd-processo">Processo ROT afetado</label><select id="anpd-processo" className="mt-1 w-full rounded-sm border bg-background p-2 text-sm focus:ring-2 focus:ring-ring" disabled={!editavel || !!incidente.processo_id} value={processo} onChange={e => { setProcesso(e.target.value); setForm({ ...form, categorias: [] }); }}><option value="">Selecione o processo afetado</option>{rot.data?.map(r => <option key={r.id} value={r.id}>{r.codigo} · {r.finalidade_especifica}</option>)}</select>{rot.isError && <p className="text-atencao">Falha ao carregar o ROT. <Button variant="link" onClick={() => rot.refetch()}>Tentar novamente</Button></p>}{!rot.isLoading && !rot.data?.length && <p className="text-atencao">Nenhum processo disponível. <Link to="/bloco-2" hash="rot" className="underline">Cadastrar processo no ROT</Link></p>}</div>
       <SeletorCategoriasANPD opcoes={incidente.enviado_anpd_em ? form.categorias.map(valor => { const item = ((incidente.comunicacao as Record<string, Json>)?.['categorias_vinculadas'] as Json[] | undefined)?.find(c => c && typeof c === 'object' && !Array.isArray(c) && c['valor'] === valor); const fonte = item && typeof item === 'object' && !Array.isArray(item) ? String(item['fonte_normativa'] ?? '') : ''; return { valor, fonte_normativa: fonte, sensivel: fonte.includes('art. 5º, II') }; }) : categorias} valores={form.categorias} editavel={editavel} padrao={!!escolhido && ![...escolhido.dados_pessoais, ...escolhido.dados_sensiveis].some(v => v.trim() && v !== 'N/A')} onChange={valores => setForm(atual => ({ ...atual, categorias: valores }))} />
       <div><label htmlFor="anpd-titulares">Número aproximado de titulares afetados</label><Input id="anpd-titulares" type="number" min={1} step={1} value={form.titulares} readOnly={!editavel} placeholder="Ex.: 1240" onChange={e => setForm({ ...form, titulares: e.target.value })} /></div>
-      <div><label htmlFor="anpd-riscos">Riscos e consequências aos titulares</label><Textarea id="anpd-riscos" rows={3} placeholder="Ex.: Risco de acesso não autorizado a dados pessoais e indisponibilidade temporária. Dados restaurados de backup íntegro, sem indício de exfiltração." value={form.riscos} readOnly={!editavel} onChange={e => setForm({ ...form, riscos: e.target.value })} /><p className="text-xs text-muted-foreground">{form.riscos.trim().length} caracteres · mínimo 30</p></div>
+      <SeletorRiscos form={form} onChange={setForm} editavel={editavel} sensivel={categorias.some(c => form.categorias.includes(c.valor) && c.sensivel)} menores={form.categorias.some(c => /menor|criança|adolescente/i.test(c))} />
       <SeletorMedidas form={form} onChange={setForm} editavel={editavel} estado={estado} />
       <div><label htmlFor="anpd-encarregado">Contato do Encarregado (DPO)</label><Input id="anpd-encarregado" value={email} readOnly placeholder="Contato ainda não cadastrado" />{!email && <p className="mt-1 text-sm text-atencao">Nenhum DPO cadastrado para este CNPJ. <Link to="/membros" className="underline">Cadastrar DPO →</Link></p>}</div>
       {!incidente.enviado_anpd_em && <><ul id="anpd-motivos" aria-live="polite" className="space-y-2 text-sm text-pendencia">{motivos.map((m, i) => <li key={`${m.campo}-${i}`} className="flex flex-wrap items-start gap-2 border-l-4 border-l-pendencia-border pl-2"><Circle className="mt-1 h-3 w-3 shrink-0" aria-hidden /><span>{m.mensagem} {m.campo === 'encarregado' ? <Link to="/membros" className="font-medium underline">Cadastrar DPO →</Link> : <Button type="button" variant="link" className="h-auto p-0 text-pendencia" onClick={() => ir(m.campo)}>{m.campo.startsWith('etapa-') ? 'Ir para a etapa →' : 'Corrigir →'}</Button>}</span></li>)}</ul>{falha && <p role="alert" className="text-destructive">{falha}</p>}{!editavel && <p className="flex items-center gap-1 text-pendencia"><AlertTriangle className="h-4 w-4" aria-hidden />Envio disponível apenas para DPO e Administrador, fora do modo demonstração.</p>}<Button id="anpd-envio" type="submit" aria-describedby={motivos.length ? 'anpd-motivos' : undefined} disabled={!editavel || !!motivos.length || busy} className={`h-auto min-h-9 max-w-full whitespace-normal text-left ${!motivos.length ? 'bg-concluido text-primary-foreground hover:bg-concluido/90' : 'border border-pendencia-border bg-pendencia-bg text-pendencia disabled:opacity-100'}`}>{busy ? 'Enviando…' : motivos.length ? `Faltam ${camposPendentes.length ? `${camposPendentes.length} campos: ${camposPendentes.join(', ')}` : ''}${camposPendentes.length && etapasPendentes.length ? ' · ' : ''}${etapasPendentes.length ? `${etapasPendentes.length} etapas` : ''}` : 'Enviar à ANPD (simulado)'}</Button></>}

@@ -1,0 +1,21 @@
+import { describe, expect, it } from 'vitest';
+import { RISCOS_ANPD, sugerirRiscos, textoRiscos, linhasRiscos } from '@/lib/priva/riscosIncidente';
+import { medidasDoVetor, melhorMedida } from '@/lib/priva/vetoresANPD';
+import { NATUREZAS } from '@/lib/priva/naturezasIncidente';
+import { prepararComunicacaoANPD, validarANPD } from '@/lib/priva/anpd';
+import { calcularProximoPasso } from '@/lib/priva/proximoPasso';
+describe('ANPD assistida por vetor', () => {
+  const natureza = 'Ransomware com criptografia de ativos';
+  const form = { natureza, categorias: ['Nome'], titulares: '1', riscos: 'adulterado', riscosSelecionados: ['Fraude por uso indevido de identidade'], riscosDetalhes: 'D'.repeat(50), medidas: '', medidasSelecionadas: ['Isolamento dos endpoints afetados da rede'] };
+  it('contém 11 riscos únicos com fonte e descrição', () => { expect(new Set(RISCOS_ANPD.map(r => r.valor)).size).toBe(11); expect(RISCOS_ANPD.every(r => r.fonte_normativa && r.descricao)).toBe(true); });
+  it('exige ao menos um risco marcado', () => { expect(validarANPD({ ...form, riscosSelecionados: [] }, 'contato@exemplo.org', Array(5).fill(true)).some(m => m.campo === 'riscos')).toBe(true); });
+  it('exige 50 caracteres concretos, não 49', () => { expect(validarANPD({ ...form, riscosDetalhes: 'D'.repeat(49) }, 'contato@exemplo.org', Array(5).fill(true)).some(m => m.campo === 'riscos')).toBe(true); expect(validarANPD(form, 'contato@exemplo.org', Array(5).fill(true))).toEqual([]); });
+  it('não aceita risco fora do catálogo', () => { expect(validarANPD({ ...form, riscosSelecionados: ['Inventado'] }, 'contato@exemplo.org', Array(5).fill(true)).some(m => m.campo === 'riscos')).toBe(true); });
+  it('não aceita só outras medidas sem medida marcada', () => { expect(validarANPD({ ...form, medidasSelecionadas: [], outrasMedidas: 'M'.repeat(100) }, 'contato@exemplo.org', Array(5).fill(true)).some(m => m.campo === 'medidas')).toBe(true); });
+  it('ransomware sugere cinco riscos e oito medidas', () => { expect(sugerirRiscos(natureza, false, false)).toHaveLength(5); expect(medidasDoVetor(natureza)).toHaveLength(8); expect(melhorMedida(natureza)?.valor).toBe('Restauração a partir de backup íntegro com validação de hash'); });
+  it('acesso destaca revogação e exposição destaca contenção', () => { expect(medidasDoVetor('Conta comprometida por phishing')).toContain('Implementação de MFA'); expect(melhorMedida('Conta comprometida por phishing')?.valor).toBe('Revogação de credenciais e sessões ativas'); expect(melhorMedida('Exfiltração por agente externo')?.valor).toBe('Contenção da exposição com desativação do acesso público'); });
+  it('disponibilidade destaca backup e vulnerabilidade destaca patch', () => { expect(melhorMedida('DDoS')?.valor).toBe('Restauração a partir de backup íntegro'); expect(melhorMedida('Zero-day')?.fonte_normativa).toBe('CIS Control 07 / ISO/IEC 27002 — 8.8'); });
+  it('agravantes só são sugeridos quando presentes', () => { expect(sugerirRiscos('Exfiltração por agente externo', false, false)).not.toContain('Discriminação e tratamento desigual'); expect(sugerirRiscos('Exfiltração por agente externo', true, true)).toContain('Discriminação e tratamento desigual'); for (const n of NATUREZAS) expect(sugerirRiscos(n.valor, false, true)).toContain('Risco a menores de idade'); });
+  it('salva valores com fonte e gera texto e PDF sem texto adulterado', () => { const payload = prepararComunicacaoANPD(form); expect(payload.riscos).toBe(textoRiscos(form.riscosSelecionados, form.riscosDetalhes)); expect(payload.riscos_selecionados).toEqual([{ valor: 'Fraude por uso indevido de identidade', fonte_normativa: 'LGPD art. 5º, I / Res. CD/ANPD nº 15/2024 art. 3º' }]); expect(linhasRiscos(payload)[0]).toContain('LGPD art. 5º, I'); expect(linhasRiscos({ riscos: 'Texto antigo' })).toEqual(['Riscos: Texto antigo']); });
+  it('próximo passo carrega o ID correto em vez de âncora genérica', () => { const p = calcularProximoPasso({ blocoTela: 4, blocoBase: 4, roles: ['DPO_OPERACIONAL'], itens: [{ id: 'anpd-a54ac7', incidenteId: 'a54ac757-94ec-4eb2-9814-363daea0d10f', titulo: 'ANPD', exige: '', responsavel: 'DPO_OPERACIONAL', estado: 'critico', bloco: 4, ancora: 'anpd', acao: 'Abrir formulário ANPD' }] }); expect(p.link.to).toBe('/bloco-4/anpd/a54ac757-94ec-4eb2-9814-363daea0d10f'); });
+});

@@ -23,6 +23,7 @@ import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedManualRouteImport } from './routes/_authenticated/manual'
 import { Route as AuthenticatedMembrosRouteImport } from './routes/_authenticated/membros'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
+import { Route as AuthenticatedBloco4AnpdIncidenteIdRouteImport } from './routes/_authenticated/bloco-4_.anpd.$incidenteId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -93,6 +94,12 @@ const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
   path: '/painel',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBloco4AnpdIncidenteIdRoute =
+  AuthenticatedBloco4AnpdIncidenteIdRouteImport.update({
+    id: '/bloco-4_/anpd/$incidenteId',
+    path: '/bloco-4/anpd/$incidenteId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/manual': typeof AuthenticatedManualRoute
   '/membros': typeof AuthenticatedMembrosRoute
   '/painel': typeof AuthenticatedPainelRoute
+  '/bloco-4/anpd/$incidenteId': typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,6 +131,7 @@ export interface FileRoutesByTo {
   '/manual': typeof AuthenticatedManualRoute
   '/membros': typeof AuthenticatedMembrosRoute
   '/painel': typeof AuthenticatedPainelRoute
+  '/bloco-4/anpd/$incidenteId': typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -140,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated/manual': typeof AuthenticatedManualRoute
   '/_authenticated/membros': typeof AuthenticatedMembrosRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
+  '/_authenticated/bloco-4_/anpd/$incidenteId': typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/membros'
     | '/painel'
+    | '/bloco-4/anpd/$incidenteId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/membros'
     | '/painel'
+    | '/bloco-4/anpd/$incidenteId'
   id:
     | '__root__'
     | '/'
@@ -188,6 +200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/manual'
     | '/_authenticated/membros'
     | '/_authenticated/painel'
+    | '/_authenticated/bloco-4_/anpd/$incidenteId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -296,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPainelRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/bloco-4_/anpd/$incidenteId': {
+      id: '/_authenticated/bloco-4_/anpd/$incidenteId'
+      path: '/bloco-4/anpd/$incidenteId'
+      fullPath: '/bloco-4/anpd/$incidenteId'
+      preLoaderRoute: typeof AuthenticatedBloco4AnpdIncidenteIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -311,6 +331,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedManualRoute: typeof AuthenticatedManualRoute
   AuthenticatedMembrosRoute: typeof AuthenticatedMembrosRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
+  AuthenticatedBloco4AnpdIncidenteIdRoute: typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -325,6 +346,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedManualRoute: AuthenticatedManualRoute,
   AuthenticatedMembrosRoute: AuthenticatedMembrosRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
+  AuthenticatedBloco4AnpdIncidenteIdRoute:
+    AuthenticatedBloco4AnpdIncidenteIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
