@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2, Lock, RefreshCw } from "lucide-react";
-import { BLOCKS, computeGM, riskZone } from "@/lib/priva/data";
+import { BLOCKS, computeGM } from "@/lib/priva/data";
+import { CardAcoes, CardEventos, CardGM, CardPIs, CardScore } from "@/components/priva/Indicadores";
+import { Sigla } from "@/components/priva/Sigla";
 import { useQuestions, useRespostas } from "@/lib/priva/questions";
 import { usePriva, isUnlocked } from "@/lib/priva/store";
-import { PageHeader, Panel, Tag } from "@/components/priva/ui";
+import { PageHeader, Panel } from "@/components/priva/ui";
 import { cn } from "@/lib/utils";
 import { AdminDashboard, CSuiteDashboard } from "@/components/priva/RoleDashboards";
 
@@ -33,20 +35,19 @@ function Index() {
   const answers = useRespostas(cnpj);
   const questions = useQuestions();
   const { gm, score, bankMax } = computeGM(answers, questions);
-  const zone = riskZone(gm);
-  const done = BLOCKS.filter((b) => signatures[`PI-0${b.n}`]).length;
 
   return (
     <div>
-      <PageHeader eyebrow={`Trilho ${enterprise ? "Enterprise" : "Core"} · Método BLLOCO`} title="Onboarding Industrial · Esteira de Conformidade">
-        Cada bloco produz um Produto Interno (PI). O próximo bloco só é liberado após a chancela digital do anterior. Ao fim do bloco A, o ciclo retroalimenta o bloco P.
+      <PageHeader eyebrow={`Trilho ${enterprise ? "Enterprise" : "Core (registrador central de eventos)"} · Método BLLOCO`} title="Onboarding Industrial · Esteira de Conformidade">
+        Cada bloco produz um <Sigla id="pi">PI · Procedimento Interno</Sigla> chancelado. O próximo bloco só é liberado após a chancela digital do anterior. Ao fim do bloco A, o ciclo retroalimenta o bloco P.
       </PageHeader>
 
-      <div className="mb-8 grid gap-4 md:grid-cols-4">
-        <Stat label="Grau de Maturidade" value={`${gm.toFixed(1)}%`} sub={<Tag tone={zone.tone}>{zone.label}</Tag>} />
-        <Stat label="Score" value={`${score} / ${bankMax}`} sub="pontos ponderados" />
-        <Stat label="PIs chancelados" value={`${done} / 5`} sub={enterprise ? "+ PI-06 Enterprise" : "Trilho Core"} />
-        <Stat label="Eventos auditados" value={String(audit.length)} sub={`${kanban.filter((k) => k.column !== "done").length} ações 5W2H abertas`} />
+      <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <CardGM gm={gm} />
+        <CardScore score={score} max={bankMax} />
+        <CardPIs signatures={signatures} enterprise={enterprise} />
+        <CardEventos total={audit.length} />
+        <CardAcoes abertas={kanban.filter((k) => k.column !== "done").length} />
       </div>
 
       <Panel title="Linha de montagem">
@@ -84,16 +85,6 @@ function Index() {
           <RefreshCw className="h-3 w-3" /> Preparar → Registrar → Implementar → Vigiar → Auditar → novo diagnóstico: a privacidade é um ciclo contínuo.
         </p>
       </Panel>
-    </div>
-  );
-}
-
-function Stat({ label, value, sub }: { label: string; value: string; sub: React.ReactNode }) {
-  return (
-    <div className="rounded-md border bg-card p-4">
-      <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-primary">{value}</p>
-      <div className="mt-1 text-xs text-muted-foreground">{sub}</div>
     </div>
   );
 }
