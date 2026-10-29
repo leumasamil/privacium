@@ -100,7 +100,7 @@ function Bloco2() {
       </PageHeader>
       <AjudaTarefa {...AJUDA[2]!} />
 
-      <Panel title={`Planilha mestre · ${rows.length} processos · ${riskyCount} em alerta`} action={canEdit && (
+      <Panel id="rot" title={`Planilha mestre · ${rows.length} processos · ${riskyCount} em alerta`} action={canEdit && (
         <Button size="sm" onClick={() => setEdit({ id: null, form: empty(cnpj) })}><Plus className="h-4 w-4" /> Novo processo</Button>
       )}>
         <div className="overflow-x-auto">

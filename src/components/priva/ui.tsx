@@ -8,6 +8,7 @@ import { maskCNPJ, maskCPF, maskEmail, maskName, sha256 } from "@/lib/priva/data
 import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { TelaBloqueio } from "./TelaBloqueio";
 
 export function PageHeader({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
   return (
@@ -19,9 +20,9 @@ export function PageHeader({ eyebrow, title, children }: { eyebrow: string; titl
   );
 }
 
-export function Panel({ title, children, className, action }: { title?: string; children: ReactNode; className?: string; action?: ReactNode }) {
+export function Panel({ title, children, className, action, id }: { title?: string; children: ReactNode; className?: string; action?: ReactNode; id?: string }) {
   return (
-    <section className={cn("rounded-md border bg-card p-5", className)}>
+    <section id={id} className={cn("scroll-mt-6 rounded-md border bg-card p-5", className)}>
       {title && (
         <div className="mb-4 flex items-center justify-between gap-2">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-primary">{title}</h2>
@@ -105,7 +106,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
   const [open, setOpen] = useState(false);
   const docRef = useRef<HTMLDivElement>(null);
   return (
-    <Panel title="Saída obrigatória" className="border-primary/40">
+    <Panel id="assinatura" title="Saída obrigatória" className="border-primary/40">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="font-semibold text-primary">{pi}</p>
@@ -174,14 +175,5 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
 export function BlockGate({ n, children }: { n: number; children: ReactNode }) {
   const { signatures } = usePriva();
   if (isUnlocked(signatures, n)) return <>{children}</>;
-  return (
-    <div className="flex flex-col items-center justify-center rounded-md border border-dashed bg-card p-16 text-center">
-      <Lock className="h-8 w-8 text-muted-foreground" />
-      <h2 className="mt-4 text-lg font-semibold text-primary">Bloco travado</h2>
-      <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        O avanço exige que o PI-0{n - 1} do bloco anterior esteja concluído e chancelado digitalmente.
-      </p>
-      <Button asChild className="mt-6"><Link to={`/bloco-${n - 1}` as "/bloco-1"}>Ir para o Bloco {n - 1}</Link></Button>
-    </div>
-  );
+  return <TelaBloqueio n={n} />;
 }

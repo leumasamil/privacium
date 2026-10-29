@@ -142,7 +142,7 @@ function ConsolePgAudit({ cnpj, lotes, canEdit, refresh }: { cnpj: string; lotes
   };
 
   return (
-    <Panel title="Console forense · pgAudit (trilhas mensais)" action={canEdit && <Button size="sm" onClick={extrair} disabled={busy}><Play className="h-4 w-4" /> Extrair lote de {mesAtual()}</Button>}>
+    <Panel id="lotes" title="Console forense · pgAudit (trilhas mensais)" action={canEdit && <Button size="sm" onClick={extrair} disabled={busy}><Play className="h-4 w-4" /> Extrair lote de {mesAtual()}</Button>}>
       <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
         <ul className="space-y-2">
           {lotes.length === 0 && <li className="text-sm text-muted-foreground">Nenhum lote extraído.</li>}
@@ -190,7 +190,7 @@ function CriseRansomware({ cnpj, ativo, canEdit, refresh }: { cnpj: string; ativ
   const formOk = FORM.every((f) => (form[f.k] ?? "").trim().length > 2);
 
   return (
-    <Panel title="Gerenciamento de Crise Cibernética · Ransomware" action={canEdit && (ativo
+    <Panel id="incidentes" title="Gerenciamento de Crise Cibernética · Ransomware" action={canEdit && (ativo
       ? <Button size="sm" variant="outline" disabled={!ativo.passos.every(Boolean) || !ativo.enviado_anpd_em} onClick={() => upd({ encerrado_em: new Date().toISOString() }, "Incidente encerrado")}>Encerrar incidente</Button>
       : <Button size="sm" variant="destructive" onClick={declarar}>Declarar incidente</Button>)}>
       <div className="grid gap-6 lg:grid-cols-[260px_1fr]">

@@ -120,7 +120,7 @@ function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { en
   };
 
   return (
-    <Panel title="BitLocker · Criptografia de endpoint">
+    <Panel id="endpoints" title="BitLocker · Criptografia de endpoint">
       <div className="flex items-end gap-4">
         <p className={cn("font-mono text-4xl font-semibold", pct === 100 ? "text-success" : pct >= 50 ? "text-warning-foreground" : "text-destructive")}>{prot}/{endpoints.length}</p>
         <p className="pb-1 text-sm text-muted-foreground">máquinas protegidas</p>
@@ -228,7 +228,7 @@ function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove }: { cofres: A
   };
 
   return (
-    <Panel title="Cryptomator · Cofres em nuvem (client-side)">
+    <Panel id="cofres" title="Cryptomator · Cofres em nuvem (client-side)">
       <ul className="divide-y text-sm">
         {cofres.map((a) => (
           <li key={a.id} className="py-2">
