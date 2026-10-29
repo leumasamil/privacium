@@ -1,3 +1,5 @@
+import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
+import { AJUDA } from "@/lib/priva/ajuda";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, PartyPopper, RefreshCw } from "lucide-react";
@@ -89,6 +91,7 @@ function Bloco5() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow={`Bloco 5 · (A) Ciclo Privacium Semestral · Ano Fiscal ${anoAtual}`} title="Auditar o Sistema de Privacidade e Mitigar Riscos" />
+      <AjudaTarefa {...AJUDA[5]!} />
 
       <Panel title="RIPD algorítmico · IA e LLMs (Art. 38 LGPD / ISO 42001)">
         <label className="text-xs text-muted-foreground">Sistema de IA avaliado

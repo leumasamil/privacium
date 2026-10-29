@@ -1,3 +1,5 @@
+import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
+import { AJUDA } from "@/lib/priva/ajuda";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -77,6 +79,7 @@ function Bloco3() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 3 · (I) Ciclo Privacium Semestral · Art. 46 LGPD" title="Implementar Salvaguardas Técnicas e Jurídicas" />
+      <AjudaTarefa {...AJUDA[3]!} />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <BitLockerCard endpoints={endpoints} prot={prot} cnpj={cnpj} canEdit={canEdit} refresh={refresh} remove={remove} />
