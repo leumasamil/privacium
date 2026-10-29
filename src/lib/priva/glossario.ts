@@ -12,7 +12,7 @@ export const PIS: Record<number, { codigo: string; nome: string }> = {
 };
 
 export const GLOSSARIO: Termo[] = [
-  { id: "bllloco", termo: "Método BLLOCO", definicao: "Sequência de 5 blocos (Preparar, Registrar, Implementar, Vigiar, Auditar) que leva a empresa à conformidade com a LGPD.", exemplo: "O Bloco 2 só abre depois que o PI-01 do Bloco 1 é chancelado.", onde: "Esteira BLLOCO e menu lateral." },
+  { id: "blloco", termo: "Método BLLOCO", definicao: "Sequência de 5 blocos (Preparar, Registrar, Implementar, Vigiar, Auditar) que leva a empresa à conformidade com a LGPD.", exemplo: "O Bloco 2 só abre depois que o PI-01 do Bloco 1 é chancelado.", onde: "Esteira BLLOCO e menu lateral." },
   { id: "ciclo", termo: "Ciclo Privacium Semestral", definicao: "Repetição contínua dos 5 blocos: ao concluir o Bloco 5, um novo diagnóstico reabre o Bloco 1.", exemplo: "Ao finalizar o ciclo no Bloco 5, as assinaturas são limpas para um novo semestre.", onde: "Menu lateral e Bloco 5." },
   { id: "pi", termo: "PI", nome: "Procedimento Interno", definicao: "Documento chancelado que comprova a execução de uma etapa do Método BLLOCO.", exemplo: "PI-01 Dossiê Legal · PI-02 ROT · PI-03 Book de Evidências · PI-04 Dossiê de Auditoria · PI-05 Escudo Jurídico (RIPD).", onde: "Seção “Saída obrigatória” de cada bloco e card de PIs chancelados." },
   ...Object.values(PIS).map((p) => ({ id: p.codigo.toLowerCase(), termo: p.codigo, nome: p.nome, definicao: `Procedimento Interno: ${p.nome}.`, exemplo: `Gerado e assinado na saída obrigatória do Bloco ${p.codigo.slice(-1)}.`, onde: `Bloco ${p.codigo.slice(-1)} e painel.` })),
