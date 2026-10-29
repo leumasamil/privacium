@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, Circle, Clock, Copy } from 'lucide-react';
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ import { CasosPublicosSemelhantes } from './ReferenciasExternas';
 type Incidente = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
 export function FormularioANPD({ incidente, estado, encerramento, canEdit, refresh }: { incidente: Incidente; estado: EstadoIncidente; encerramento: React.ReactNode; canEdit: boolean; refresh: () => void | Promise<unknown> }) {
   const { demo } = usePriva();
+  const navigate = useNavigate();
   const dpo = useEncarregado();
   const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -65,7 +66,7 @@ export function FormularioANPD({ incidente, estado, encerramento, canEdit, refre
   const etapasPendentes = motivos.filter(m => m.campo.startsWith('etapa-'));
   const ir = (campo: string) => {
     const el = document.getElementById(campo.startsWith('etapa-') ? `incidente-etapa-${Number(campo.slice(6)) + 1}` : `anpd-${campo}`);
-    if (!el && campo.startsWith('etapa-')) { window.location.hash = ''; window.location.assign(`/bloco-4#incidente-etapa-${Number(campo.slice(6)) + 1}`); return; }
+    if (!el && campo.startsWith('etapa-')) { void navigate({ to: '/bloco-4', hash: `incidente-etapa-${Number(campo.slice(6)) + 1}` }); return; }
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' }); el?.focus({ preventScroll: true });
     el?.classList.remove('anpd-destaque'); requestAnimationFrame(() => el?.classList.add('anpd-destaque')); setTimeout(() => el?.classList.remove('anpd-destaque'), 2000);
   };

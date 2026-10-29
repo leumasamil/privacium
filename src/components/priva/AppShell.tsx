@@ -2,10 +2,11 @@ import { PrivaciumLogo } from "@/components/priva/Logo";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Lock, CheckCircle2, LayoutDashboard, KanbanSquare, ScrollText, Building2, RotateCcw, LogOut, Users, Presentation, X, BookOpen } from "lucide-react";
+import { Lock, CheckCircle2, LayoutDashboard, KanbanSquare, ScrollText, Building2, RotateCcw, LogOut, Users, Presentation, X, BookOpen, Menu } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { BLOCKS, ROLE_LABEL, isValidCNPJ, maskCNPJ, type Role } from "@/lib/priva/data";
 import { usePriva, isUnlocked } from "@/lib/priva/store";
+import { Button } from '@/components/ui/button';
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { FollowUpBanner, FollowUpBell } from "@/components/priva/FollowUp";
@@ -28,6 +29,7 @@ export function canAccess(role: Role, path: string) {
 export function AppShell({ children }: { children: ReactNode }) {
   const { role, roles, setRole, set, enterprise, signatures, reset, ready, email, cnpj, empresas, selectEmpresa, createEmpresa, log, demo, setDemo } = usePriva();
   const [demoAsk, setDemoAsk] = useState(false);
+  const [menuAberto, setMenuAberto] = useState(false);
   const podeDemo = roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL");
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -108,8 +110,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
+    <div className="flex min-h-screen flex-col md:flex-row">
+      <div className="flex items-center justify-between border-b p-4 md:hidden"><PrivaciumLogo size="sm" /><Button variant="outline" size="icon" aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuAberto} onClick={() => setMenuAberto(v => !v)}>{menuAberto ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}</Button></div>
+      <aside className={cn("top-0 h-auto w-full shrink-0 flex-col bg-sidebar text-sidebar-foreground md:sticky md:flex md:h-screen md:w-72", menuAberto ? 'flex' : 'hidden')}>
         <div className="border-b border-sidebar-border px-5 py-5">
           <PrivaciumLogo size="sm" className="text-sidebar-accent-foreground" />
           <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.2em]">Governança de Privacidade</p>
@@ -185,7 +188,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </aside>
-      <main className="relative min-w-0 flex-1 px-10 py-8">
+      <main className="relative min-w-0 flex-1 px-4 py-8 sm:px-10">
         {(role === "DPO_OPERACIONAL" || role === "C_SUITE") && !demo && <FollowUpBanner />}
         {(role === "DPO_OPERACIONAL" || role === "C_SUITE") && <div className="mb-4 flex justify-end"><FollowUpBell /></div>}
         {demo && (
