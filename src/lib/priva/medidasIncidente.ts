@@ -53,7 +53,8 @@ export function sugerirMedidas(etapas: { numero: number; concluida: boolean }[])
 export function textoMedidas(valores: string[], outras = ''): string {
   const partes = MEDIDAS.filter(m => valores.includes(m.valor)).map(m => m.valor);
   if (outras.trim()) partes.push(outras.trim().replace(/[.;]+$/, ''));
-  return partes.length ? partes.join('; ') + '.' : '';
+  const fontes = [...new Set(MEDIDAS.filter(m => valores.includes(m.valor)).map(m => m.fonte_normativa))];
+  return partes.length ? partes.join('; ') + '.' + (fontes.length ? ` Fontes: ${fontes.join('; ')}.` : '') : '';
 }
 export function linhasMedidas(comunicacao: unknown): string[] {
   if (!comunicacao || typeof comunicacao !== 'object' || Array.isArray(comunicacao)) return [];

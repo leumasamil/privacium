@@ -1,6 +1,7 @@
 import { OUTRO, vincularNatureza, VERSAO_NATUREZAS } from "./naturezasIncidente";
 import { textoMedidas, vincularMedida, VERSAO_MEDIDAS } from './medidasIncidente';
 import type { CategoriaANPD } from './categoriasANPD';
+import { textoRiscos, vincularRisco, VERSAO_RISCOS } from './riscosIncidente';
 export type ComunicacaoANPD = {
   natureza: string;
   naturezasSecundarias?: string[];
@@ -9,6 +10,8 @@ export type ComunicacaoANPD = {
   categoriasVinculadas?: CategoriaANPD[];
   titulares: string;
   riscos: string;
+  riscosSelecionados?: string[];
+  riscosDetalhes?: string;
   medidas: string;
   medidasSelecionadas?: string[];
   outrasMedidas?: string;
@@ -22,7 +25,12 @@ export function validarANPD(form: ComunicacaoANPD, email: string, passos: boolea
   if ((form.natureza === OUTRO || secundarias.includes(OUTRO)) && !form.naturezaOutro?.trim()) motivos.push({ campo: "natureza-outro", titulo: "Descrição de Outro", mensagem: "Campo Outro: descreva a natureza do incidente" });
   if (!form.categorias.length) motivos.push({ campo: "categorias", titulo: "Categorias", mensagem: "Campo Categorias de dados: selecione ao menos uma opção" });
   if (!/^\d+$/.test(form.titulares) || Number(form.titulares) < 1 || !Number.isSafeInteger(Number(form.titulares))) motivos.push({ campo: "titulares", titulo: "Titulares", mensagem: "Campo Titulares: informe um número inteiro, mínimo 1" });
-  for (const campo of ["riscos", "medidas"] as const) {
+  if (form.riscosSelecionados !== undefined) {
+    if (!form.riscosSelecionados.length || (form.riscosDetalhes ?? '').trim().length < 50) motivos.push({ campo: 'riscos', titulo: 'Riscos', mensagem: 'Riscos: marque ao menos 1 risco e descreva o detalhe (50 caracteres)' });
+    if (form.riscosSelecionados.some(v => !vincularRisco(v)) || new Set(form.riscosSelecionados).size !== form.riscosSelecionados.length) motivos.push({ campo: 'riscos', titulo: 'Riscos', mensagem: 'Selecione riscos distintos do catálogo' });
+  }
+  if (form.medidasSelecionadas !== undefined && !form.medidasSelecionadas.length) motivos.push({ campo: 'medidas', titulo: 'Medidas', mensagem: 'Medidas: marque ao menos uma medida adotada' });
+  for (const campo of (form.riscosSelecionados !== undefined ? ["medidas"] : ["riscos", "medidas"]) as ("riscos" | "medidas")[]) {
     const atual = (campo === 'medidas' && form.medidasSelecionadas !== undefined ? textoMedidas(form.medidasSelecionadas, form.outrasMedidas) : form[campo]).trim().length;
     const titulo = campo === "riscos" ? "Riscos" : "Medidas";
     if (atual < 30) motivos.push({ campo, titulo, mensagem: `Campo ${campo === 'riscos' ? 'Riscos e consequências' : titulo}: informe ao menos 30 caracteres (atual: ${atual})` });
@@ -39,8 +47,9 @@ export function progressoANPD(form: ComunicacaoANPD, email: string) {
   return { preenchidos: grupos.filter(g => !motivos.some(m => g.includes(m.campo))).length, total: 6 };
 }
 export function prepararComunicacaoANPD(form: ComunicacaoANPD) {
-  const { naturezasSecundarias = [], naturezaOutro = "", medidasSelecionadas, outrasMedidas = '', categoriasVinculadas, ...campos } = form;
+  const { naturezasSecundarias = [], naturezaOutro = "", medidasSelecionadas, outrasMedidas = '', categoriasVinculadas, riscosSelecionados, riscosDetalhes = '', ...campos } = form;
   return { ...campos, natureza_principal: vincularNatureza(form.natureza),
+    ...(riscosSelecionados !== undefined ? { riscos: textoRiscos(riscosSelecionados, riscosDetalhes), riscos_selecionados: riscosSelecionados.map(vincularRisco), riscos_detalhes: riscosDetalhes.trim(), riscos_versao: VERSAO_RISCOS } : {}),
     ...(categoriasVinculadas ? { categorias_vinculadas: categoriasVinculadas.map(({ valor, fonte_normativa }) => ({ valor, fonte_normativa })), criticidade_comunicacao: categoriasVinculadas.some(c => c.sensivel) ? 'ELEVADA' : 'PADRAO' } : {}),
     ...(medidasSelecionadas !== undefined ? { medidas: textoMedidas(medidasSelecionadas, outrasMedidas), medidas_selecionadas: medidasSelecionadas.map(vincularMedida), outras_medidas: outrasMedidas.trim(), medidas_versao: VERSAO_MEDIDAS } : {}),
     naturezas_secundarias: naturezasSecundarias.map(vincularNatureza),

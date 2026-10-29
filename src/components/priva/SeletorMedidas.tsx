@@ -6,12 +6,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { GRUPOS_MEDIDAS, sugerirMedidas, textoMedidas } from '@/lib/priva/medidasIncidente';
+import { medidasDoVetor, melhorMedida } from '@/lib/priva/vetoresANPD';
 import type { ComunicacaoANPD } from '@/lib/priva/anpd';
 import type { EstadoIncidente } from '@/lib/priva/estadoIncidente';
 
 export function SeletorMedidas({ form, onChange, editavel, estado }: { form: ComunicacaoANPD; onChange: React.Dispatch<React.SetStateAction<ComunicacaoANPD>>; editavel: boolean; estado: EstadoIncidente }) {
   const vistas = useRef(new Set<string>());
-  const sugeridas = sugerirMedidas(estado.etapas.itens);
+  const porEtapa = sugerirMedidas(estado.etapas.itens);
+  const porVetor = medidasDoVetor(form.natureza);
+  const sugeridas = [...new Set([...porEtapa, ...porVetor])];
+  const melhor = melhorMedida(form.natureza);
   const chave = sugeridas.join('|');
   useEffect(() => {
     if (!editavel) return;
@@ -32,12 +36,13 @@ export function SeletorMedidas({ form, onChange, editavel, estado }: { form: Com
   const legado = !editavel && form.medidasSelecionadas === undefined;
   return <fieldset id="anpd-medidas" tabIndex={-1} className="min-w-0 space-y-4 focus:ring-2 focus:ring-ring">
     <legend className="font-medium">Medidas técnicas e de segurança adotadas</legend>
+    {!legado && melhor && <div className="border-l-4 border-l-concluido-border p-3"><p className="text-xs font-semibold uppercase text-concluido">Melhor medida para {melhor.vetor}</p><p className="font-medium">{melhor.valor}</p><p className="text-xs text-muted-foreground">{melhor.fonte_normativa}</p></div>}
     {!legado && <TooltipProvider><div className="space-y-5">{GRUPOS_MEDIDAS.map(g => <fieldset key={g.titulo} className="min-w-0 border-t pt-3">
       <legend className="pr-2 text-sm font-semibold">{g.titulo}</legend>
       <p className="mb-3 text-xs text-muted-foreground">{g.fonte_normativa}</p>
       <div className="grid gap-3 md:grid-cols-2">{g.itens.map(m => <div key={m.valor} className="flex min-w-0 items-start gap-2 text-sm">
         <Tooltip><TooltipTrigger asChild><Checkbox aria-label={m.valor} className="mt-0.5 shrink-0" checked={selecionadas.includes(m.valor)} disabled={!editavel} onCheckedChange={v => alterar(v === true ? [...selecionadas, m.valor] : selecionadas.filter(x => x !== m.valor))} /></TooltipTrigger><TooltipContent className="max-w-xs">{m.descricao}</TooltipContent></Tooltip>
-        <span className="min-w-0 break-words">{m.valor}<span className="block text-xs text-muted-foreground">{m.fonte_normativa}</span>{editavel && sugeridas.includes(m.valor) && selecionadas.includes(m.valor) && <span className="mt-1 block text-xs font-medium text-andamento">Sugerido a partir das etapas concluídas</span>}</span>
+        <span className="min-w-0 break-words">{m.valor}<span className="block text-xs text-muted-foreground">{m.fonte_normativa}</span>{editavel && porEtapa.includes(m.valor) && selecionadas.includes(m.valor) && <span className="mt-1 block text-xs font-medium text-andamento">Sugerido a partir das etapas concluídas</span>}{editavel && selecionadas.includes(m.valor) && !porEtapa.includes(m.valor) && porVetor.includes(m.valor) && <span className="mt-1 block text-xs font-medium text-andamento">Sugerido para {form.natureza}</span>}</span>
       </div>)}</div>
     </fieldset>)}</div></TooltipProvider>}
     {!legado && <div><label htmlFor="anpd-outras-medidas">Outras medidas adotadas (opcional)</label><Textarea id="anpd-outras-medidas" placeholder="Ex.: comunicação espontânea aos clientes por e-mail e abertura de canal de dúvidas." value={form.outrasMedidas ?? ''} readOnly={!editavel} rows={3} onChange={e => alterar(selecionadas, e.target.value)} /><p className="text-xs text-muted-foreground">{(form.outrasMedidas ?? '').trim().length} caracteres · complemento opcional</p></div>}
