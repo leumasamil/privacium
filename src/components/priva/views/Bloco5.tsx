@@ -83,7 +83,7 @@ export function Bloco5() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow={`Bloco 5 · (A) Ciclo Privacium Semestral · Ano Fiscal ${anoAtual}`} title="Auditar o Sistema de Privacidade e Mitigar Riscos" />
-      <AjudaTarefa {...AJUDA[5]} pendencias={pendenciasBloco5({ sistema, escudo, riscos: RISKS.map((r) => ({ label: r.label, mitig: (ripd[r.id] ?? DEF).mitig })) }, signatures)} />
+      {AJUDA[5] && <AjudaTarefa {...AJUDA[5]} pendencias={pendenciasBloco5({ sistema, escudo, riscos: RISKS.map((r) => ({ label: r.label, mitig: (ripd[r.id] ?? DEF).mitig })) }, signatures)} />}
 
       <Panel id="ripd" title="RIPD algorítmico · IA e LLMs (Art. 38 LGPD / ISO 42001)">
         <label className="text-xs text-muted-foreground">Sistema de IA avaliado

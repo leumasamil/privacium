@@ -36,7 +36,7 @@ export const Route = createFileRoute('/demo')({
 
 function DemoPage() {
   const { aba } = Route.useSearch();
-  return <PrivaProvider initialDemo><AppShell><DemoConteudo aba={aba} /></AppShell></PrivaProvider>;
+  return <PrivaProvider initialDemo><AppShell><DemoConteudo aba={aba ?? "painel"} /></AppShell></PrivaProvider>;
 }
 function DemoConteudo({ aba }: { aba: string }) {
   switch (aba) {
