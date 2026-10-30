@@ -323,15 +323,70 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
               </div>
               <div>
                 <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">{ROTULO_ETAPA2}</p>
-                <div className="grid gap-2 sm:grid-cols-2">{ETAPA2.map(generoBtns)}</div>
+                {operador ? (
+                  <p className="rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="destino-operador">{NOTA_DESTINO_OPERADOR} — o destino (Etapa 2) é definido pelo controlador e exibido como somente leitura.</p>
+                ) : (
+                  <div className="grid gap-2 sm:grid-cols-2">{ETAPA2.map(generoBtns)}</div>
+                )}
               </div>
             </div>
             {retencao && <p role="alert" className="flex items-center gap-1 text-xs font-semibold text-warning-foreground" data-testid="alerta-retencao"><AlertTriangle className="h-3 w-3" /> {retencao}</p>}
           </Field>
+          <Field label="10C. Produto interno gerado — obrigatório quando houver Processar (Etapa 1)" wide>
+            <p className="text-[11px] text-muted-foreground">{NOTA_PRODUTO}</p>
+            <Input value={f.produto_interno ?? ""} placeholder="Ex.: Ficha de candidato" onChange={(e) => up({ produto_interno: e.target.value || null })} />
+            {alertaProdutoAusente(f) && <p role="alert" data-testid="alerta-produto" className="flex items-center gap-1 text-xs font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> {ALERTA_PRODUTO_AUSENTE} A chancela do PI-02 fica bloqueada neste estado.</p>}
+          </Field>
+          {temEtapa2(cicloDaLinha(f)) && !operador && (
+            <Field label={`Etapa 2 — O que acontece com o produto "${f.produto_interno?.trim() || "…"}"?`} wide>
+              <select aria-label="Destino do produto" className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={destino?.tipo ?? ""} onChange={(e) => { const t = e.target.value; up({ destino_produto: t ? { tipo: t as DestinoProduto["tipo"] } : null }); }}>
+                <option value="">Selecione…</option>
+                <option value="INTERNO">Compartilhamento interno — Área › Setor de destino</option>
+                <option value="EXTERNO">Compartilhamento externo — terceiro</option>
+                <option value="ELIMINACAO">Eliminação — prazo e fundamento (LGPD art. 16)</option>
+              </select>
+              {destino?.tipo === "INTERNO" && (
+                <div className="grid gap-2 sm:grid-cols-2" data-testid="destino-interno">
+                  <select aria-label="Área de destino" className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={destArea} onChange={(e) => up({ destino_produto: { tipo: "INTERNO", area_setor_destino: areaSetorCompleto(e.target.value, "") } })}>
+                    <option value="">Área…</option>
+                    {AREAS_SETORES.map((a) => <option key={a.area} value={a.area}>{a.area}</option>)}
+                  </select>
+                  <select aria-label="Setor de destino" className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={destSetores.includes(destSetor) ? destSetor : destSetor ? "__outro__" : ""} onChange={(e) => up({ destino_produto: { tipo: "INTERNO", area_setor_destino: areaSetorCompleto(destArea, e.target.value === "__outro__" ? "" : e.target.value) } })}>
+                    <option value="">Setor…</option>
+                    {destSetores.map((s) => <option key={s} value={s}>{s}</option>)}
+                    <option value="__outro__">outro (especificar)</option>
+                  </select>
+                  {(destSetor && !destSetores.includes(destSetor)) && <Input value={destSetor} onChange={(e) => up({ destino_produto: { tipo: "INTERNO", area_setor_destino: areaSetorCompleto(destArea, e.target.value) } })} placeholder="Especifique o setor" />}
+                  <p className="text-[11px] text-muted-foreground sm:col-span-2">Ao salvar, uma linha em estado "insumo recebido" é criada automaticamente no ROT do setor receptor, com o produto como insumo (10A) e origem rastreada.</p>
+                </div>
+              )}
+              {destino?.tipo === "EXTERNO" && (
+                <div data-testid="destino-externo">
+                  <Input value={destino.terceiro ?? ""} placeholder="Terceiro destinatário (do cadastro de fornecedores)" onChange={(e) => up({ destino_produto: { ...destino, terceiro: e.target.value } })} />
+                  {!(destino.terceiro ?? "").trim() && <p role="alert" className="mt-1 flex items-center gap-1 text-xs font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> Terceiro não cadastrado — cadastre o destinatário antes de chancelar o PI-02.</p>}
+                </div>
+              )}
+              {destino?.tipo === "ELIMINACAO" && (
+                <div className="grid gap-2 sm:grid-cols-2" data-testid="destino-eliminacao">
+                  <Input value={f.prazo_produto ?? ""} placeholder="Prazo do produto (ex.: 6 meses)" onChange={(e) => up({ prazo_produto: e.target.value || null })} />
+                  <Input value={f.fundamento_produto ?? ""} placeholder="Fundamento (LGPD art. 16)" onChange={(e) => up({ fundamento_produto: e.target.value || null })} />
+                  <p className="text-[11px] text-muted-foreground sm:col-span-2">A eliminação do insumo não elimina o produto: os dois prazos (insumo e produto) são exibidos separadamente, cada um com seu fundamento.</p>
+                </div>
+              )}
+            </Field>
+          )}
           <Field label="3. Categoria de Titulares" wide><Chips options={TITULARES} value={f.categoria_titulares} onChange={(v) => up({ categoria_titulares: v })} /></Field>
           <Field label="4. Dado pessoal" wide><Chips options={DADOS} value={f.dados_pessoais} onChange={(v) => up({ dados_pessoais: v })} /></Field>
           <Field label="5. Dado pessoal sensível" wide><Chips options={SENSIVEIS} value={f.dados_sensiveis} exclusive="N/A" onChange={(v) => up({ dados_sensiveis: v, hipotese_sensivel: v.some((x) => x !== "N/A") ? f.hipotese_sensivel : null })} /></Field>
-          <Field label="6. Finalidade Específica" wide><Textarea value={f.finalidade_especifica} onChange={(e) => up({ finalidade_especifica: e.target.value })} /></Field>
+          {operador ? (
+            <Field label="6. Finalidade vinculada ao contrato com o controlador — LGPD art. 39" wide>
+              <Input value={f.contrato_controlador ?? ""} placeholder="Contrato de prestação de serviços nº …" onChange={(e) => up({ contrato_controlador: e.target.value || null })} />
+              <p className="text-[11px] text-muted-foreground">Finalidade da linha (somente leitura): {(f.contrato_controlador ?? "").trim() ? finalidadeDoContrato(f.contrato_controlador ?? "") : "informe o contrato com o controlador"}.</p>
+              {alertaFinalidadeOperador(f) && <p role="alert" data-testid="alerta-finalidade-operador" className="flex items-center gap-1 text-xs font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> {ALERTA_FINALIDADE_OPERADOR}</p>}
+            </Field>
+          ) : (
+            <Field label="6. Finalidade Específica" wide><Textarea value={f.finalidade_especifica} onChange={(e) => up({ finalidade_especifica: e.target.value })} /></Field>
+          )}
           <Field label="7A. Hipótese de Tratamento — art. 7º (dado pessoal, art. 5º, I)" wide>
             <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.hipotese_tratamento} onChange={(e) => up({ hipotese_tratamento: e.target.value })}>
               <option value="">Selecione…</option>
