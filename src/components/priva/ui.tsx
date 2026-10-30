@@ -150,7 +150,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
                     const done = signatures[k];
                     return (
                       <Button key={who} variant={done ? "outline" : "default"} disabled={!demo && !!done} onClick={async () => {
-                        if (demo) return avisarAcaoDemo();
+                        if (demo) return void demoAssinar(code, who);
                         const ts = new Date().toISOString();
                         const by = who === "DPO" ? `DPO ${email} · CPF · Gov.br (simulado)` : `Diretoria · CNPJ ${maskCNPJ(cnpj ?? "")} · Gov.br (simulado)`;
                         const hash = await sha256(`${k}|${ts}|${by}`);
@@ -165,7 +165,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
                   })}
                 </div>
               ) : (
-                <Button onClick={async () => { if (demo) return avisarAcaoDemo(); await sign(code); }}>
+                <Button onClick={async () => { await sign(code); }}>
                   <ShieldCheck className="h-4 w-4" /> Assinar com Gov.br (simulado)
                 </Button>
               )
