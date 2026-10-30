@@ -85,6 +85,14 @@ export const DEMO_DPO: Database['public']['Tables']['encarregado_dpo']['Row'] = 
   telefone: null, endereco: null, publicar_contato: false, atualizado_em: ts,
 };
 const etapasDemo = [1, 2, 3, 4, 5, 6].map(numero => ({ numero, concluida: true }));
+const evidenciasDemo = [
+  'Servidores desconectados da VLAN corporativa.',
+  'Célula de resposta acionada; papéis de crise atribuídos.',
+  'Coleta forense de logs de firewall e dump de memória.',
+  'Restauração a partir de backup íntegro com validação de hash.',
+  'Integridade dos dados restaurados validada por SHA-256.',
+  'Comunicação à ANPD preparada no formulário assistido.',
+];
 const riscosDemo = sugerirRiscos(PADRAO_RANSOMWARE, false, false);
 const medidasDemo = sugerirMedidas(etapasDemo.slice(0, 3));
 const detalhesDemo = 'Incidente cenográfico: ransomware criptografou o servidor de arquivos da folha de pagamento, interrompendo o acesso a Nome, CPF e Dados bancários de 1250 colaboradores. Não representa uma ocorrência real.';
@@ -120,7 +128,7 @@ export const DEMO_ROWS: {
       riscos: textoRiscos(riscosDemo, detalhesDemo), medidas_selecionadas: medidasDemo.map(vincularMedida),
       medidas: textoMedidas(medidasDemo), encarregado: 'dpo@cenografica.com.br' },
     enviado_anpd_em: null, encerrado_em: null, criado_por: null, processo_id: 'demo-rot-1', comunicacao_atrasada: false,
-    etapas_registro: Object.fromEntries(etapasDemo.map(({ numero }) => [String(numero), { data: ts, responsavel: 'DPO Cenográfico', evidencia: `Etapa ${numero} concluída apenas no cenário de demonstração.` }])),
+    etapas_registro: Object.fromEntries(etapasDemo.map(({ numero }) => [String(numero), { data: ts, responsavel: 'DPO Cenográfico', evidencia: evidenciasDemo[numero - 1] ?? '' }])),
   }],
   ripd_ia: [{
     empresa_cnpj: DEMO_CNPJ, sistema_avaliado: "Assistente LLM de triagem de currículos e atendimento", atualizado_por: null, atualizado_em: ts,

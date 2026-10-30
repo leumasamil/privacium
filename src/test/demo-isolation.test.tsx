@@ -45,6 +45,16 @@ describe('regras da demonstração pública', () => {
     expect(state.etapas.concluidas).toBe(6);
     const registros = incident.etapas_registro as Record<string, { data: string; responsavel: string; evidencia: string }>;
     expect(Object.keys(registros)).toEqual(['1', '2', '3', '4', '5', '6']);
+    expect(Object.values(registros).map(registro => registro.evidencia)).toEqual([
+      'Servidores desconectados da VLAN corporativa.',
+      'Célula de resposta acionada; papéis de crise atribuídos.',
+      'Coleta forense de logs de firewall e dump de memória.',
+      'Restauração a partir de backup íntegro com validação de hash.',
+      'Integridade dos dados restaurados validada por SHA-256.',
+      'Comunicação à ANPD preparada no formulário assistido.',
+    ]);
+    expect(state.incidente.id).toBe('demo-inc');
+    expect(state.etapas.itens.map(etapa => etapa.responsavel)).toEqual(Array(6).fill('DPO Cenográfico'));
     for (const registro of Object.values(registros)) {
       expect(registro.data).toBe('2026-10-01T12:00:00.000Z');
       expect(registro.responsavel).toBe('DPO Cenográfico');
