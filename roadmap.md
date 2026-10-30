@@ -72,3 +72,8 @@
 - [x] Parte A: `ciclos_priva.reducao_dosimetria` aceita NULL; 0→NULL; relatório exibe "não calculado"; teste.
 - [x] Parte B: tabela `biblioteca_normativa` + seed (51 verificadas + 8 não verificáveis), regra de renderização, painel "Qualidade normativa" com filtro e verificação auditada, teste B.5.
 - [ ] Pendência de decisão: empresa SLN tem 2 ciclos legados com redução 48% (método rejeitado); tarefa só mandou converter os zeros — aguardando orientação.
+
+## Exclusão lógica do ROT (migração 0044)
+- [x] Exclusão lógica com data, autor e motivo; grafo, PI-02 e relatório art. 43 exibem a remoção.
+- [x] Grafo: "Etapa 1 receptor: ausente" para destino Interno sem receptor; nota do hash; seleção do nó auditada.
+- Limitação: Linhas excluídas antes da migração 0044 não são recuperáveis — o histórico anterior tem lacunas.

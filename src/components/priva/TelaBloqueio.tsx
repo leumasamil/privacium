@@ -27,7 +27,7 @@ export function useDadosBloco(n: number, cnpj: string | null) {
     queryFn: async (): Promise<DadosBloco> => {
       if (demo) {
         if (n === 1) return { n: 1, perguntas: DEMO_QUESTIONS.length, respondidas: DEMO_QUESTIONS.length, naos: 40 };
-        if (n === 2) return { n: 2, rot: DEMO_ROT };
+        if (n === 2) return { n: 2, rot: DEMO_ROT.filter((r) => !r.excluido_em) };
         if (n === 3) return { n: 3, endpoints: DEMO_ATIVOS.filter(a => a.tipo === 'ENDPOINT'), cofres: DEMO_ATIVOS.filter(a => a.tipo === 'COFRE'), chaves: 20 };
         const ripd = DEMO_ROWS.ripd_ia[0];
         return { n: 5, sistema: ripd?.sistema_avaliado ?? '', escudo: ripd?.escudo_digital ?? '', riscos: [] };
