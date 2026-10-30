@@ -6,7 +6,7 @@
 import { produtosDaLinha, descreverDestinoPRT, destinoPRTCompleto, rotuloPRT, type DestinoProduto, type OrigemCompartilhamento, type RotRow } from "./rot";
 
 export type AssinaturaRot = { assinante: string; email?: string; etapa: number; em: string; sha256: string };
-type Linha = Pick<RotRow, "id" | "codigo" | "area_setor" | "setor" | "produtos_tratamento" | "produto_interno" | "destino_produto" | "prazo_produto" | "fundamento_produto" | "origem_compartilhamento" | "assinatura_etapa1" | "assinatura_etapa2" | "salvaguardas" | "justificativa_mitigacao" | "insumo"> & Partial<Pick<RotRow, "excluido_em" | "excluido_por" | "motivo_exclusao">>;
+type Linha = Pick<RotRow, "id" | "codigo" | "area_setor" | "setor" | "produtos_tratamento" | "produto_interno" | "destino_produto" | "prazo_produto" | "fundamento_produto" | "origem_compartilhamento" | "assinatura_etapa1" | "assinatura_etapa2" | "salvaguardas" | "justificativa_mitigacao" | "insumo"> & Partial<Pick<RotRow, "excluido_em" | "excluido_por" | "motivo_exclusao" | "origem" | "removida_do_dossie">>;
 
 export type NoCadeia = { id: string; codigo: string; rotulo: string; removido: boolean; excluidoEm?: string | null; excluidoPor?: string | null; motivoExclusao?: string | null };
 export type ArestaCadeia = {
@@ -24,9 +24,10 @@ const asAss = (v: unknown): AssinaturaRot | null => (v && typeof v === "object" 
 export const rotuloNo = (r: Pick<Linha, "codigo" | "area_setor" | "setor">) => `${r.area_setor ?? r.setor} · ${r.codigo}`;
 const no = (r: Linha): NoCadeia => ({ id: r.id, codigo: r.codigo, rotulo: rotuloNo(r), removido: !!r.excluido_em, excluidoEm: r.excluido_em ?? null, excluidoPor: r.excluido_por ?? null, motivoExclusao: r.motivo_exclusao ?? null });
 
-/** Linhas visíveis na planilha mestre: as excluídas logicamente (art. 37) ficam só no grafo e no PI-02. */
-export const linhasAtivas = <T extends { excluido_em?: string | null }>(rows: T[]) => rows.filter((r) => !r.excluido_em);
-export const linhasExcluidas = <T extends { excluido_em?: string | null }>(rows: T[]) => rows.filter((r) => !!r.excluido_em);
+/** Linhas visíveis na planilha mestre: as excluídas logicamente (art. 37) ficam só no grafo e no PI-02.
+ *  Linhas removidas do dossiê (origem TESTE/DEMONSTRACAO, via remover_registro_de_teste) não aparecem em lugar nenhum. */
+export const linhasAtivas = <T extends { excluido_em?: string | null; removida_do_dossie?: boolean | null }>(rows: T[]) => rows.filter((r) => !r.excluido_em && !r.removida_do_dossie);
+export const linhasExcluidas = <T extends { excluido_em?: string | null; removida_do_dossie?: boolean | null }>(rows: T[]) => rows.filter((r) => !!r.excluido_em && !r.removida_do_dossie);
 
 const dataBR = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
 /** Descrição do nó removido: data e motivo da exclusão lógica, ou lacuna anterior à migração 0044. */
@@ -60,9 +61,10 @@ export function receptoraExistente<T extends Pick<RotRow, "id" | "codigo" | "are
 
 /** Monta as trilhas de todos os PRT, incluindo linhas receptoras cuja origem foi removida (B.3). */
 export function montarCadeia(linhas: Linha[]): TrilhaPRT[] {
-  const porId = new Map(linhas.map((l) => [l.id, l]));
+  const visiveis = linhas.filter((l) => !l.removida_do_dossie);
+  const porId = new Map(visiveis.map((l) => [l.id, l]));
   const trilhas: TrilhaPRT[] = [];
-  for (const l of linhas) {
+  for (const l of visiveis) {
     const origem = no(l);
     const a2 = asAss(l.assinatura_etapa2);
     produtosDaLinha(l).forEach((p, i) => {

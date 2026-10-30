@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+// Testes da remoção de registros de teste do dossiê (migração 0045).
 import { DEMO_ROT, DEMO_ROWS } from "@/lib/priva/demo";
 import { NOTA_HASH_ASSINATURA, linhasAtivas, linhasExcluidas, rotuloEtapa1Receptor, incisoSustentado, montarCadeia, receptoraExistente, relatorioProvaCadeia, rotuloStatus, trilhasDoNo } from "@/lib/priva/cadeiaCustodia";
 import { BIBLIOTECA_NORMATIVA } from "@/lib/priva/bibliotecaNormativa";

@@ -77,3 +77,9 @@
 - [x] Exclusão lógica com data, autor e motivo; grafo, PI-02 e relatório art. 43 exibem a remoção.
 - [x] Grafo: "Etapa 1 receptor: ausente" para destino Interno sem receptor; nota do hash; seleção do nó auditada.
 - Limitação: Linhas excluídas antes da migração 0044 não são recuperáveis — o histórico anterior tem lacunas.
+
+## Remoção de registro de teste + prova real da seleção do nó (migração 0045)
+- [x] Coluna `origem` (REAL/TESTE/DEMONSTRACAO) + `removida_do_dossie` no ROT; RPC auditada `remover_registro_de_teste` (só ADMIN_SISTEMA, justificativa obrigatória, hash na trilha).
+- [x] PRIVA-TI-001 da empresa real marcada TESTE e fora do dossiê (justificativa registrada); PI-02 e grafo não a exibem mais.
+- [x] Prova real na empresa de teste: incidente criado, seleção do nó gravada na trilha com hash (sem simulação) e relatório com o mesmo hash.
+- [x] Regra A.5: testes automatizados nunca criam dados na empresa real — só na empresa de teste ou com rollback.
