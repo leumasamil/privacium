@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import * as dos from "@/lib/priva/dosimetria";
-import { SLA_MS, slaRestante, SIMULADOR_EM_REVISAO, AVISO_SIMULADOR, LITERAL_RES4_ART13 } from "@/lib/priva/dosimetria";
+import { SLA_MS, slaRestante, SIMULADOR_EM_REVISAO, AVISO_SIMULADOR, LITERAL_RES4_ART13, rotuloReducaoDosimetria } from "@/lib/priva/dosimetria";
 
 describe("Dosimetria (Res. CD/ANPD nº 4/2023)", () => {
   it("simulador desabilitado com o aviso de revisão", () => {
@@ -19,5 +20,23 @@ describe("Dosimetria (Res. CD/ANPD nº 4/2023)", () => {
   it("prazo começa em 72h úteis (3 dias úteis)", () => {
     expect(SLA_MS).toBe(72 * 3600 * 1000);
     expect(slaRestante(null, Date.now())).toBe(SLA_MS);
+  });
+});
+
+describe("Registro de dosimetria no ciclo (Parte A)", () => {
+  it("NULL significa 'não calculado' — nunca '0%'", () => {
+    expect(rotuloReducaoDosimetria(null)).toBe("não calculado");
+    expect(rotuloReducaoDosimetria(undefined)).toBe("não calculado");
+    expect(rotuloReducaoDosimetria(0)).toBe("0%");
+    expect(rotuloReducaoDosimetria(20)).toBe("20%");
+  });
+  it("o fechamento do ciclo grava NULL com o simulador desabilitado", () => {
+    const fonte = readFileSync("src/components/priva/views/Bloco5.tsx", "utf8");
+    expect(fonte).toContain("reducao_dosimetria: null");
+    expect(fonte).not.toContain("reducao_dosimetria: 0");
+  });
+  it("o relatório de ciclos arquivados exibe o rótulo 'não calculado'", () => {
+    const fonte = readFileSync("src/components/priva/views/Bloco5.tsx", "utf8");
+    expect(fonte).toContain("rotuloReducaoDosimetria(c.reducao_dosimetria)");
   });
 });
