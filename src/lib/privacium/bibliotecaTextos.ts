@@ -23,7 +23,7 @@ export const BIBLIOTECA_TEXTOS: Record<TextoId, TextoModelo> = {
     id: "politica-ia",
     titulo: "Política de uso de IA com dado pessoal",
     pi: "PI-03",
-    fonte: "LGPD art. 46 / CIS Control 03",
+    fonte: "LGPD art. 46 / CIS Controls v8 (controle em verificação)",
     corpo: `POLÍTICA DE USO DE INTELIGÊNCIA ARTIFICIAL COM DADO PESSOAL
 
 1. É proibido colar dado pessoal (nome, CPF, e-mail, dado bancário) em prompts de serviços de IA externos sem higienização prévia pelo Escudo Digital.
@@ -67,7 +67,7 @@ Infraestrutura: Nuvem externa (somente tokens) + endpoint local (tabela de rever
     id: "convencao-hostname",
     titulo: "Convenção de nomenclatura de hostname e domínio",
     pi: "PI-03",
-    fonte: "ISO/IEC 27002 — 8.9 / CIS Control 01",
+    fonte: "ISO/IEC 27002:2022 / CIS Controls v8 (controles em verificação)",
     corpo: `CONVENÇÃO DE NOMENCLATURA DE ATIVOS
 
 Formato de hostname: <TIPO>-<SETOR>-<NN>
@@ -84,7 +84,7 @@ Observação: o ID de hardware (número de série) e o hash de integridade são 
     id: "inventario-cofre",
     titulo: "Inventário de cofre criptográfico",
     pi: "PI-03",
-    fonte: "LGPD art. 46 / ISO/IEC 27002 — 8.24",
+    fonte: "LGPD art. 46 / ISO/IEC 27002:2022 (controle em verificação)",
     corpo: `INVENTÁRIO DE COFRE CRIPTOGRÁFICO (CRYPTOMATOR)
 
 Cofre: <DIRETÓRIO LÓGICO>
@@ -100,7 +100,7 @@ Chave de recuperação: custodiada offline pelo Encarregado (DPO), fora da nuvem
     id: "estrutura-pasta-rot",
     titulo: "Estrutura de pasta por cenário do ROT",
     pi: "PI-02",
-    fonte: "LGPD art. 37 / ISO/IEC 27002 — 5.9",
+    fonte: "LGPD art. 37 / ISO/IEC 27002:2022 (controle em verificação)",
     corpo: `ESTRUTURA DE PASTA POR CENÁRIO DO ROT
 
 Cada cofre espelha os setores registrados no ROT (PI-02), com uma subpasta por categoria de documento:

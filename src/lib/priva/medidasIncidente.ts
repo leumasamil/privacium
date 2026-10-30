@@ -1,26 +1,26 @@
 export type MedidaVinculada = { valor: string; fonte_normativa: string };
 const grupo = (titulo: string, fonte_normativa: string, itens: [string, string][]) => ({ titulo, fonte_normativa, itens: itens.map(([valor, descricao]) => ({ valor, descricao, fonte_normativa })) });
 export const GRUPOS_MEDIDAS = [
-  grupo('Contenção', 'CIS Control 04 / ISO/IEC 27002:2022 — 8.5 e 8.7', [
+  grupo('Contenção', 'CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação)', [
     ['Isolamento dos endpoints afetados da rede', 'Desconectar os equipamentos afetados para conter a propagação.'],
     ['Bloqueio de indicadores de comprometimento no firewall', 'Bloquear endereços, domínios e outros indicadores identificados.'],
     ['Revogação de credenciais e sessões ativas', 'Invalidar credenciais comprometidas e encerrar sessões.'],
     ['Desativação temporária de serviço comprometido', 'Suspender o serviço afetado durante a contenção.'],
   ]),
-  grupo('Erradicação e recuperação', 'CIS Control 11 / ISO/IEC 27002 — 8.13', [
+  grupo('Erradicação e recuperação', 'CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação)', [
     ['Restauração a partir de backup íntegro', 'Recuperar os dados de uma cópia íntegra e confiável.'],
     ['Validação de hash dos dados restaurados', 'Comparar hashes para verificar a integridade da restauração.'],
     ['Reinstalação de sistemas afetados', 'Reinstalar os sistemas a partir de fontes confiáveis.'],
     ['Uso de ferramenta de descriptografia validada', 'Utilizar ferramenta previamente validada para recuperação.'],
     ['Aplicação de patch de correção', 'Aplicar a atualização que corrige a vulnerabilidade identificada.'],
   ]),
-  grupo('Monitoramento e detecção', 'CIS Control 08 / ISO/IEC 27002 — 8.15 e 8.16', [
+  grupo('Monitoramento e detecção', 'CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação)', [
     ['Preservação de evidências forenses (ISO/IEC 27037)', 'Preservar evidências e sua cadeia de custódia conforme ISO/IEC 27037.'],
     ['Análise em ambiente isolado (sandbox)', 'Analisar amostras sem expor o ambiente de produção.'],
     ['Ativação de monitoramento reforçado', 'Ampliar alertas e acompanhamento dos ativos afetados.'],
     ['Revisão de logs de acesso do período', 'Examinar registros de acesso no intervalo do incidente.'],
   ]),
-  grupo('Governança e resposta', 'ISO/IEC 27002 — 5.24 a 5.28 / Res. CD/ANPD nº 15/2024', [
+  grupo('Governança e resposta', 'ISO/IEC 27002:2022 (controles em verificação) / Res. CD/ANPD nº 15/2024', [
     ['Acionamento da Célula de Resposta', 'Mobilizar DPO, TI, Jurídico e Diretoria para a resposta.'],
     ['Comunicação à Diretoria', 'Informar a Diretoria sobre impactos e ações de resposta.'],
     ['Registro do incidente na trilha de auditoria', 'Registrar os atos de resposta na trilha forense.'],
@@ -28,7 +28,7 @@ export const GRUPOS_MEDIDAS = [
     ['Comunicação à ANPD', 'Registrar a comunicação à autoridade quando aplicável.'],
     ['Acionamento do fornecedor ou seguradora', 'Acionar os responsáveis contratuais pelo apoio à resposta.'],
   ]),
-  grupo('Medidas preventivas posteriores', 'CIS Controls v8 / ISO/IEC 27002 — 5.15 e 8.2', [
+  grupo('Medidas preventivas posteriores', 'CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação)', [
     ['Implementação de MFA', 'Exigir autenticação com múltiplos fatores.'],
     ['Revisão de permissões e RLS', 'Reavaliar privilégios e isolamento de acesso por empresa.'],
     ['Treinamento da equipe', 'Capacitar a equipe sobre prevenção e resposta a incidentes.'],

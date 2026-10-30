@@ -8,7 +8,7 @@ import { PartyPopper, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import { AVISO_SIMULADOR, FONTE_RES4, LITERAL_RES4_ART13 } from "@/lib/priva/dosimetria";
+import { AVISO_SIMULADOR, FONTE_RES4, LITERAL_RES4_ART13, rotuloReducaoDosimetria } from "@/lib/priva/dosimetria";
 import { BIBLIOTECA, INERENTE, derivarRisco, sugestaoDescricao, sugestaoMitigacao, type RiscoId } from "@/lib/privacium/bibliotecaMitigacao";
 import { DIMENSOES_AIA, NIVEIS_RISCO_IA, PL_2338_RESSALVA, ROTULO_ESCOPO_IA, classificarRiscoIA, respostasAIA, type NivelRiscoIA } from "@/lib/privacium/bibliotecaTextos";
 import { CopiarModelo } from "@/components/priva/CopiarModelo";
@@ -113,7 +113,8 @@ export function Bloco5() {
   const finalizar = async () => {
     if (demo) return avisarAcaoDemo();
     setBusy(true);
-    const { error } = await supabase.from("ciclos_priva").insert({ empresa_cnpj: cnpj, ano_fiscal: anoAtual, reducao_dosimetria: 0, assinaturas: signatures as unknown as Json });
+    // Simulador em revisão: grava NULL ("não calculado"), nunca 0 ("calculado e igual a zero").
+    const { error } = await supabase.from("ciclos_priva").insert({ empresa_cnpj: cnpj, ano_fiscal: anoAtual, reducao_dosimetria: null, assinaturas: signatures as unknown as Json });
     setBusy(false);
     if (error) { toast.error("Não foi possível finalizar o ciclo."); return; }
     set({ signatures: {}, incidentStart: null, incidentSteps: [false, false, false, false, false, false] },
@@ -275,7 +276,13 @@ export function Bloco5() {
 
       {ciclos.rows.length > 0 && (
         <Panel title="Ciclos arquivados">
-          <ul className="divide-y text-sm">{ciclos.rows.map((c) => <li key={c.id} className="flex justify-between py-2"><span>Ano Fiscal {c.ano_fiscal}</span><span className="font-mono text-xs">{new Date(c.finalizado_em).toLocaleDateString("pt-BR")}</span></li>)}</ul>
+          <ul className="divide-y text-sm">{ciclos.rows.map((c) => (
+            <li key={c.id} className="flex flex-wrap justify-between gap-2 py-2" data-testid={`ciclo-${c.ano_fiscal}`}>
+              <span>Ano Fiscal {c.ano_fiscal}</span>
+              <span className="text-xs text-muted-foreground">Redução de dosimetria: <b data-testid={`reducao-${c.ano_fiscal}`}>{rotuloReducaoDosimetria(c.reducao_dosimetria)}</b></span>
+              <span className="font-mono text-xs">{new Date(c.finalizado_em).toLocaleDateString("pt-BR")}</span>
+            </li>
+          ))}</ul>
         </Panel>
       )}
     </div>

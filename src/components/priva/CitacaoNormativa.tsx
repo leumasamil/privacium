@@ -1,14 +1,41 @@
-import { useState } from "react";
-import { BookOpen } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { BookOpen, ShieldQuestion } from "lucide-react";
 import { buscarNorma } from "@/lib/priva/pedagogia";
+import { citacaoVerificada, referenciaGenerica } from "@/lib/priva/bibliotecaNormativa";
+import { usePriva } from "@/lib/priva/store";
 
 /**
  * Citação legal/normativa com pedagogia: ao clicar, expande o resumo fiel do
- * dispositivo e a relevância prática. Se o dispositivo não estiver na
- * biblioteca, exibe só a citação, sem explicação inventada.
+ * dispositivo e a relevância prática.
+ *
+ * Regra de renderização (biblioteca normativa versionada, item B.3): se o
+ * dispositivo não estiver com status VERIFICADA na biblioteca, a citação NÃO
+ * renderiza o identificador específico — exibe apenas a referência genérica da
+ * norma com a marca "em verificação" — e a pendência é registrada na trilha.
  */
 export function CitacaoNormativa({ citacao, className }: { citacao: string; className?: string }) {
   const [aberto, setAberto] = useState(false);
+  const { log, demo } = usePriva();
+  const pendenciaRegistrada = useRef(false);
+  const verificada = citacaoVerificada(citacao);
+
+  useEffect(() => {
+    if (verificada || pendenciaRegistrada.current || demo) return;
+    pendenciaRegistrada.current = true;
+    log("SELECT", "biblioteca_normativa", `Pendência normativa: citação não verificada suprimida na interface (${citacao})`);
+  }, [verificada, demo, citacao, log]);
+
+  if (!verificada) {
+    return (
+      <span className={className} data-testid={`citacao-pendente-${referenciaGenerica(citacao)}`}>
+        <span className="inline-flex items-center gap-1 text-muted-foreground">
+          <ShieldQuestion className="h-3 w-3" /> {referenciaGenerica(citacao)}
+          <span className="rounded-sm border border-warning px-1 text-[10px] font-medium text-warning">em verificação</span>
+        </span>
+      </span>
+    );
+  }
+
   const norma = buscarNorma(citacao);
   if (!norma) return <span className={className}>{citacao}</span>;
   return (

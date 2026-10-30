@@ -22,9 +22,9 @@ describe("ciclo de vida do dado pessoal (art. 5º, X)", () => {
     expect(validarCiclo({ Coletar: ["vender"] })).toMatch(/fora do elenco/);
     expect(validarCiclo({})).toMatch(/ao menos uma espécie/);
   });
-  it("ISO/IEC 27002 determinística por gênero", () => {
-    expect(ISO_27002.Processar).toEqual(["ISO/IEC 27002 — 5.10 (uso aceitável)", "ISO/IEC 27002 — 8.11 (mascaramento)"]);
-    expect(ISO_27002.Eliminar[1]).toContain("7.10");
+  it("ISO/IEC 27002 determinística por gênero (referência genérica enquanto o controle não é verificado)", () => {
+    expect(ISO_27002.Processar).toEqual(["ISO/IEC 27002:2022 (controle em verificação)"]);
+    expect(ISO_27002.Eliminar).toEqual(["ISO/IEC 27002:2022 (controle em verificação)"]);
   });
   it("linhas da demonstração usam só espécies válidas", () => {
     for (const r of DEMO_ROT) expect(validarCiclo(r.ciclo_vida as never)).toBeNull();

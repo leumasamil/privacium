@@ -76,11 +76,11 @@ export function destinoDeclarado(r: { ciclo_vida?: unknown; genero_verbo: string
 
 /** Itens da ISO/IEC 27002:2022 por gênero (determinístico). */
 export const ISO_27002: Record<Genero, string[]> = {
-  Coletar: ["ISO/IEC 27002 — 5.12 (classificação da informação)"],
-  Reter: ["ISO/IEC 27002 — 8.10 (exclusão de informação)"],
-  Processar: ["ISO/IEC 27002 — 5.10 (uso aceitável)", "ISO/IEC 27002 — 8.11 (mascaramento)"],
-  Compartilhar: ["ISO/IEC 27002 — 5.14 (transferência de informação)"],
-  Eliminar: ["ISO/IEC 27002 — 8.10 (exclusão de informação)", "ISO/IEC 27002 — 7.10 (mídias de armazenamento)"],
+  Coletar: ["ISO/IEC 27002:2022 (controle em verificação)"],
+  Reter: ["ISO/IEC 27002:2022 (controle em verificação)"],
+  Processar: ["ISO/IEC 27002:2022 (controle em verificação)"],
+  Compartilhar: ["ISO/IEC 27002:2022 (controle em verificação)"],
+  Eliminar: ["ISO/IEC 27002:2022 (controle em verificação)"],
 };
 
 export const CITACOES_LGPD = ["LGPD art. 5º, X (operação de tratamento)", "LGPD art. 37 (registro das operações)"];

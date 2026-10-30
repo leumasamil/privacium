@@ -29,3 +29,12 @@ export function slaRestante(inicio: string | null, agora: number) {
   if (!inicio) return SLA_MS;
   return restanteANPD(inicio, null, agora);
 }
+
+/**
+ * Rótulo do campo reducao_dosimetria em relatórios e exportações (Parte A.3):
+ * NULL significa "não calculado" (simulador em revisão) — nunca exibir "0%".
+ */
+export function rotuloReducaoDosimetria(reducao: number | null | undefined): string {
+  if (reducao === null || reducao === undefined) return "não calculado";
+  return `${reducao}%`;
+}

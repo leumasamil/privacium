@@ -18,11 +18,11 @@ export function medidasDoVetor(natureza: string) { return MEDIDAS_VETOR[vetorDaN
 export function melhorMedida(natureza: string) {
   const vetor = vetorDaNatureza(natureza);
   const itens: Partial<Record<VetorANPD, { valor: string; fonte_normativa: string }>> = {
-    ransomware: { valor: 'Restauração a partir de backup íntegro com validação de hash', fonte_normativa: 'CIS Control 11 / ISO/IEC 27002 — 8.13' },
-    acesso: { valor: 'Revogação de credenciais e sessões ativas', fonte_normativa: 'CIS Control 04 / ISO/IEC 27002 — 8.5' },
-    vazamento: { valor: 'Contenção da exposição com desativação do acesso público', fonte_normativa: 'CIS Control 04 / ISO/IEC 27002 — 8.7' },
-    disponibilidade: { valor: 'Restauração a partir de backup íntegro', fonte_normativa: 'CIS Control 11 / ISO/IEC 27002 — 8.13' },
-    vulnerabilidade: { valor: 'Aplicação de patch de correção', fonte_normativa: 'CIS Control 07 / ISO/IEC 27002 — 8.8' },
+    ransomware: { valor: 'Restauração a partir de backup íntegro com validação de hash', fonte_normativa: 'CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação)' },
+    acesso: { valor: 'Revogação de credenciais e sessões ativas', fonte_normativa: 'CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação)' },
+    vazamento: { valor: 'Contenção da exposição com desativação do acesso público', fonte_normativa: 'CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação)' },
+    disponibilidade: { valor: 'Restauração a partir de backup íntegro', fonte_normativa: 'CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação)' },
+    vulnerabilidade: { valor: 'Aplicação de patch de correção', fonte_normativa: 'CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação)' },
   };
   const item = itens[vetor]; return item ? { ...item, vetor: ROTULOS_VETORES[vetor] } : null;
 }

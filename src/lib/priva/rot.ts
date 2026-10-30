@@ -95,7 +95,7 @@ export const SENSIVEIS = ["N/A", "Biometria", "Prontuário de Saúde", "Origem R
 export const SALVAGUARDAS = ["Criptografia", "BitLocker", "Acesso Restrito RBAC", "Proxy de IA", "MFA", "Anonimização"];
 export const INFRA = ["Servidor Local", "Nuvem Corporativa", "Arquivo Físico"] as const;
 
-/** Insumo (documento de entrada) — LGPD art. 5º, I / ISO/IEC 27002:2022 — 5.12 (Classificação da informação; referência bibliográfica, item 9.6 do blueprint). */
+/** Insumo (documento de entrada) — LGPD art. 5º, I / ISO/IEC 27002:2022 (controle em verificação; referência bibliográfica, item 9.6 do blueprint). */
 export const INSUMOS = ["currículo", "nota fiscal", "banco de dados", "contrato", "formulário", "prontuário", "e-mail", "imagem/documento digitalizado"];
 /** Meio de fornecimento — LGPD art. 37 (registro das operações). */
 export const MEIOS = ["site", "e-mail", "presencial/recepção", "telefone", "API/sistema", "documento físico"];

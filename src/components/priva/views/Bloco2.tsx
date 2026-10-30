@@ -402,7 +402,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
           <Field label="8. Tempo de Retenção"><Input value={f.tempo_retencao} placeholder="5 anos pós-rescisão" onChange={(e) => up({ tempo_retencao: e.target.value })} /></Field>
           <Field label="9. Base do Prazo"><Input value={f.base_prazo} placeholder="Art. 206 do Código Civil" onChange={(e) => up({ base_prazo: e.target.value })} /></Field>
           <Field label="10. Comunicação e transferência / Destinatários"><Input value={f.compartilhamento} onChange={(e) => up({ compartilhamento: e.target.value })} /></Field>
-          <Field label="10A. Insumo (documento de entrada) — LGPD art. 5º, I / ISO/IEC 27002 — 5.12">
+          <Field label="10A. Insumo (documento de entrada) — LGPD art. 5º, I / ISO/IEC 27002:2022 (controle em verificação)">
             <Chips options={INSUMOS} value={f.insumo ? [f.insumo] : []} onChange={(v) => up({ insumo: v[v.length - 1] ?? null })} />
           </Field>
           <Field label="10B. Meio de fornecimento — LGPD art. 37">
