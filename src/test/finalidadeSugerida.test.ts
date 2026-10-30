@@ -16,8 +16,9 @@ describe("campo 6 — finalidade sugerida (v2)", () => {
     expect(contadorPadronizadas([{ finalidade_especifica: "Seleção e recrutamento de candidatos" }, { finalidade_especifica: "outra" }])).toBe("1 de 2 finalidades padronizadas");
   });
   it("nunca pré-seleciona: sugestão não altera a linha", () => {
-    const r = { area_setor: "Recursos Humanos › Recrutamento", insumo: "currículo", finalidade_especifica: "" } as never;
-    sugerir(r); expect((r as { finalidade_especifica: string }).finalidade_especifica).toBe("");
+    const r = { area_setor: "Recursos Humanos › Recrutamento", insumo: "currículo", finalidade_especifica: "", categoria_titulares: [], dados_sensiveis: ["N/A"], dados_pessoais: [], salvaguardas: [], hipotese_tratamento: "", hipotese_sensivel: null, tempo_retencao: "", ciclo_vida: {}, genero_verbo: "Coletar" } as never;
+    const d = sugerir(r); expect(d.some((x) => x.origem.includes("v2"))).toBe(true);
+    expect((r as { finalidade_especifica: string }).finalidade_especifica).toBe("");
   });
   it("checklist renomeado e suboperador pelo art. 42, § 1º, I", () => {
     expect(TITULO_CHECKLIST).toBe("Checklist de cláusulas contratuais do método (não é transcrição do art. 39)");
