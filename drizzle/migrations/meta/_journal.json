@@ -302,6 +302,13 @@
       "when": 1793388334933,
       "tag": "0042_dosimetria_null_e_biblioteca_normativa",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1793390262730,
+      "tag": "0043_dosimetria_legados_metodo_rejeitado_null",
+      "breakpoints": true
     }
   ]
 }
