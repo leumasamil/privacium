@@ -22,6 +22,7 @@ export const INERENTE = { prob: 5, imp: 5 } as const;
 export const BIBLIOTECA: Record<RiscoId, Entrada> = {
   vazamento: {
     pis: ["PI-03"],
+    descricao: "Colaboradores colam dados pessoais (currículos, cadastros, e-mails de titulares) em prompts de LLMs externos, fazendo o dado pessoal sair do perímetro do CNPJ sem registro.",
     medida: "Aplicar DLP com mascaramento local de dados pessoais (CPF, e-mail, nome) antes de qualquer envio a LLM externo, bloqueando prompts que contenham dado pessoal sensível em claro",
     fonte: "CIS Control 03 / ISO/IEC 27002 — 8.12 e 8.11",
     controles: [
@@ -32,6 +33,7 @@ export const BIBLIOTECA: Record<RiscoId, Entrada> = {
   },
   vies: {
     pis: ["PI-02", "PI-01"],
+    descricao: "Decisões automatizadas de RH ou crédito reproduzem discriminação histórica do dataset, afetando candidatos e clientes sem revisão humana.",
     medida: "Revisar o dataset de treinamento contra atributos de dado pessoal sensível, executar teste de adversidade por grupo e garantir revisão humana das decisões automatizadas (art. 20 LGPD)",
     fonte: "ISO/IEC 42001 — A.7.4 / ISO/IEC 23894 — 6.4",
     controles: [
@@ -42,6 +44,7 @@ export const BIBLIOTECA: Record<RiscoId, Entrada> = {
   },
   injecao: {
     pis: ["PI-03", "PI-04"],
+    descricao: "Documentos recebidos (currículos, anexos) contêm instruções ocultas que forçam o modelo a revelar ou alterar dados pessoais processados.",
     medida: "Validar e sanitizar toda entrada enviada ao modelo, executar o LLM em sandbox sem acesso direto a bases de dado pessoal e manter logs selados de prompts e respostas",
     fonte: "CIS Control 16 / ISO/IEC 27002 — 8.28 e 8.15",
     controles: [
