@@ -116,3 +116,11 @@ CT-5. "Dados pessoais sensíveis" no plural, quando se refere à unidade, é def
 
 ### 9.5. Prova obrigatória em toda tarefa com conteúdo normativo
 Toda resposta que implementar ou alterar citação normativa deve incluir: (a) a URL oficial de cada norma citada; (b) o trecho literal do dispositivo que fundamenta a regra implementada; (c) a confirmação dos casos de teste CT-1 a CT-5 (verificados, não presumidos); (d) a declaração: "Nenhuma afirmação legal foi implementada sem fonte oficial verificada" — ou a lista do que não pôde ser verificado e ficou de fora.
+
+### 9.6. Citação de norma técnica paga (ISO/IEC, NIST quando aplicável)
+Normas técnicas cujo texto integral é protegido por direitos autorais e vendido pelo organismo emissor NÃO exigem texto literal para citação. Para essas normas, a citação é válida quando o prompt fornecer:
+(a) a identificação completa da norma (ex.: ISO/IEC 27002:2022);
+(b) o número e o TÍTULO OFICIAL do controle (ex.: 5.12 — Classificação da informação);
+(c) a fonte pública de onde o título foi obtido (catálogo oficial da ISO, página do controle, ou publicação que reproduza a estrutura de controles).
+O produto NUNCA reproduz o texto integral do controle — apenas referencia número e título. Isso constitui referência bibliográfica, não reprodução de obra protegida.
+A regra 1.2 (texto literal + URL) permanece integralmente aplicável a LEIS e RESOLUÇÕES.
