@@ -39,7 +39,7 @@ test('a-i) circuito completo: envio → encerramento → chancela PI-04 → Bloc
   await expect(encerrar).toBeVisible();
   await encerrar.click();
   await expect(page.getByText('Incidente encerrado nesta sessão de demonstração.')).toBeVisible();
-  await expect(page.getByText('Incidente já encerrado', { exact: false }).first()).toBeVisible();
+  await expect(page.getByText('Incidente encerrado:', { exact: false })).toBeVisible();
 
   // d) PI-04 chancelável (DPO + Diretoria) e Bloco 5 liberado na mesma sessão, sem reload.
   await page.getByRole('button', { name: 'Gerar e assinar' }).click();
