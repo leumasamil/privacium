@@ -37,5 +37,5 @@
 - [x] Completar seis etapas cenográficas sem envio ou encerramento e preservar bloqueio do Bloco 5.
 - [x] Conferir ações demo clicáveis mesmo com validação pendente e aviso sem requisições.
 - [x] Executar os seis testes do anexo: todos passaram na visualização local; fluxo demo sem requisições ao banco.
-- [ ] Exibir responsável cenográfico nas seis etapas do Bloco 4 e completar as evidências específicas do anexo.
-- [ ] Executar os sete critérios do checklist demo e confirmar ausência de escrita durante a navegação.
+- [x] Exibir responsável cenográfico nas seis etapas do Bloco 4 e completar as evidências específicas do anexo.
+- [x] Executar os sete critérios do checklist demo: a–g passaram localmente, com zero requisições ao banco ou funções internas.
