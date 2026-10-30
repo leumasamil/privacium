@@ -218,6 +218,13 @@
       "when": 1793376325636,
       "tag": "0030_enquadramento_agente_assinado",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793376462592,
+      "tag": "0031_alinhar_sla_enquadramento",
+      "breakpoints": true
     }
   ]
 }
