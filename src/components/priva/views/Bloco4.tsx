@@ -8,6 +8,7 @@ import { linhasMedidas } from '@/lib/priva/medidasIncidente';
 import { linhasCategorias } from '@/lib/priva/categoriasANPD';
 import { useEncarregado } from "@/lib/priva/useEncarregado";
 import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
+import { Sigla } from "@/components/priva/Sigla";
 import { AJUDA } from "@/lib/priva/ajuda";
 import { AppLink as Link } from "@/components/priva/AppLink";
 import { useEffect, useRef, useState } from "react";

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePriva } from "@/lib/priva/store";
 import { maskCNPJ, maskCPF, maskEmail } from "@/lib/priva/data";
 import { PageHeader, Panel, Tag } from "@/components/priva/ui";
+import { Sigla } from "@/components/priva/Sigla";
 import { Button } from "@/components/ui/button";
 
 
