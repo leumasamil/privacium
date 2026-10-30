@@ -69,5 +69,6 @@
 - [ ] Tarefa D: conferir demo /demo com lista de PRT e bloqueio — depende da B.
 
 ## Dosimetria NULL + Biblioteca normativa versionada
-- [ ] Parte A: `ciclos_priva.reducao_dosimetria` aceita NULL; 0→NULL; relatório exibe "não calculado"; teste.
-- [ ] Parte B: tabela `biblioteca_normativa` + seed (42 verificadas + LC 182/2021 + corrigidas D1–D10 + não verificáveis), regra de renderização, painel "Qualidade normativa" com filtro e verificação auditada, teste B.5.
+- [x] Parte A: `ciclos_priva.reducao_dosimetria` aceita NULL; 0→NULL; relatório exibe "não calculado"; teste.
+- [x] Parte B: tabela `biblioteca_normativa` + seed (51 verificadas + 8 não verificáveis), regra de renderização, painel "Qualidade normativa" com filtro e verificação auditada, teste B.5.
+- [ ] Pendência de decisão: empresa SLN tem 2 ciclos legados com redução 48% (método rejeitado); tarefa só mandou converter os zeros — aguardando orientação.
