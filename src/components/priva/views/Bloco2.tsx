@@ -478,6 +478,15 @@ function CicloCelula({ r }: { r: RotRow }) {
   );
 }
 
+/** Vínculo do destino do produto na linha de origem (Etapa 2 ancorada no produto). */
+function DestinoProdutoCelula({ r }: { r: RotRow }) {
+  const d = r.destino_produto as DestinoProduto | null;
+  if (!d) return null;
+  if (d.tipo === "INTERNO") return <p className="mt-1 text-[10px] text-muted-foreground" data-testid={`vinculo-${r.codigo}`}>Compartilhado com {d.area_setor_destino} — linha {d.linha_receptor_codigo ?? "a criar"}</p>;
+  if (d.tipo === "EXTERNO") return <p className="mt-1 text-[10px] text-muted-foreground">Compartilhado externamente: {d.terceiro ?? "terceiro não identificado"}</p>;
+  return <p className="mt-1 text-[10px] text-muted-foreground">Eliminação do produto: {r.prazo_produto ?? "prazo a definir"} ({r.fundamento_produto ?? "fundamento a definir"})</p>;
+}
+
 type Assinatura = { assinante: string; email: string; etapa: number; em: string; sha256: string };
 
 function AssinaturasRot({ r, onAssinar }: { r: RotRow; onAssinar: (etapa: 1 | 2) => void }) {
