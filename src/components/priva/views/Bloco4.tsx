@@ -41,7 +41,7 @@ const STEPS = [
   { t: "Sandbox", d: "Analisar a amostra do ransomware em ambiente isolado e preservar evidências (ISO 27037)." },
   { t: "Descriptografia", d: "Restaurar a partir de backups íntegros ou ferramentas de descriptografia validadas." },
   { t: "Validação", d: "Conferir hashes de integridade dos dados restaurados e encerrar a contenção." },
-  { t: "Reporte", d: "Comunicar a ANPD e os titulares (Res. CD/ANPD nº 15/2024) dentro do prazo de 72h." },
+  { t: "Reporte", d: "Comunicar a ANPD e os titulares em até 3 dias úteis (Res. CD/ANPD nº 15/2024, art. 6º)." },
 ];
 
 const mesAtual = () => new Date().toISOString().slice(0, 7);
@@ -197,12 +197,12 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
   const ref = ativo ? ativo.id.slice(0, 6) : "";
   const passos = estado?.etapas.itens.map(i => i.concluida) ?? [false, false, false, false, false, false];
   const atual = passos.findIndex((p) => !p);
-  const restante = demo ? DEMO_SLA_MS : (ativo ? restanteANPD(ativo.iniciado_em, ativo.enviado_anpd_em, now) : 72 * 3600000);
+  const restante = demo ? DEMO_SLA_MS : (ativo ? restanteANPD(ativo.iniciado_em, ativo.enviado_anpd_em, now) : SLA_MS);
   const tom = !ativo ? "neutro" : restante === 0 ? "vencido" : restante < 24 * 3600000 ? "atencao" : "andamento";
   const TOM_SLA = {
     neutro: { caixa: "", texto: "text-primary", rotulo: "Nenhum incidente ativo" },
-    andamento: { caixa: "border-l-4 border-l-andamento-border", texto: "text-andamento", rotulo: "Em andamento · mais de 24h" },
-    atencao: { caixa: "border-l-4 border-l-atencao-border", texto: "text-atencao", rotulo: "Atenção · menos de 24h" },
+    andamento: { caixa: "border-l-4 border-l-andamento-border", texto: "text-andamento", rotulo: "Em andamento · mais de 24h úteis" },
+    atencao: { caixa: "border-l-4 border-l-atencao-border", texto: "text-atencao", rotulo: "Atenção · menos de 24h úteis" },
     vencido: { caixa: "border-l-4 border-l-vencido-border", texto: "text-vencido", rotulo: "Vencido" },
   }[tom];
 
@@ -240,7 +240,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
     if (!canEdit || busy) return;
     const { error } = await supabase.from("incidentes_seguranca").insert({ empresa_cnpj: cnpj });
     if (error) { toast.error("Falha ao declarar."); return; }
-    log("INSERT", "incidentes_seguranca", "Incidente de ransomware declarado · SLA 72h iniciado");
+    log("INSERT", "incidentes_seguranca", "Incidente de ransomware declarado · prazo de 3 dias úteis iniciado");
     refresh();
     qc.invalidateQueries({ queryKey: ["pendencias"] });
   };
@@ -287,7 +287,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
               {corrente && (
                 <>
                   <p className="mt-1 text-muted-foreground">{s.d}</p>
-                  {i === 5 ? <p className="mt-1 text-pendencia">Consome o SLA de 72h · preencha o formulário abaixo.</p>
+                   {i === 5 ? <p className="mt-1 text-pendencia">Consome o prazo de 3 dias úteis · preencha o formulário abaixo.</p>
                     : canEdit && <Button size="sm" variant="outline" disabled={!demo && busy} className="mt-2 h-auto min-h-7 w-full whitespace-normal" onClick={() => concluirEtapa(i)}>Marcar como concluída</Button>}
                 </>
               )}
@@ -308,9 +308,9 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
           {ativo?.enviado_anpd_em && <div className="mt-2"><Tag tone="success">ANPD comunicada</Tag></div>}
         </div>
         <ul className="space-y-1 text-xs text-foreground">
-          <li><b>O que mede:</b> Prazo de comunicação à ANPD — Res. CD/ANPD nº 15/2024. Vinculado à etapa 6 (Reporte).</li>
+          <li><b>O que mede:</b> Prazo de comunicação à ANPD — 3 dias úteis (Res. CD/ANPD nº 15/2024, art. 6º), contados do conhecimento do incidente; não inclui fins de semana e feriados. Vinculado à etapa 6 (Reporte).</li>
           <li><b>Ao zerar:</b> Após o prazo, o incidente é marcado como comunicado em atraso e a trilha registra o descumprimento.</li>
-          <li><b>Contador:</b> não pausa durante a resposta; após a comunicação simulada, congela no instante de envio.</li>
+          <li><b>Contador:</b> conta apenas horas úteis (segunda a sexta) e não pausa durante a resposta; após a comunicação simulada, congela no instante de envio.</li>
         </ul>
       </div>
 
