@@ -67,3 +67,7 @@
 - [ ] Tarefa B: PRT como entidade (`produtos_tratamento`/`produtos_destino`) e grafo "Cadeia de custódia".
 - [ ] Tarefa C: incidente com seleção de nó e relatório "Prova de cadeia de custódia" (art. 43) — depende da B.
 - [ ] Tarefa D: conferir demo /demo com lista de PRT e bloqueio — depende da B.
+
+## Dosimetria NULL + Biblioteca normativa versionada
+- [ ] Parte A: `ciclos_priva.reducao_dosimetria` aceita NULL; 0→NULL; relatório exibe "não calculado"; teste.
+- [ ] Parte B: tabela `biblioteca_normativa` + seed (42 verificadas + LC 182/2021 + corrigidas D1–D10 + não verificáveis), regra de renderização, painel "Qualidade normativa" com filtro e verificação auditada, teste B.5.
