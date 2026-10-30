@@ -113,6 +113,10 @@ export function Bloco5() {
       {AJUDA[5] && <AjudaTarefa {...AJUDA[5]} pendencias={pendencias} />}
 
       <Panel id="ripd" title="RIPD algorítmico · IA e LLMs (Art. 38 LGPD / ISO 42001)">
+        <p className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <CitacaoNormativa citacao="LGPD art. 38" />
+          <CitacaoNormativa citacao="ISO/IEC 42001" />
+        </p>
         <label className="text-xs text-muted-foreground">Sistema de IA avaliado
           <Input disabled={!canEdit} placeholder="Ex.: assistente interno baseado em LLM para atendimento e triagem de currículos" value={sistema}
             onChange={(e) => setSistema(e.target.value)} onBlur={() => salvar({}, "RIPD: sistema avaliado")} />
@@ -165,6 +169,7 @@ export function Bloco5() {
       </Panel>
 
       <Panel title="Simulador do Escudo Jurídico de Dosimetria · Res. CD/ANPD nº 4/2023">
+        <p className="mb-3 text-xs text-muted-foreground"><CitacaoNormativa citacao="Res. CD/ANPD nº 4/2023" /></p>
         <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">A redução é calculada a partir dos mesmos riscos do RIPD acima: risco inerente 5×5 = {INE} contra o risco residual de cada linha.</p>
