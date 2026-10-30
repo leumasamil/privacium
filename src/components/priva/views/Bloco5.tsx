@@ -146,14 +146,14 @@ export function Bloco5() {
                       onChange={(ev) => { if (!v.descManual) log("UPDATE", "ripd_ia", `RIPD: descrição de "${e.label}" revisada manualmente pelo DPO`); put({ descricao: ev.target.value, descManual: true }, false); }}
                       onBlur={() => salvar({}, `RIPD: ${e.label}`)} />
                     <p className="mt-1 text-[11px] text-muted-foreground" data-testid={`rotulo-desc-${e.id}`}>{e.rotuloDesc}</p>
-                    {!manualDesc && e.descricao && <div className="mt-1"><CopiarModelo texto={e.descricao} pi={e.derivado.reducoes.length ? "PI-03" : "PI-01"} fonte="LGPD art. 38 / ISO/IEC 42001" rotulo="Copiar sugestão" /></div>}
+                    {e.rotuloDesc.startsWith("Sugerido") && e.descricao && <div className="mt-1"><CopiarModelo texto={e.descricao} pi="PI-03" fonte="LGPD art. 38 / ISO/IEC 42001" rotulo="Copiar sugestão" /></div>}
                   </div>
                   <div>
                     <Textarea rows={3} disabled={!canEdit} aria-label={`Medidas de mitigação · ${e.label}`} placeholder={e.aviso ?? "Medidas de mitigação…"} value={e.mitig}
                       onChange={(ev) => { if (!v.mitigManual) log("UPDATE", "ripd_ia", `RIPD: mitigação de "${e.label}" revisada manualmente pelo DPO`); put({ mitig: ev.target.value, mitigManual: true }, false); }}
                       onBlur={() => salvar({}, `RIPD: ${e.label}`)} />
                     <p className="mt-1 text-[11px] text-muted-foreground" data-testid={`rotulo-${e.id}`}>{e.rotuloMitig}</p>
-                    {!manual && e.mitig && <div className="mt-1"><CopiarModelo texto={e.mitig} pi="PI-03" fonte={BIBLIOTECA[e.id].fonte} rotulo="Copiar sugestão" /></div>}
+                    {e.rotuloMitig.startsWith("Sugerido") && e.mitig && <div className="mt-1"><CopiarModelo texto={e.mitig} pi="PI-03" fonte={BIBLIOTECA[e.id].fonte} rotulo="Copiar sugestão" /></div>}
                   </div>
                 </div>
                 <p className="mt-2 text-[11px] text-muted-foreground" data-testid={`derivado-${e.id}`}>
