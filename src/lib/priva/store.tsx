@@ -254,6 +254,7 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
 
 /** Indica se o Modo Demonstração Comercial está ativo. */
 export const useDemo = () => useContext(C)?.demo ?? false;
+export const usePublicDemo = () => useContext(C)?.publicDemo ?? false;
 
 export function usePriva() {
   const c = useContext(C);
