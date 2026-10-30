@@ -1,3 +1,5 @@
+import { restanteANPD } from "./anpd";
+
 /** Atenuantes cumulativas (Res. CD/ANPD nº 4/2023) vinculadas aos PIs do Método BLLOCO. */
 export const DOSIMETRIA = [
   { id: "governanca", pis: ["PI-01", "PI-02"], rule: "Política de Privacidade e ROTI estruturado comprovados", pct: 20 },
