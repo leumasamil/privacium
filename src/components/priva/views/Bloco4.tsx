@@ -61,7 +61,7 @@ export function Bloco4() {
   useEffect(() => { if (cnpj) log("SELECT", "lotes_pgaudit", "Abertura do console forense do Bloco 4"); }, [cnpj, log]);
 
   if (!cnpj) return <Panel title="Vigilância"><p className="text-sm text-muted-foreground">Selecione um CNPJ no menu lateral.</p></Panel>;
-  if (consulta.isError) return <Panel title="Vigilância"><p role="alert">Não foi possível ler o estado dos incidentes.</p><Button onClick={() => consulta.refetch()}>Tentar novamente</Button></Panel>;
+  if (consulta.isError) return <Panel title="Vigilância"><p role="alert">Não foi possível ler o estado dos incidentes.</p><Button onClick={() => demo ? avisarAcaoDemo() : void consulta.refetch()}>Tentar novamente</Button></Panel>;
   if (!consulta.data) return <p role="status">Lendo o estado dos incidentes…</p>;
 
   const lotesComHash = lotes.rows.filter((l) => l.hash_sha256);

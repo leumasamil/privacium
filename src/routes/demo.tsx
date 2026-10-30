@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useHydrated } from '@tanstack/react-router';
 import { PrivaProvider } from '@/lib/priva/store';
 import { AppShell } from '@/components/priva/AppShell';
 import { BlockGate } from '@/components/priva/ui';
@@ -36,6 +36,8 @@ export const Route = createFileRoute('/demo')({
 
 function DemoPage() {
   const { aba } = Route.useSearch();
+  const hydrated = useHydrated();
+  if (!hydrated) return <p role="status" className="p-8 text-muted-foreground">Carregando demonstração…</p>;
   return <PrivaProvider initialDemo><AppShell><DemoConteudo aba={aba ?? "painel"} /></AppShell></PrivaProvider>;
 }
 function DemoConteudo({ aba }: { aba: string }) {

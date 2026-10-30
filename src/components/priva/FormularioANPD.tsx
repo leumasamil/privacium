@@ -80,7 +80,7 @@ export function FormularioANPD({ incidente, estado, encerramento, canEdit, refre
     setForm(atual => ({ ...atual, categorias: categoriasDoROT(escolhido).map(c => c.valor) }));
   }, [editavel, processo, escolhido]);
   useEffect(() => {
-    if (!editavel || rot.isLoading || dpo.isLoading || focoInicial.current) return;
+    if (demo || !editavel || rot.isLoading || dpo.isLoading || focoInicial.current) return;
     const timer = setTimeout(() => {
       focoInicial.current = true;
       const campo = !processo ? 'processo' : motivos.find(m => !m.campo.startsWith('etapa-'))?.campo;
