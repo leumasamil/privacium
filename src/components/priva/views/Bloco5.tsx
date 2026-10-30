@@ -176,7 +176,7 @@ export function Bloco5() {
       </Panel>
 
       <Panel id="aia" title="Avaliação de Impacto Algorítmico (AIA)">
-        <p className="mb-3 text-xs text-muted-foreground">Painel distinto do RIPD de LGPD, focado nos impactos algorítmicos. {ROTULO_ESCOPO_IA}</p>
+        <p className="mb-3 text-xs text-muted-foreground">Painel distinto do RIPD de LGPD, focado nos impactos algorítmicos, incluindo a revisão humana de decisões automatizadas (<CitacaoNormativa citacao="LGPD art. 20" />). {ROTULO_ESCOPO_IA}</p>
         <div className="grid gap-3 md:grid-cols-2" data-testid="aia-eixos">
           {DIMENSOES_AIA.map((d) => (
             <div key={d.id} className="rounded-sm border bg-background p-3" data-testid={`aia-${d.id}`}>
