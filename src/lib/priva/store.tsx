@@ -262,6 +262,7 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
     const hash = await sha256(`${prev}|${op}|${target}|${detail}|${DEMO_AGORA_ISO}`);
     demoUltimoHash.current = hash;
     setDemoEventos((ev) => [...ev, { seq: ev.length + 1, ts: DEMO_AGORA_ISO, role: "DPO_OPERACIONAL", cnpj: DEMO_CNPJ, user_email: "dpo@cenografica.com.br", op, target, detail, prev_hash: prev, hash }]);
+    return { hash, ts: DEMO_AGORA_ISO };
   };
   /** Envio simulado: a etapa 06 nasce pendente e só conclui como efeito deste ato. */
   const demoEnviarANPD = async () => {
@@ -297,7 +298,7 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
         reset: noop, refreshAudit: async () => undefined, demo, publicDemo: initialDemo, setDemo, demoPorte, setDemoPorte,
         demoSessao, demoEnviarANPD, demoEncerrarIncidente, demoAssinar, demoRegistrarEvento: registrarEventoDemo,
       }
-    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, demoPorte, setDemoPorte: noop, publicDemo: false, setDemo, demoSessao: DEMO_SESSAO_INICIAL, demoEnviarANPD: async () => undefined, demoEncerrarIncidente: async () => undefined, demoAssinar: async () => undefined, demoRegistrarEvento: async () => undefined };
+    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, demoPorte, setDemoPorte: noop, publicDemo: false, setDemo, demoSessao: DEMO_SESSAO_INICIAL, demoEnviarANPD: async () => undefined, demoEncerrarIncidente: async () => undefined, demoAssinar: async () => undefined, demoRegistrarEvento: async () => ({ hash: "", ts: "" }) };
 
   return (
     <C.Provider value={value}>
