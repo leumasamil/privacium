@@ -168,8 +168,8 @@ export function validateRot(r: RotInput): string | null {
 }
 
 /** Processar na Etapa 1 sem produto interno declarado: alerta exibido e chancela do PI-02 bloqueada (LGPD art. 6º, I). */
-export function alertaProdutoAusente(r: Pick<RotInput, "ciclo_vida" | "genero_verbo" | "produto_interno">): string | null {
-  return temProcessar(cicloDaLinha(r)) && !(r.produto_interno ?? "").trim() ? ALERTA_PRODUTO_AUSENTE : null;
+export function alertaProdutoAusente(r: Pick<RotInput, "ciclo_vida" | "genero_verbo"> & ComPRT): string | null {
+  return temProcessar(cicloDaLinha(r)) && !produtosDaLinha(r).some((p) => p.nome.trim()) ? ALERTA_PRODUTO_AUSENTE : null;
 }
 
 /** Operador com texto de finalidade que não referencia o contrato com o controlador (alerta não bloqueante, LGPD art. 39). */
@@ -199,12 +199,12 @@ const SUGESTOES_PRODUTO_V1: Record<string, { insumo: string; produtos: string[] 
 };
 
 /** Sugestões de produto interno quando há Processar e o campo está vazio (o usuário confirma ou digita o nome próprio). */
-export function sugerirProduto(r: Pick<RotInput, "area_setor" | "insumo" | "ciclo_vida" | "genero_verbo" | "produto_interno">): Sugestao[] {
-  if (!temProcessar(cicloDaLinha(r)) || (r.produto_interno ?? "").trim()) return [];
+export function sugerirProduto(r: Pick<RotInput, "area_setor" | "insumo" | "ciclo_vida" | "genero_verbo"> & ComPRT): Sugestao[] {
+  if (!temProcessar(cicloDaLinha(r)) || produtosDaLinha(r).length) return [];
   const area = (r.area_setor ?? "").split("›")[0]?.trim() ?? "";
   const insumo = r.insumo?.trim().toLowerCase() ?? "";
   const regra = SUGESTOES_PRODUTO_V1[area]?.find((x) => x.insumo === insumo);
-  return (regra?.produtos ?? []).map((p) => ({ texto: `Produto interno: ${p}`, origem: ORIGEM_PRODUTO, patch: { produto_interno: p } }));
+  return (regra?.produtos ?? []).map((p) => ({ texto: `Produto interno: ${p}`, origem: ORIGEM_PRODUTO, patch: { produto_interno: p, produtos_tratamento: [{ nome: p }] } }));
 }
 
 /**
@@ -215,6 +215,7 @@ export function montarLinhaReceptora(
   origem: Pick<RotRow, "id" | "codigo" | "empresa_cnpj" | "categoria_titulares" | "dados_pessoais" | "dados_sensiveis" | "hipotese_tratamento" | "hipotese_sensivel" | "salvaguardas" | "infraestrutura" | "justificativa_mitigacao" | "area_setor" | "setor" | "produto_interno" | "papel_agente" | "contrato_controlador">,
   areaSetorDestino: string,
   chaveSetor: string,
+  nomePRT: string = origem.produto_interno ?? "",
 ): RotInput {
   return {
     empresa_cnpj: origem.empresa_cnpj,
@@ -224,18 +225,19 @@ export function montarLinhaReceptora(
     categoria_titulares: origem.categoria_titulares,
     dados_pessoais: origem.dados_pessoais,
     dados_sensiveis: origem.dados_sensiveis,
-    finalidade_especifica: `Recebimento de "${origem.produto_interno}" de ${origem.area_setor ?? origem.setor} (compartilhamento interno)`,
+    finalidade_especifica: `Recebimento de "${nomePRT}" de ${origem.area_setor ?? origem.setor} (compartilhamento interno)`,
     hipotese_tratamento: origem.hipotese_tratamento,
     hipotese_sensivel: origem.hipotese_sensivel,
     tempo_retencao: "", base_prazo: "", compartilhamento: "Não Compartilhado",
     salvaguardas: origem.salvaguardas, infraestrutura: origem.infraestrutura,
     justificativa_mitigacao: origem.justificativa_mitigacao,
     area_setor: areaSetorDestino,
-    insumo: origem.produto_interno,
+    insumo: nomePRT,
     meio_fornecimento: "API/sistema",
     papel_agente: origem.papel_agente,
     contrato_controlador: origem.contrato_controlador,
     produto_interno: null,
+    produtos_tratamento: [],
     destino_produto: null,
     prazo_produto: null, fundamento_produto: null,
     origem_compartilhamento: { estado: "insumo recebido", linha_origem_id: origem.id, codigo_origem: origem.codigo, area_setor_origem: origem.area_setor ?? origem.setor },
