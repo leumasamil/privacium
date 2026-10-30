@@ -37,8 +37,8 @@ describe('PI-05 · biblioteca determinística', () => {
   it('e) riscos do seed e redução coerentes: 2×4, 3×4, 3×3 → 48%', () => {
     const r = IDS.map((id) => derivarRisco(id, DEMO_SIGNATURES));
     expect(r.map((x) => [x.prob, x.imp])).toEqual([[2, 4], [3, 4], [3, 3]]);
-    expect(reducaoPorRiscos(r)).toBe(Math.round((75 * (16 + 13 + 16)) / 72));
-    expect(reducaoPorRiscos(r)).toBe(47);
+    expect(reducaoPorRiscos(r)).toBe(Math.round((75 * (17 + 13 + 16)) / 72));
+    expect(reducaoPorRiscos(r)).toBe(48);
   });
   it('sem PIs o risco é 5×5 e a redução é 0%; no piso é o teto de 75%', () => {
     expect(derivarRisco('vies', {})).toMatchObject({ prob: 5, imp: 5 });
@@ -56,7 +56,7 @@ describe('PI-05 · tela', () => {
     ctx.signatures = DEMO_SIGNATURES; ctx.log.mockClear();
     await renderBloco5();
     for (const id of IDS) expect(screen.getByTestId(`rotulo-${id}`).textContent).toMatch(/^Sugerido a partir do PI-0/);
-    expect(screen.getByTestId('reducao').textContent).toBe('−47%');
+    expect(screen.getByTestId('reducao').textContent).toBe('−48%');
     fireEvent.change(screen.getByLabelText('Medidas de mitigação · Injeção de prompts'), { target: { value: 'Texto revisado pelo DPO com mais detalhes.' } });
     expect(screen.getByTestId('rotulo-injecao').textContent).toBe('Revisado manualmente pelo DPO');
     expect(ctx.log).toHaveBeenCalledWith('UPDATE', 'ripd_ia', expect.stringContaining('revisada manualmente pelo DPO'));
