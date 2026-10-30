@@ -133,6 +133,62 @@ export function Bloco5() {
       <PageHeader eyebrow={`Bloco 5 · (A) Ciclo Privacium Semestral · Ano Fiscal ${anoAtual}`} title="Auditar o Sistema de Privacidade e Mitigar Riscos" />
       {AJUDA[5] && <AjudaTarefa {...AJUDA[5]} pendencias={pendencias} />}
 
+      <Panel id="classificacao-ia" title="Classificação do Sistema de IA">
+        <p className="mb-3 rounded-sm border border-atencao/40 bg-atencao/10 p-2 text-xs text-muted-foreground" data-testid="escopo-ia">
+          {ROTULO_ESCOPO_IA} <span className="block mt-1 font-medium">{PL_2338_RESSALVA}</span>
+        </p>
+        <div className="flex flex-wrap gap-2" role="list" aria-label="Níveis de risco de IA">
+          {NIVEIS_RISCO_IA.map((n) => (
+            <span key={n} role="listitem" data-testid={`nivel-${n}`}
+              className={`rounded-sm border px-3 py-1 text-xs font-semibold ${n === nivelIA ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>
+              {n}
+            </span>
+          ))}
+        </div>
+        <p className="mt-3 text-[11px] text-muted-foreground" data-testid="derivado-ia">
+          {overrideIA ? `Sobrescrito manualmente pelo DPO · o nível derivado seria ${derivadaIA.nivel}.` : <>Derivado de: {derivadaIA.derivadoDe.join("; ")}.</>}
+        </p>
+        {canEdit && (
+          <label className="mt-3 block text-xs text-muted-foreground">Sobrescrever classificação (registrado na trilha)
+            <select className="mt-1 w-full rounded-sm border bg-background p-2 text-sm" value={overrideIA ?? ""} data-testid="override-ia"
+              onChange={(e) => { const v = e.target.value as NivelRiscoIA | ""; if (v) sobrescreverIA(v); else setOverrideIA(null); }}>
+              <option value="">Usar nível derivado ({derivadaIA.nivel})</option>
+              {NIVEIS_RISCO_IA.map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </label>
+        )}
+      </Panel>
+
+      <Panel id="inventario-ia" title="Inventário de sistemas de IA">
+        <p className="mb-3 text-xs text-muted-foreground">Alimentado pelos dados já declarados no PI-03 (Escudo Digital) e no RIPO abaixo — sem digitação duplicada.</p>
+        {sistema.trim().length > 2 ? (
+          <ul className="divide-y text-sm" data-testid="inventario-ia">
+            <li className="grid gap-1 py-2 md:grid-cols-[1fr_160px_200px_140px]">
+              <span><b>{sistema}</b><span className="block text-xs text-muted-foreground">Finalidade declarada no RIPO</span></span>
+              <span className="text-xs">Provedor do modelo: <b>{provedorIA}</b></span>
+              <span className="text-xs">Papel na cadeia: <b>Operador</b> (usa sistema de terceiro)</span>
+              <span className="text-xs">Classificação: <b>{nivelIA}</b> · PIs vinculados: PI-03, PI-05</span>
+            </li>
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground" data-testid="inventario-ia-vazio">Nenhum sistema de IA declarado. Preencha “Sistema de IA avaliado” no RIPO abaixo.</p>
+        )}
+      </Panel>
+
+      <Panel id="aia" title="Avaliação de Impacto Algorítmico (AIA)">
+        <p className="mb-3 text-xs text-muted-foreground">Painel distinto do RIPD de LGPD, focado nos impactos algorítmicos. {ROTULO_ESCOPO_IA}</p>
+        <div className="grid gap-3 md:grid-cols-2" data-testid="aia-eixos">
+          {DIMENSOES_AIA.map((d) => (
+            <div key={d.id} className="rounded-sm border bg-background p-3" data-testid={`aia-${d.id}`}>
+              <p className="font-semibold text-primary">{d.titulo}</p>
+              <p className="text-xs text-muted-foreground">{d.pergunta}</p>
+              <p className="mt-2 text-sm">{aia[d.id].resposta}</p>
+              {aia[d.id].sugerida && <p className="mt-1 text-[11px] text-muted-foreground">Sugerido a partir do RIPO</p>}
+            </div>
+          ))}
+        </div>
+      </Panel>
+
       <Panel id="ripd" title="RIPD algorítmico · IA e LLMs (Art. 38 LGPD / ISO 42001)">
         <p className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <CitacaoNormativa citacao="LGPD art. 38" />
