@@ -92,11 +92,13 @@ export function Bloco2() {
   };
 
   const riskyCount = rows.filter(isRisky).length;
+  const semDestino = rows.filter((r) => !destinoDeclarado(r)).length;
+  const NUMS = ["", "1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "", "", "8. ", "9. ", "10. ", "10A. ", "10B. ", "11. ", "12. "];
 
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 2 · (R) Ciclo Privacium Semestral · Art. 37 LGPD" title="Registrar as Operações de Tratamento">
-        Inventário em 12 campos (campo 7 dividido em 7A — art. 7º, dado pessoal — e 7B — art. 11, dado pessoal sensível). Linhas com menores de idade ou dado pessoal sensível recebem tarja vermelha e exigem justificativa das medidas mitigadoras.{" "}
+        Inventário em 12 campos (campo 7 dividido em 7A — art. 7º, dado pessoal — e 7B — art. 11, dado pessoal sensível), com insumo e meio de fornecimento (10A/10B). Linhas com menores de idade ou dado pessoal sensível recebem tarja vermelha e exigem justificativa das medidas mitigadoras.{" "}
         <Link to="/manual" className="inline-flex items-center gap-1 font-medium text-primary underline"><BookOpen className="h-3 w-3" /> Manual de Uso</Link>
       </PageHeader>
       {AJUDA[2] && <AjudaTarefa {...AJUDA[2]} />}
@@ -106,23 +108,28 @@ export function Bloco2() {
         <Button size="sm" onClick={() => demo ? avisarAcaoDemo() : setEdit({ id: null, form: empty(cnpj) })}><Plus className="h-4 w-4" /> Novo processo</Button>
       )}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[2000px] text-xs">
+          <table className="w-full min-w-[2400px] text-xs">
             <thead>
               <tr className="border-b text-left">
-                {HEADS.map((h, i) => <th key={h} className="px-2 py-2 font-mono font-medium uppercase tracking-wider text-muted-foreground">{i < 6 ? `${i + 1}. ` : i > 7 ? `${i}. ` : ""}{h}</th>)}
+                {HEADS.map((h, i) => <th key={h} className="px-2 py-2 font-mono font-medium uppercase tracking-wider text-muted-foreground">{NUMS[i]}{h}</th>)}
                 <th />
               </tr>
             </thead>
             <tbody>
               {rows.map((r) => {
                 const risk = isRisky(r);
+                const retencao = alertaRetencao(cicloDaLinha(r));
                 return (
                   <tr id={`rot-${r.id}`} key={r.id} className={cn("scroll-mt-6 border-b align-top", risk && "border-l-4 border-l-destructive bg-destructive/15")}>
                     <td className="px-2 py-2 font-mono font-semibold text-primary">
                       {r.codigo}
                       {risk && <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold uppercase text-destructive"><AlertTriangle className="h-3 w-3" /> Alerta crítico</p>}
                     </td>
-                    <td className="max-w-72 px-2 py-2"><CicloCelula r={r} /></td>
+                    <td className="px-2 py-2">{exibirAreaSetor(r)}</td>
+                    <td className="max-w-72 px-2 py-2">
+                      <CicloCelula r={r} />
+                      {retencao && <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-warning-foreground" data-testid={`retencao-${r.codigo}`}><AlertTriangle className="h-3 w-3" /> {retencao}</p>}
+                    </td>
                     <td className="px-2 py-2"><Tags items={r.categoria_titulares} danger="Menores de Idade" /></td>
                     <td className="px-2 py-2"><Tags items={r.dados_pessoais} /></td>
                     <td className="px-2 py-2"><Tags items={r.dados_sensiveis} safe="N/A" /></td>
@@ -132,6 +139,8 @@ export function Bloco2() {
                     <td className="px-2 py-2">{r.tempo_retencao}</td>
                     <td className="px-2 py-2">{r.base_prazo}</td>
                     <td className="px-2 py-2">{r.compartilhamento}</td>
+                    <td className="px-2 py-2">{r.insumo ?? "—"}</td>
+                    <td className="px-2 py-2">{r.meio_fornecimento ?? "—"}</td>
                     <td className="px-2 py-2"><Tags items={r.salvaguardas} /></td>
                     <td className="px-2 py-2">{r.infraestrutura}<BadgeFornecedorROT processoId={r.id} /></td>
                     <td className="whitespace-nowrap px-2 py-2">
@@ -147,7 +156,7 @@ export function Bloco2() {
                   </tr>
                 );
               })}
-              {!rows.length && <tr><td colSpan={14} className="py-8 text-center text-muted-foreground">Nenhum processo cadastrado.</td></tr>}
+              {!rows.length && <tr><td colSpan={17} className="py-8 text-center text-muted-foreground">Nenhum processo cadastrado.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -155,12 +164,12 @@ export function Bloco2() {
 
       {edit && <RotDialog edit={edit} setEdit={setEdit} onSave={save} />}
 
-      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0} readyHint="Cadastre ao menos um processo na planilha mestre.">
-        <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico.</p>
-        <p className="mt-2"><b>Ciclo de vida do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO}</p>
+      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0 && semDestino === 0} readyHint={rows.length === 0 ? "Cadastre ao menos um processo na planilha mestre." : `${semDestino} processo(s) sem destino declarado: a Etapa 2 (compartilhamento com destinatário identificado ou eliminação com prazo e fundamento — LGPD art. 16) é obrigatória para chancelar o PI-02.`}>
+        <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico{semDestino > 0 ? `, ${semDestino} sem destino declarado (Etapa 2)` : ""}.</p>
+        <p className="mt-2"><b>Ciclo de vida do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO} {NOTA_METODO_CICLO}</p>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           {rows.map((r) => (
-            <li key={r.id}><b>{r.codigo}</b> — Ciclo de vida: {formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção: {r.tempo_retencao} ({r.base_prazo}).{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
+            <li key={r.id}><b>{r.codigo}</b> — {exibirAreaSetor(r)}. Ciclo de vida: {formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção: {r.tempo_retencao} ({r.base_prazo}).{r.insumo && <> Insumo: {r.insumo}.</>}{r.meio_fornecimento && <> Meio de fornecimento: {r.meio_fornecimento}.</>}{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
           ))}
         </ul>
       </PIOutput>
