@@ -279,13 +279,14 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
   // Em demonstração nada é persistido nem registrado: o estado vive só na memória do navegador.
   const value: Ctx = demo
     ? {
-        ...demoShared, ready, userId: initialDemo ? null : userId, email: initialDemo ? 'dpo@cenografica.com.br' : email, roles: ['DPO_OPERACIONAL'], role: 'DPO_OPERACIONAL', audit: [], cnpj: DEMO_CNPJ,
+        ...demoShared, ready, userId: initialDemo ? null : userId, email: initialDemo ? 'dpo@cenografica.com.br' : email, roles: ['DPO_OPERACIONAL'], role: 'DPO_OPERACIONAL', audit: demoEventos as AuditEntry[], cnpj: DEMO_CNPJ,
         empresas: [{ cnpj: DEMO_CNPJ, razao_social: DEMO_RAZAO }], selectEmpresa: noop,
         createEmpresa: async () => "Indisponível no Modo Demonstração.", setRole: noop,
-        set: noop, log: noop, sign: async () => undefined,
+        set: noop, log: noop, sign: async (pi: string) => demoAssinar(pi, "DPO"),
         reset: noop, refreshAudit: async () => undefined, demo, publicDemo: initialDemo, setDemo,
+        demoSessao, demoEnviarANPD, demoEncerrarIncidente, demoAssinar,
       }
-    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, publicDemo: false, setDemo };
+    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, publicDemo: false, setDemo, demoSessao: DEMO_SESSAO_INICIAL, demoEnviarANPD: async () => undefined, demoEncerrarIncidente: async () => undefined, demoAssinar: async () => undefined };
 
   return (
     <C.Provider value={value}>
