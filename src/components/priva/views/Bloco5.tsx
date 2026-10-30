@@ -29,7 +29,6 @@ const RISKS: { id: RiscoId; label: string; hint: string }[] = [
 type R = { prob?: number; imp?: number; descricao: string; mitig: string; descManual?: boolean; mitigManual?: boolean; riscoManual?: boolean; pontosResiduaisNaoMitigados?: number };
 const DEF: R = { descricao: "", mitig: "" };
 const ESCUDO_PADRAO = "O Escudo Digital do Bloco 3 tokeniza localmente CPFs, e-mails e nomes ([CPF_TOKEN], [EMAIL_TOKEN], [NOME_TOKEN]) antes do envio a qualquer IA externa e reverte os tokens apenas no navegador do usuário autorizado. Nenhum dado pessoal em claro sai do perímetro do CNPJ.";
-const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 export function Bloco5() {
   const { cnpj, roles, signatures, set, log, demo, email, demoRegistrarEvento } = usePriva();
@@ -172,7 +171,7 @@ export function Bloco5() {
       </Panel>
 
       <Panel id="aia" title="Avaliação de Impacto Algorítmico (AIA)">
-        <p className="mb-3 text-xs text-muted-foreground">Painel distinto do RIPD de LGPD, focado nos impactos algorítmicos, incluindo a revisão humana de decisões automatizadas (<CitacaoNormativa citacao="LGPD art. 20" />). {ROTULO_ESCOPO_IA}</p>
+        <p className="mb-3 text-xs text-muted-foreground">Painel distinto do RIPD de LGPD, focado nos impactos algorítmicos, incluindo o direito de solicitar a revisão de decisões automatizadas (<CitacaoNormativa citacao="LGPD art. 20" />). {ROTULO_ESCOPO_IA}</p>
         <div className="grid gap-3 md:grid-cols-2" data-testid="aia-eixos">
           {DIMENSOES_AIA.map((d) => (
             <div key={d.id} className="rounded-sm border bg-background p-3" data-testid={`aia-${d.id}`}>
@@ -268,7 +267,7 @@ export function Bloco5() {
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <PartyPopper className="h-10 w-10 text-success" />
             <p className="text-xl font-semibold text-primary">Conformidade estrutural alcançada · Ano Fiscal {anoAtual}</p>
-            <p className="max-w-lg text-sm text-muted-foreground">Os cinco Produtos Internos estão chancelados por DPO e Diretoria. Ao finalizar, o ciclo é arquivado com a redução de {reducao}% e o Ano Fiscal {anoAtual + 1} começa pelo Bloco 1.</p>
+            <p className="max-w-lg text-sm text-muted-foreground">Os cinco Produtos Internos estão chancelados por DPO e Diretoria. Ao finalizar, o ciclo é arquivado e o Ano Fiscal {anoAtual + 1} começa pelo Bloco 1.</p>
             <Button onClick={finalizar} disabled={!demo && (busy || !canEdit)}><RefreshCw className="h-4 w-4" /> Finalizar Ciclo Privacium Semestral</Button>
           </div>
         </Panel>
