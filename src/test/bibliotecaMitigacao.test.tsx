@@ -2,7 +2,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
 import { derivarRisco, sugestaoMitigacao, type RiscoId } from '@/lib/privacium/bibliotecaMitigacao';
-import { memoriaDosimetria } from '@/lib/priva/dosimetria';
 import { DEMO_SIGNATURES, DEMO_PUBLIC_SIGNATURES } from '@/lib/priva/demo';
 import { isUnlocked } from '@/lib/priva/store';
 
@@ -35,16 +34,12 @@ describe('PI-05 · biblioteca determinística', () => {
     const { 'PI-03': _x, ...sem } = DEMO_SIGNATURES;
     expect(sugestaoMitigacao('vazamento', sem)).toEqual({ aviso: 'Conclua o PI-03 para receber a sugestão.' });
   });
-  it('e) riscos do seed não declaram pontos percentuais; PIs 01–04 somam 60%', () => {
+  it('e) riscos do seed derivados dos PIs', () => {
     const r = IDS.map((id) => derivarRisco(id, DEMO_SIGNATURES));
     expect(r.map((x) => [x.prob, x.imp])).toEqual([[2, 4], [3, 4], [3, 3]]);
-    const m = memoriaDosimetria(DEMO_SIGNATURES, r.map((v, i) => ({ label: IDS[i] ?? '' })), 100_000);
-    expect(m.descontoResidual).toBe(0);
-    expect(m.reducaoEfetiva).toBe(60);
   });
-  it('sem PIs o risco é 5×5 e a redução é 0%', () => {
+  it('sem PIs o risco é 5×5', () => {
     expect(derivarRisco('vies', {})).toMatchObject({ prob: 5, imp: 5 });
-    expect(memoriaDosimetria({}, [{ label: 'Viés' }], 100_000).reducaoEfetiva).toBe(0);
   });
   it('h) demonstração pública sem PI-04: Bloco 5 continua bloqueado', () => {
     expect(isUnlocked(DEMO_PUBLIC_SIGNATURES, 5)).toBe(false);

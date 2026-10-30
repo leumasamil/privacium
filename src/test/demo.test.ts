@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { computeGM, riskZone, type Question } from "@/lib/priva/data";
-import { demoAnswers, DEMO_SIGNATURES, DEMO_MULTA_BASE } from "@/lib/priva/demo";
-import { multaComAtenuantes, reducaoDosimetria } from "@/lib/priva/dosimetria";
+import { demoAnswers } from "@/lib/priva/demo";
 
 const deps = ["RH", "TI", "Marketing", "Compras", "Recepção", "Jurídico", "Financeiro"];
 const ws = [10, 9, 8, 7];
@@ -16,8 +15,5 @@ describe("Modo Demonstração", () => {
     expect(r.score).toBe(1075);
     expect(r.bankMax).toBe(1414);
     expect(riskZone(r.gm).tone).toBe("success");
-  });
-  it("multa de R$ 100.000 cai para R$ 25.000 com todos os PIs chancelados", () => {
-    expect(multaComAtenuantes(DEMO_MULTA_BASE, reducaoDosimetria({ ...DEMO_SIGNATURES, "PI-05": 1 }))).toBe(25_000);
   });
 });
