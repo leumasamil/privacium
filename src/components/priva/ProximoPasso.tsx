@@ -37,13 +37,14 @@ export function ProximoPasso() {
   const t = TOM[passo.tipo];
   const naMesmaTela = pathname === passo.link.to;
 
+  // Só cancela a navegação quando o destino existe na tela; caso contrário o Link navega normalmente.
   const ir = (e: React.MouseEvent) => {
-    if (naMesmaTela && passo.link.hash) {
-      e.preventDefault();
-      const el = document.getElementById(passo.link.hash);
-      el?.scrollIntoView({ behavior: "smooth", block: "start" });
-      setTimeout(() => (el?.querySelector<HTMLElement>("input:not([disabled]):placeholder-shown, textarea:not([disabled]):placeholder-shown, button:not([disabled])"))?.focus(), 400);
-    }
+    if (!naMesmaTela || !passo.link.hash) return;
+    const el = document.getElementById(passo.link.hash);
+    if (!el) return;
+    e.preventDefault();
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => (el.querySelector<HTMLElement>("input:not([disabled]):placeholder-shown, textarea:not([disabled]):placeholder-shown, button:not([disabled])"))?.focus(), 400);
   };
 
   return (
