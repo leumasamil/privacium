@@ -78,7 +78,7 @@ export function Bloco1() {
   if (!cnpj) return <Panel title="Diagnóstico de entrada"><p className="text-sm text-muted-foreground">Cadastre ou selecione um CNPJ no menu lateral para iniciar o diagnóstico.</p></Panel>;
   if (!loading && !cpf) {
     return (
-      <Panel title="Identificação do auditor responsável" className="max-w-md">
+      <div className="space-y-6"><EnquadramentoAgente /><Panel title="Identificação do auditor responsável" className="max-w-md">
         <p className="mb-3 text-sm text-muted-foreground">Cada resposta é amarrada ao CNPJ auditado e ao CPF do auditor. Informe seu CPF para continuar.</p>
         <form className="flex gap-2" onSubmit={async (e) => {
           e.preventDefault();
@@ -91,7 +91,7 @@ export function Bloco1() {
           <Button type="submit">Salvar</Button>
         </form>
         {cpfErr && <p className="mt-2 text-sm text-destructive">{cpfErr}</p>}
-      </Panel>
+      </Panel></div>
     );
   }
 

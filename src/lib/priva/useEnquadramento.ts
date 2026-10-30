@@ -6,7 +6,7 @@ import type { CriteriosPorte, Porte } from './enquadramento';
 import type { Database } from '@/integrations/supabase/types';
 export type DeclaracaoPorte = Database['public']['Tables']['enquadramentos_agente']['Row'];
 export function useEnquadramento() {
-  const { cnpj, demo, demoPorte } = usePriva();
+  const { cnpj, demo, demoPorte, signatures, set } = usePriva();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ['enquadramento', cnpj, demo], enabled: !!cnpj && !demo, refetchInterval: 5000,
     queryFn: async () => {
@@ -24,6 +24,8 @@ export function useEnquadramento() {
     if (!cnpj || demo) throw new Error('Assinatura disponível apenas na versão completa.');
     const { data, error } = await supabase.rpc('assinar_enquadramento', { _cnpj: cnpj, _criterios: criterios });
     if (error) throw error;
+    const next = { ...signatures }; delete next['PI-01'];
+    set({ signatures: next });
     await qc.invalidateQueries({ queryKey: ['enquadramento', cnpj] });
     return data;
   };

@@ -73,8 +73,9 @@ test('a-i) circuito completo: envio → encerramento → chancela PI-04 → Bloc
 
 test('f) prazo de 3 dias úteis exibido no Bloco 4 e no Dashboard, sem "72 horas"', async ({ page }) => {
   await page.goto(`${base}/demo?aba=bloco-4`, { waitUntil: 'networkidle' });
-  await expect(page.getByText('3 dias úteis (Res. CD/ANPD nº 15/2024, art. 6º)', { exact: false }).first()).toBeVisible();
-  await expect(page.getByText('contados do conhecimento do incidente; não inclui fins de semana e feriados', { exact: false })).toBeVisible();
+  await expect(page.getByTestId('prazo-porte')).toContainText('Prazo legal aplicável: 3 dias úteis');
+  await expect(page.getByTestId('prazo-porte')).toContainText('Res. CD/ANPD nº 15/2024, art. 6º, § 8º');
+  await expect(page.getByText('sem calendário de feriados configurado', { exact: false })).toBeVisible();
   await expect(page.locator('main')).not.toContainText('72 horas');
   await page.locator('a[href*="/demo?aba=pendencias"]').first().click();
   await expect(page.locator('[data-testid="pendencia-anpd-demo-inc"]')).toContainText('3 dias úteis');
