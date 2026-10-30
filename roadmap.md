@@ -59,4 +59,4 @@
 - [x] Inventário de sistemas de IA alimentado pelo PI-03 (sem digitação duplicada).
 - [x] Painel AIA com 4 eixos + rótulo de escopo + ressalva PL 2338 em tramitação.
 - [x] Testes unitários + e2e (a)–(i); provar delta 0, guards/migrations intactos.
-- [ ] ROT: papel do agente (Bloco 1 + por linha) e camada de produto interno com destino ancorado — TAREFA A/B/C do anexo
+- [x] ROT: papel do agente (Bloco 1 + por linha) e camada de produto interno com destino ancorado — TAREFA A/B/C do anexo
