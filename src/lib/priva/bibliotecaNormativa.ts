@@ -134,7 +134,7 @@ export const BIBLIOTECA_NORMATIVA: EntradaNormativa[] = [
   v("Lei 12.965/2014", "art. 7º, VIII", "VIII - informações claras e completas sobre coleta, uso, armazenamento, tratamento e proteção de seus dados pessoais, que somente poderão ser utilizados para finalidades que: a) justifiquem sua coleta; b) não sejam vedadas pela legislação; e c) estejam especificadas nos contratos de prestação de serviços e nos termos de uso de aplicações de internet.", MCI_URL),
 
   // ---- Não verificáveis (item 9.6 do blueprint: normas pagas / fontes não abertas) ----
-  nv("Res. CMN nº 4.658/2018", "ementa", "https://www.bcb.gov.br/estabilidadefinanceira/buscanormas", "Fonte não aberta na varredura de 30/10/2026; referência histórica do setor financeiro."),
+  nv("Res. CMN nº 4.658/2018", "ementa", "https://www.bcb.gov.br/estabilidadefinanceira/buscanormas", "Fonte não aberta na varredura de 30/10/2026; referência histórica do setor financeiro.", "LEI_ESPECIAL_SETORIAL"),
   nv("ISO/IEC 27002:2022", "controles 5.9, 5.10, 5.12, 5.14, 5.24–5.28, 7.10, 8.x", "https://www.iso.org/standard/75652.html", "Norma paga (item 9.6): títulos dos controles não confirmados em fonte pública na varredura de 30/10/2026."),
   nv("ISO/IEC 27701:2019", "cl. 6.9", "https://www.iso.org/standard/71670.html", "Norma paga (item 9.6): título da cláusula não confirmado em fonte pública."),
   nv("ISO/IEC 27037:2012", "ementa", "https://www.iso.org/standard/44381.html", "Norma paga (item 9.6): não aberta na varredura de 30/10/2026."),
