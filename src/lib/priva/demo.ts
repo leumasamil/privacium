@@ -1,5 +1,9 @@
 import type { Database } from "@/integrations/supabase/types";
 import type { Question } from "./data";
+import { PADRAO_RANSOMWARE, vincularNatureza } from './naturezasIncidente';
+import { sugerirRiscos, textoRiscos, vincularRisco } from './riscosIncidente';
+import { sugerirMedidas, textoMedidas, vincularMedida } from './medidasIncidente';
+import { categoriasDoROT, vincularCategorias } from './categoriasANPD';
 
 /** Modo Demonstração Comercial: dados cenográficos que vivem só no estado do navegador. Nada aqui é gravado no banco. */
 export const DEMO_CNPJ = "99999999000199";
@@ -63,6 +67,16 @@ export const DEMO_ROT: Rot[] = [
   rot({ id: "demo-rot-3", setor: "Recepção", codigo: "PRIVA-RECEPCAO-001", categoria_titulares: ["Menores de Idade", "Visitantes"], dados_pessoais: ["Nome", "Foto"], dados_sensiveis: ["Biometria Facial"], finalidade_especifica: "Controle de acesso físico às instalações", hipotese_tratamento: "Art. 7º, IX – Legítimo interesse do controlador ou de terceiro", hipotese_sensivel: "Art. 11, II, g – Garantia de prevenção à fraude e segurança do titular", tempo_retencao: "6 meses", base_prazo: "Política interna de segurança", infraestrutura: "Servidor local", salvaguardas: ["Criptografia em repouso", "Acesso restrito por perfil"], justificativa_mitigacao: "Templates biométricos cifrados com AES-256, sem armazenamento da imagem bruta, consentimento específico do responsável legal (Art. 14 LGPD) e exclusão automática após 6 meses." }),
 ];
 
+export const DEMO_PUBLIC_SIGNATURES = Object.fromEntries(Object.entries(DEMO_SIGNATURES).filter(([key]) => !key.startsWith('PI-04') && !key.startsWith('PI-05')));
+export const DEMO_DPO: Database['public']['Tables']['encarregado_dpo']['Row'] = {
+  empresa_cnpj: DEMO_CNPJ, nome: 'Encarregado Cenográfico', email: 'dpo@cenografica.com.br',
+  telefone: null, endereco: null, publicar_contato: false, atualizado_em: ts, atualizado_por: null,
+};
+const etapasDemo = [1, 2, 3].map(numero => ({ numero, concluida: true }));
+const riscosDemo = sugerirRiscos(PADRAO_RANSOMWARE, false, false);
+const medidasDemo = sugerirMedidas(etapasDemo);
+const detalhesDemo = 'Incidente cenográfico: ransomware criptografou o servidor de arquivos da folha de pagamento, interrompendo o acesso a Nome, CPF e Dados bancários de 1250 colaboradores. Não representa uma ocorrência real.';
+
 type Ativo = Database["public"]["Tables"]["ativos_seguranca"]["Row"];
 export const DEMO_ATIVOS: Ativo[] = [
   ...Array.from({ length: 20 }, (_, i): Ativo => ({
@@ -87,8 +101,14 @@ export const DEMO_ROWS: {
   }],
   incidentes_seguranca: [{
     id: "demo-inc", empresa_cnpj: DEMO_CNPJ, iniciado_em: ts, passos: [true, true, true, false, false, false],
-    comunicacao: { natureza: "Ransomware no servidor de arquivos", categorias: "Nome, CPF", titulares: "1.250", riscos: "Fraude de identidade", medidas: "Isolamento e restauração de backup", encarregado: "dpo@cenografica.com.br" },
-    enviado_anpd_em: null, encerrado_em: null, criado_por: null, processo_id: null, comunicacao_atrasada: false, etapas_registro: {},
+    comunicacao: { natureza: 'Ransomware no servidor de arquivos', natureza_principal: vincularNatureza(PADRAO_RANSOMWARE) ?? null,
+      naturezas_secundarias: [], categorias: ['Nome', 'CPF', 'Dados bancários'],
+      categorias_vinculadas: vincularCategorias(['Nome', 'CPF', 'Dados bancários'], categoriasDoROT(DEMO_ROT[0])),
+      titulares: '1250', riscos_selecionados: riscosDemo.map(vincularRisco), riscos_detalhes: detalhesDemo,
+      riscos: textoRiscos(riscosDemo, detalhesDemo), medidas_selecionadas: medidasDemo.map(vincularMedida),
+      medidas: textoMedidas(medidasDemo), encarregado: 'dpo@cenografica.com.br' },
+    enviado_anpd_em: null, encerrado_em: null, criado_por: null, processo_id: 'demo-rot-1', comunicacao_atrasada: false,
+    etapas_registro: Object.fromEntries(etapasDemo.map(({ numero }) => [String(numero), { data: ts, responsavel: 'DPO Cenográfico', evidencia: `Etapa ${numero} concluída apenas no cenário de demonstração.` }])),
   }],
   ripd_ia: [{
     empresa_cnpj: DEMO_CNPJ, sistema_avaliado: "Assistente LLM de triagem de currículos e atendimento", atualizado_por: null, atualizado_em: ts,
