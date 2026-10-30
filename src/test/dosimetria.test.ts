@@ -27,8 +27,9 @@ describe("Registro de dosimetria no ciclo (Parte A)", () => {
   it("NULL significa 'não calculado' — nunca '0%'", () => {
     expect(rotuloReducaoDosimetria(null)).toBe("não calculado");
     expect(rotuloReducaoDosimetria(undefined)).toBe("não calculado");
-    expect(rotuloReducaoDosimetria(0)).toBe("0%");
-    expect(rotuloReducaoDosimetria(20)).toBe("20%");
+    // Sem método verificado, nenhum valor numérico (do método rejeitado) é exibido como percentual.
+    expect(rotuloReducaoDosimetria(0)).toBe("não calculado");
+    expect(rotuloReducaoDosimetria(48)).toBe("não calculado");
   });
   it("o fechamento do ciclo grava NULL com o simulador desabilitado", () => {
     const fonte = readFileSync("src/components/priva/views/Bloco5.tsx", "utf8");
