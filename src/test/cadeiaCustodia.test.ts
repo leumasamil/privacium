@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEMO_ROT, DEMO_ROWS } from "@/lib/priva/demo";
-import { incisoSustentado, montarCadeia, receptoraExistente, relatorioProvaCadeia, rotuloStatus, trilhasDoNo } from "@/lib/priva/cadeiaCustodia";
+import { NOTA_HASH_ASSINATURA, linhasAtivas, linhasExcluidas, rotuloEtapa1Receptor, incisoSustentado, montarCadeia, receptoraExistente, relatorioProvaCadeia, rotuloStatus, trilhasDoNo } from "@/lib/priva/cadeiaCustodia";
 import { BIBLIOTECA_NORMATIVA } from "@/lib/priva/bibliotecaNormativa";
 import { rotuloReducaoDosimetria } from "@/lib/priva/dosimetria";
 
@@ -18,10 +18,23 @@ describe("cadeia de custódia", () => {
     const t = achar("Base de leads");
     expect(t.status.tipo === "ROMPE" && t.status.motivo).toBe("assinatura da Etapa 2 (DPO) ausente");
   });
-  it("linha receptora com origem removida exibe a ruptura no nó removido", () => {
-    const t = trilhas.find((x) => x.origem.removido)!;
-    expect(t.origem.codigo).toBe("PRIVA-COMERCIAL-002");
-    expect(t.status.tipo === "ROMPE" && t.status.motivo).toBe("origem removida");
+  it("linha excluída logicamente aparece no grafo como removida, com data e motivo", () => {
+    const t = trilhas.find((x) => x.origem.codigo === "PRIVA-COMERCIAL-002")!;
+    expect(t.origem.removido).toBe(true);
+    expect(t.status.tipo === "ROMPE" && t.status.motivo).toBe("excluída logicamente em 12/10/2026 por DPO (cenográfica) — motivo: Processo de cobrança terceirizado e encerrado internamente");
+  });
+  it("linha excluída sai da planilha mestre e vai para a seção histórica do PI-02", () => {
+    expect(linhasAtivas(DEMO_ROT).map((r) => r.codigo)).not.toContain("PRIVA-COMERCIAL-002");
+    expect(linhasExcluidas(DEMO_ROT).map((r) => r.codigo)).toEqual(["PRIVA-COMERCIAL-002"]);
+  });
+  it("origem apagada antes da migração 0044 é declarada como lacuna não recuperável", () => {
+    const semOrigem = DEMO_ROT.filter((r) => r.id !== "demo-rot-removida");
+    const t = montarCadeia(semOrigem).find((x) => x.origem.removido)!;
+    expect(t.status.tipo === "ROMPE" && t.status.motivo).toBe("origem excluída antes da migração 0044 — data e motivo não recuperáveis");
+  });
+  it("destino Interno sem linha receptora mostra Etapa 1 receptor ausente; Externo mostra não se aplica", () => {
+    expect(rotuloEtapa1Receptor(achar("Ficha cadastral").arestas[0])).toBe("ausente");
+    expect(rotuloEtapa1Receptor(achar("Demonstrativo de pagamento").arestas[0])).toBe("não se aplica");
   });
   it("compartilhar o mesmo PRT de novo com o mesmo setor vincula à linha existente", () => {
     expect(receptoraExistente(DEMO_ROT, "demo-rot-1", "Financeiro › Contas a Pagar", "Relatório de folha consolidado")?.codigo).toBe("PRIVA-FIN-001");
@@ -35,6 +48,14 @@ describe("cadeia de custódia", () => {
     expect(txt).toContain("III - que o dano é decorrente de culpa exclusiva");
     expect(txt).toContain("Não afirma que a excludente");
     expect(incisoSustentado(doNo)).toMatch(/^Inciso II/);
+    expect(txt).toContain(NOTA_HASH_ASSINATURA);
+  });
+  it("relatório do nó receptor exibe data e motivo da origem removida e a seleção registrada", () => {
+    const art43 = BIBLIOTECA_NORMATIVA.find((e) => e.identificador === "art. 43")!;
+    const no = DEMO_ROT.find((r) => r.id === "demo-rot-5")!;
+    const txt = relatorioProvaCadeia({ noSelecionado: no, trilhas: trilhasDoNo(trilhas, no.id), linhas: DEMO_ROT, incidenteId: "x", art43Literal: art43.texto_literal!, art43Url: art43.url_oficial, geradoEm: "2026-10-30", selecao: { ts: "2026-10-30T12:00:00Z", hash: "abc123" } });
+    expect(txt).toContain("REMOVIDA: excluída logicamente em 12/10/2026 por DPO (cenográfica) — motivo: Processo de cobrança terceirizado e encerrado internamente");
+    expect(txt).toContain("Seleção do nó registrada na trilha: 2026-10-30T12:00:00Z · SHA-256 abc123");
   });
 });
 
