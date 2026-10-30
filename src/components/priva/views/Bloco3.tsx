@@ -8,9 +8,11 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { AIShield } from "@/components/priva/AIShield";
+import { CitacaoNormativa } from "@/components/priva/CitacaoNormativa";
 import { sha256 } from "@/lib/priva/data";
 import { usePriva } from "@/lib/priva/store";
-import { DEMO_ATIVOS } from "@/lib/priva/demo";
+import { DEMO_ATIVOS, DEMO_ROT } from "@/lib/priva/demo";
+import { estruturaSugerida, padraoHostname } from "@/lib/privacium/bibliotecaMitigacao";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +43,17 @@ export function Bloco3() {
       const { data, error } = await supabase.from("ativos_seguranca").select("*").eq("empresa_cnpj", cnpj ?? "").order("criado_em");
       if (error) throw error;
       return data;
+    },
+  });
+  // Setores do ROT (PI-02) alimentam a sugestão de estrutura de pasta do cofre.
+  const { data: setoresRot = [] } = useQuery({
+    queryKey: ["rot_setores", cnpj, demo],
+    enabled: !!cnpj,
+    queryFn: async (): Promise<string[]> => {
+      if (demo) return DEMO_ROT.map((r) => r.setor);
+      const { data, error } = await supabase.from("registro_operacoes").select("setor").eq("empresa_cnpj", cnpj ?? "");
+      if (error) throw error;
+      return [...new Set(data.map((r) => r.setor))];
     },
   });
   useEffect(() => {
