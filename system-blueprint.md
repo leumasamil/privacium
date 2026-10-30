@@ -17,7 +17,7 @@
 
 - **Segregação de Papéis (RBAC):** 'ADMIN_SISTEMA', 'DPO_OPERACIONAL', 'C_SUITE'.
 
-- **Rastreabilidade Forense:** Toda leitura ou modificação de dados pessoais sensíveis DEVE registrar uma linha na tabela 'trilha_auditoria_sistema'.
+- **Rastreabilidade Forense:** Toda leitura ou modificação de dado pessoal sensível DEVE registrar uma linha na tabela 'trilha_auditoria_sistema'.
 
 - **Privacy by Default:** CPFs, CNPJs e e-mails de titulares aparecem ocultos/mascarados por padrão (ex: ***.555.***-77).
 
@@ -76,7 +76,7 @@ Estas regras valem para todo o produto:
 Roadmap documental: os itens abaixo ainda não estão implementados.
 
 - Enquadramento do agente por porte no Bloco 1 (critérios do art. 5º, XVII da LGPD e art. 3º da Res. 2/2022), assinado pelo DPO no PI-01, com efeito transversal nos blocos 2, 4 e 5 e citação da Res. 2/2022 condicionada a esse enquadramento.
-- Matriz RAC no Bloco 1 (Membros: nome, CPF/CNPJ, e-mail, área/setor, papel R/A/C).
+- Matriz RAC no Bloco 1 (Membros: nome, CPF/CNPJ, e-mail, Área › Setor, papel R/A/C).
 - Campos do ROT: "Área › Setor"; "Insumo (documento de entrada)"; "Meio de fornecimento".
 - Sugestões determinísticas para Finalidade e hipóteses dos arts. 7º/11, nunca pré-selecionadas, sempre "Sugerido — confirme".
 - Cadastro de Terceiros e Agentes de Tratamento no Bloco 1 (papel na cadeia: operador, suboperador/cocontrolador como construções doutrinárias sinalizadas; contrato art. 39; localização art. 33) + colunas 10A/10B no ROT.
