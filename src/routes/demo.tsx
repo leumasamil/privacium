@@ -15,9 +15,9 @@ import { Glossario } from '@/components/priva/views/Glossario';
 import { Auditoria } from '@/components/priva/views/Auditoria';
 import { FormularioANPD } from '@/components/priva/FormularioANPD';
 import { EncarregadoDPO } from '@/components/priva/EncarregadoDPO';
-import { DEMO_ROWS, DEMO_PUBLIC_SIGNATURES, carregarEstadoIncidenteDemo } from '@/lib/priva/demo';
 import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
-import { avisarAcaoDemo } from '@/lib/priva/demoAction';
+import { usePriva } from '@/lib/priva/store';
+import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
 
 const ABAS = ['painel', 'bloco-1', 'bloco-2', 'bloco-3', 'bloco-4', 'bloco-5', 'anpd', 'kanban', 'pendencias', 'manual', 'glossario', 'auditoria', 'encarregado'];
 export const Route = createFileRoute('/demo')({
