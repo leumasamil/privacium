@@ -463,8 +463,8 @@ function CicloCelula({ r }: { r: RotRow }) {
   return (
     <div className="space-y-1" data-testid={`ciclo-${r.codigo}`}>
       {e1 && <p><span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">Etapa 1 · Perímetro: </span><span className="font-medium">{e1}</span></p>}
-      {e2 && <p><span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">Etapa 2 · Destino: </span><span className="font-medium">{e2}</span></p>}
-      {!e2 && <p className="text-[10px] italic text-muted-foreground">Etapa 2 · Destino: não declarado</p>}
+      {e2 && <p><span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">Etapa 2 · Destino dos produtos gerados: </span><span className="font-medium">{e2}</span></p>}
+      {!e2 && <p className="text-[10px] italic text-muted-foreground">Etapa 2 · Destino dos produtos gerados: não declarado</p>}
       <CitacoesCiclo ciclo={c} />
     </div>
   );
