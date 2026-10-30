@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AREAS_SETORES, areaSetorCompleto, chaveDaArea, exibirAreaSetor } from "@/lib/priva/areasSetores";
-import { ALERTA_RETENCAO, ETAPA1, ETAPA2, GENEROS, alertaRetencao, destinoDeclarado, type CicloVida } from "@/lib/priva/cicloVida";
+import { ALERTA_RETENCAO, ETAPA1, ETAPA2, GENEROS, alertaRetencao, destinoDeclarado, formatarCicloEtapas, type CicloVida } from "@/lib/priva/cicloVida";
 import { ALERTA_COERENCIA, HIPOTESES_7A, HIPOTESES_7B, alertasCoerencia, sugerir, type RotInput } from "@/lib/priva/rot";
 import { DEMO_MEMBROS, DEMO_ROT } from "@/lib/priva/demo";
 import { responsavelDaArea } from "@/components/priva/MembrosEmpresa";
@@ -26,6 +26,12 @@ describe("campo 2 em duas etapas", () => {
   it("Etapa 1 e Etapa 2 particionam os 5 gêneros sem sobreposição", () => {
     expect([...ETAPA1, ...ETAPA2].sort()).toEqual([...GENEROS].sort());
     expect(ETAPA1.filter((g) => ETAPA2.includes(g))).toEqual([]);
+  });
+  it("a exibição da planilha agrupa o ciclo por etapa", () => {
+    const f = formatarCicloEtapas({ Coletar: ["receber"], Reter: ["arquivar"], Compartilhar: ["transferir"] });
+    expect(f.e1).toBe("Coletar (receber); Reter (arquivar)");
+    expect(f.e2).toBe("Compartilhar (transferir)");
+    expect(formatarCicloEtapas({ Reter: ["armazenar"] }).e2).toBe("");
   });
   it("alerta de retenção perpétua: Reter sem destino dispara; com destino, não", () => {
     expect(alertaRetencao({ Reter: ["arquivar"] })).toBe(ALERTA_RETENCAO);

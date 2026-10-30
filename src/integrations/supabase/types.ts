@@ -692,6 +692,8 @@ export type Database = {
       registro_operacoes: {
         Row: {
           area_setor: string | null
+          assinatura_etapa1: Json | null
+          assinatura_etapa2: Json | null
           atualizado_em: string
           base_prazo: string
           categoria_titulares: string[]
@@ -718,6 +720,8 @@ export type Database = {
         }
         Insert: {
           area_setor?: string | null
+          assinatura_etapa1?: Json | null
+          assinatura_etapa2?: Json | null
           atualizado_em?: string
           base_prazo: string
           categoria_titulares?: string[]
@@ -744,6 +748,8 @@ export type Database = {
         }
         Update: {
           area_setor?: string | null
+          assinatura_etapa1?: Json | null
+          assinatura_etapa2?: Json | null
           atualizado_em?: string
           base_prazo?: string
           categoria_titulares?: string[]
@@ -1100,6 +1106,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      assinar_etapa_rot: {
+        Args: { _etapa: number; _rot_id: string }
+        Returns: Json
       }
       avaliar_fornecedor: {
         Args: {

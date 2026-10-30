@@ -8,7 +8,7 @@ import { AlertTriangle, BookOpen, Lightbulb, Pencil, Plus, Trash2 } from "lucide
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AREAS_SETORES, ROTULO_AREA_SETOR, areaSetorCompleto, chaveDaArea, exibirAreaSetor } from "@/lib/priva/areasSetores";
-import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, ETAPA1, ETAPA2, NOTA_CICLO, NOTA_ETAPA2_COMPARTILHAR, NOTA_ETAPA2_ELIMINAR, NOTA_METODO_CICLO, NOTA_RESPONSAVEL_ETAPAS, ROTULO_ETAPA1, ROTULO_ETAPA2, alertaRetencao, alternar, cicloDaLinha, citacoesISO, destinoDeclarado, formatarCiclo, generosMarcados, type CicloVida, type Genero } from "@/lib/priva/cicloVida";
+import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, ETAPA1, ETAPA2, NOTA_CICLO, NOTA_ETAPA2_COMPARTILHAR, NOTA_ETAPA2_ELIMINAR, NOTA_METODO_CICLO, NOTA_RESPONSAVEL_ETAPAS, ROTULO_ETAPA1, ROTULO_ETAPA2, alertaRetencao, alternar, cicloDaLinha, citacoesISO, destinoDeclarado, formatarCiclo, formatarCicloEtapas, generosMarcados, type CicloVida, type Genero } from "@/lib/priva/cicloVida";
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { citacaoSimplificada } from '@/lib/priva/enquadramento';
 import { DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, MEIOS, SALVAGUARDAS, SENSIVEIS, TITULARES, alertasCoerencia, hasSensivel, isRisky, normalizeHipoteses, sugerir, validateRot, type RotInput, type RotRow } from "@/lib/priva/rot";
@@ -91,6 +91,15 @@ export function Bloco2() {
     void qc.invalidateQueries({ queryKey: key });
   };
 
+  const assinar = async (r: RotRow, etapa: 1 | 2) => {
+    if (demo) return avisarAcaoDemo();
+    const { data, error } = await supabase.rpc("assinar_etapa_rot", { _rot_id: r.id, _etapa: etapa });
+    if (error) { toast.error(error.message); return; }
+    const a = data as { assinante: string };
+    toast.success(`Etapa ${etapa} assinada por ${a.assinante} — hash registrado na trilha`);
+    void qc.invalidateQueries({ queryKey: key });
+  };
+
   const riskyCount = rows.filter(isRisky).length;
   const semDestino = rows.filter((r) => !destinoDeclarado(r)).length;
   const NUMS = ["", "1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "", "", "8. ", "9. ", "10. ", "10A. ", "10B. ", "11. ", "12. "];
@@ -107,6 +116,7 @@ export function Bloco2() {
       <Panel id="rot" title={`Planilha mestre · ${rows.length} processos · ${riskyCount} em alerta`} action={canEdit && (
         <Button size="sm" onClick={() => demo ? avisarAcaoDemo() : setEdit({ id: null, form: empty(cnpj) })}><Plus className="h-4 w-4" /> Novo processo</Button>
       )}>
+        <p className="mb-2 rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="nota-metodo-planilha">{NOTA_METODO_CICLO} {NOTA_RESPONSAVEL_ETAPAS}</p>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[2400px] text-xs">
             <thead>
@@ -152,6 +162,7 @@ export function Bloco2() {
                         }}><Pencil className="h-3 w-3 text-muted-foreground" /></button>
                         <button aria-label="Excluir" onClick={() => void remove(r)}><Trash2 className="h-3 w-3 text-muted-foreground" /></button>
                       </>}
+                      <AssinaturasRot r={r} onAssinar={(etapa) => void assinar(r, etapa)} />
                     </td>
                   </tr>
                 );
@@ -353,12 +364,35 @@ function CicloResumo() {
 
 function CicloCelula({ r }: { r: RotRow }) {
   const c: CicloVida = cicloDaLinha(r);
+  const { e1, e2 } = formatarCicloEtapas(c);
+  if (!e1 && !e2) return <p className="px-2 py-2">—</p>;
   return (
     <div className="space-y-1" data-testid={`ciclo-${r.codigo}`}>
-      <p className="font-medium">{formatarCiclo(c) || "—"}</p>
+      {e1 && <p><span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">Etapa 1 · Perímetro: </span><span className="font-medium">{e1}</span></p>}
+      {e2 && <p><span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">Etapa 2 · Destino: </span><span className="font-medium">{e2}</span></p>}
+      {!e2 && <p className="text-[10px] italic text-muted-foreground">Etapa 2 · Destino: não declarado</p>}
       <CitacoesCiclo ciclo={c} />
     </div>
   );
+}
+
+type Assinatura = { assinante: string; email: string; etapa: number; em: string; sha256: string };
+
+function AssinaturasRot({ r, onAssinar }: { r: RotRow; onAssinar: (etapa: 1 | 2) => void }) {
+  const a1 = r.assinatura_etapa1 as Assinatura | null;
+  const a2 = r.assinatura_etapa2 as Assinatura | null;
+  const chip = (a: Assinatura | null, etapa: 1 | 2, rotulo: string) => (
+    <div className="mt-1" data-testid={`assinatura-e${etapa}-${r.codigo}`}>
+      {a ? (
+        <p className="text-[10px] text-muted-foreground" title={`SHA-256: ${a.sha256}`}>
+          <span className="font-semibold text-success">✓ {rotulo}</span> — {a.assinante} · {new Date(a.em).toLocaleDateString("pt-BR")} · hash {a.sha256.slice(0, 10)}…
+        </p>
+      ) : (
+        <button type="button" className="text-[10px] font-semibold text-primary underline" onClick={() => onAssinar(etapa)}>Assinar {rotulo}</button>
+      )}
+    </div>
+  );
+  return <>{chip(a1, 1, "Etapa 1 (gestor da área)")}{chip(a2, 2, "Etapa 2 (DPO)")}</>;
 }
 
 function CitacoesCiclo({ ciclo }: { ciclo: CicloVida }) {

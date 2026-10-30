@@ -78,7 +78,7 @@ const rot = (p: Partial<Rot> & Pick<Rot, "id" | "setor" | "codigo">): Rot => ({
   finalidade_especifica: "", hipotese_tratamento: "Art. 7º, II – Cumprimento de obrigação legal ou regulatória",
   tempo_retencao: "5 anos", base_prazo: "CTN art. 173", compartilhamento: "Não há", salvaguardas: ["Criptografia em repouso"],
   infraestrutura: "Nuvem", justificativa_mitigacao: null, hipotese_sensivel: null, criado_por: null, criado_em: ts, atualizado_em: ts,
-  area_setor: null, insumo: null, meio_fornecimento: null, ...p,
+  area_setor: null, insumo: null, meio_fornecimento: null, assinatura_etapa1: null, assinatura_etapa2: null, ...p,
 });
 export const DEMO_ROT: Rot[] = [
   rot({ id: "demo-rot-1", setor: "RH", codigo: "PRIVA-RH-001", ciclo_vida: { Coletar: ["receber", "classificar"], Reter: ["arquivar"], Processar: ["utilizar"], Compartilhar: ["transferir"] }, categoria_titulares: ["Colaboradores"], dados_pessoais: ["Nome", "CPF", "Dados bancários"], finalidade_especifica: "Processamento da folha de pagamento mensal", compartilhamento: "Contabilidade terceirizada", area_setor: "Recursos Humanos › Folha de Pagamento", insumo: "contrato", meio_fornecimento: "API/sistema" }),
