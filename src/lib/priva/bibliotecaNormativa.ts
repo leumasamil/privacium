@@ -150,7 +150,7 @@ export function normaDaCitacao(citacao: string): string | null {
   const res = c.match(/Res\.\s*CD\/ANPD\s*n[ºo°]*\s*(\d+)\s*\/\s*(\d{4})/i);
   if (res) return `Res. CD/ANPD nº ${res[1]}/${res[2]}`;
   if (/LGPD|Lei\s*n?[ºo°]*\s*13\.?709/i.test(c)) return "LGPD";
-  if (/Lei\s*12\.?965|Marco Civil/i.test(c)) return "Lei 12.965/2014";
+  if (/Lei\s*12\.?965|Marco Civil|\bMCI\b/i.test(c)) return "Lei 12.965/2014";
   if (/LC\s*123|Lei\s*Complementar\s*n?[ºo°]*\s*123/i.test(c)) return "LC 123/2006";
   if (/LC\s*182|Lei\s*Complementar\s*n?[ºo°]*\s*182/i.test(c)) return "LC 182/2021";
   if (/CTN|Código Tributário/i.test(c)) return "CTN";

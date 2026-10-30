@@ -24,7 +24,7 @@ export const BIBLIOTECA: Record<RiscoId, Entrada> = {
     pis: ["PI-03"],
     descricao: "Colaboradores colam dados pessoais (currículos, cadastros, e-mails de titulares) em prompts de LLMs externos, fazendo o dado pessoal sair do perímetro do CNPJ sem registro.",
     medida: "Aplicar DLP com mascaramento local de dados pessoais (CPF, e-mail, nome) antes de qualquer envio a LLM externo, bloqueando prompts que contenham dado pessoal sensível em claro",
-    fonte: "CIS Control 03 / ISO/IEC 27002 — 8.12 e 8.11",
+    fonte: "CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação)",
     controles: [
       { pi: "PI-03", eixo: "prob", delta: 2, motivo: "Escudo Digital tokeniza dados pessoais (PI-03)" },
       { pi: "PI-01", eixo: "prob", delta: 1, motivo: "Política de privacidade assinada (PI-01)" },
@@ -35,7 +35,7 @@ export const BIBLIOTECA: Record<RiscoId, Entrada> = {
     pis: ["PI-02", "PI-01"],
     descricao: "Decisões automatizadas de RH ou crédito reproduzem discriminação histórica do dataset, afetando candidatos e clientes sem canal de revisão.",
     medida: "Revisar o dataset de treinamento contra atributos de dado pessoal sensível, executar teste de adversidade por grupo e manter canal para o titular solicitar a revisão das decisões automatizadas (art. 20 LGPD)",
-    fonte: "ISO/IEC 42001 — A.7.4 / ISO/IEC 23894 — 6.4",
+    fonte: "ISO/IEC 42001:2023 / ISO/IEC 23894:2023 (controles em verificação)",
     controles: [
       { pi: "PI-02", eixo: "prob", delta: 1, motivo: "ROT mapeia as decisões automatizadas (PI-02)" },
       { pi: "PI-01", eixo: "prob", delta: 1, motivo: "Dossiê Legal define a finalidade (PI-01)" },
@@ -46,7 +46,7 @@ export const BIBLIOTECA: Record<RiscoId, Entrada> = {
     pis: ["PI-03", "PI-04"],
     descricao: "Documentos recebidos (currículos, anexos) contêm instruções ocultas que forçam o modelo a revelar ou alterar dados pessoais processados.",
     medida: "Validar e sanitizar toda entrada enviada ao modelo, executar o LLM em sandbox sem acesso direto a bases de dado pessoal e manter logs selados de prompts e respostas",
-    fonte: "CIS Control 16 / ISO/IEC 27002 — 8.28 e 8.15",
+    fonte: "CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação)",
     controles: [
       { pi: "PI-03", eixo: "prob", delta: 2, motivo: "Sandbox e validação de entrada comprovadas (PI-03)" },
       { pi: "PI-04", eixo: "imp", delta: 2, motivo: "Logs selados de prompts e respostas (PI-04)" },
@@ -151,7 +151,7 @@ export const EXEMPLOS_ESCUDO: ExemploEscudo[] = [
     prompt: "Resuma o cadastro do cliente portador do CPF 123.456.789-00 e informe o status do último atendimento.",
     higienizado: "Resuma o cadastro do cliente portador do CPF [CPF_TOKEN_4821] e informe o status do último atendimento.",
     mascara: "123.456.789-**",
-    fonte: "LGPD art. 46 / CIS Control 03",
+    fonte: "LGPD art. 46 / CIS Controls v8 (controle em verificação)",
   },
   {
     id: "email",
@@ -159,7 +159,7 @@ export const EXEMPLOS_ESCUDO: ExemploEscudo[] = [
     prompt: "Envie a proposta comercial revisada para maria.souza@cliente.com.br até sexta-feira.",
     higienizado: "Envie a proposta comercial revisada para [EMAIL_TOKEN_7312] até sexta-feira.",
     mascara: "m****@cliente.com.br",
-    fonte: "LGPD art. 5º, I / CIS Control 03",
+    fonte: "LGPD art. 5º, I / CIS Controls v8 (controle em verificação)",
   },
   {
     id: "bancario",
@@ -175,7 +175,7 @@ export const EXEMPLOS_ESCUDO: ExemploEscudo[] = [
     prompt: "Analise o histórico de atendimento de João da Silva e sugira o próximo contato.",
     higienizado: "Analise o histórico de atendimento de [NOME_TOKEN_01] e sugira o próximo contato.",
     mascara: "J*** da S****",
-    fonte: "LGPD art. 5º, I / CIS Control 03",
+    fonte: "LGPD art. 5º, I / CIS Controls v8 (controle em verificação)",
   },
 ];
 
