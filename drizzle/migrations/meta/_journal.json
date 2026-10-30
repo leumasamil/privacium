@@ -211,6 +211,20 @@
       "when": 1793371598259,
       "tag": "0029_rot_ciclo_vida",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1793376325636,
+      "tag": "0030_enquadramento_agente_assinado",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793376462592,
+      "tag": "0031_alinhar_sla_enquadramento",
+      "breakpoints": true
     }
   ]
 }

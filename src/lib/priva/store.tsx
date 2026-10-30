@@ -1,4 +1,5 @@
 import { assinaturasVigentes } from "@/lib/priva/ciclo";
+import type { Porte } from './enquadramento';
 import { DEMO_CNPJ, DEMO_RAZAO, DEMO_SIGNATURES, DEMO_PUBLIC_SIGNATURES, DEMO_TRILHA_SEED, DEMO_SESSAO_INICIAL, DEMO_AGORA_ISO, type DemoSessao, type DemoEvento } from "./demo";
 import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
@@ -75,6 +76,8 @@ type Ctx = Shared & {
   reset: () => void;
   refreshAudit: () => Promise<void>;
   demo: boolean;
+  demoPorte: Porte;
+  setDemoPorte: (porte: Porte) => void;
   publicDemo: boolean;
   setDemo: (on: boolean) => void;
   /** Sessão cenográfica em memória: envio/encerramento simulados e trilha local. Nunca toca o banco. */
@@ -104,6 +107,7 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
   const [cnpj, setCnpj] = useState<string | null>(null);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [demo, setDemoState] = useState(initialDemo);
+  const [demoPorte, setDemoPorte] = useState<Porte>('COMPLETO');
   const [demoShared, setDemoShared] = useState<Shared>(() => ({ ...initialShared, signatures: initialDemo ? DEMO_PUBLIC_SIGNATURES : DEMO_SIGNATURES }));
   const [demoSessao, setDemoSessao] = useState<DemoSessao>(DEMO_SESSAO_INICIAL);
   const [demoEventos, setDemoEventos] = useState<DemoEvento[]>(DEMO_TRILHA_SEED);
@@ -213,6 +217,10 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
   };
 
   const sign = async (pi: string) => {
+    if (pi === 'PI-01') {
+      const { data, error } = await supabase.rpc('enquadramento_vigente', { _cnpj: cnpj ?? '' });
+      if (error || !data) throw new Error('Assine primeiro a declaração de enquadramento do agente neste ciclo.');
+    }
     const ts = new Date().toISOString();
     const hash = await sha256(`${pi}|${ts}|${email}|gov.br`);
     set({ signatures: { ...shared.signatures, [pi]: { by: `${email} · Gov.br (simulado)`, ts, hash } } }, { op: "INSERT", target: "signatures", detail: `${pi} chancelado` });
@@ -239,6 +247,7 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
     if (initialDemo) return;
     if (on && !(roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL"))) return;
     setDemoShared({ ...initialShared, signatures: DEMO_SIGNATURES });
+    setDemoPorte('COMPLETO');
     setDemoSessao(DEMO_SESSAO_INICIAL);
     setDemoEventos(DEMO_TRILHA_SEED);
     demoUltimoHash.current = DEMO_TRILHA_SEED[DEMO_TRILHA_SEED.length - 1]?.hash ?? "";
@@ -284,10 +293,10 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
         empresas: [{ cnpj: DEMO_CNPJ, razao_social: DEMO_RAZAO }], selectEmpresa: noop,
         createEmpresa: async () => "Indisponível no Modo Demonstração.", setRole: noop,
         set: noop, log: noop, sign: async (pi: string) => demoAssinar(pi, "DPO"),
-        reset: noop, refreshAudit: async () => undefined, demo, publicDemo: initialDemo, setDemo,
+        reset: noop, refreshAudit: async () => undefined, demo, publicDemo: initialDemo, setDemo, demoPorte, setDemoPorte,
         demoSessao, demoEnviarANPD, demoEncerrarIncidente, demoAssinar, demoRegistrarEvento: registrarEventoDemo,
       }
-    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, publicDemo: false, setDemo, demoSessao: DEMO_SESSAO_INICIAL, demoEnviarANPD: async () => undefined, demoEncerrarIncidente: async () => undefined, demoAssinar: async () => undefined, demoRegistrarEvento: async () => undefined };
+    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, demoPorte, setDemoPorte: noop, publicDemo: false, setDemo, demoSessao: DEMO_SESSAO_INICIAL, demoEnviarANPD: async () => undefined, demoEncerrarIncidente: async () => undefined, demoAssinar: async () => undefined, demoRegistrarEvento: async () => undefined };
 
   return (
     <C.Provider value={value}>

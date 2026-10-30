@@ -236,6 +236,51 @@ export type Database = {
           },
         ]
       }
+      enquadramentos_agente: {
+        Row: {
+          assinado_em: string
+          assinado_por: string
+          criterios: Json
+          empresa_cnpj: string
+          hash_sha256: string
+          id: string
+          porte: string
+        }
+        Insert: {
+          assinado_em?: string
+          assinado_por: string
+          criterios: Json
+          empresa_cnpj: string
+          hash_sha256: string
+          id?: string
+          porte: string
+        }
+        Update: {
+          assinado_em?: string
+          assinado_por?: string
+          criterios?: Json
+          empresa_cnpj?: string
+          hash_sha256?: string
+          id?: string
+          porte?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enquadramentos_agente_assinado_por_fkey"
+            columns: ["assinado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enquadramentos_agente_empresa_cnpj_fkey"
+            columns: ["empresa_cnpj"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["cnpj"]
+          },
+        ]
+      }
       faturamento_saas: {
         Row: {
           criado_em: string
@@ -286,6 +331,7 @@ export type Database = {
           id: string
           iniciado_em: string
           passos: boolean[]
+          prazo_dias_uteis: number | null
           processo_id: string | null
         }
         Insert: {
@@ -299,6 +345,7 @@ export type Database = {
           id?: string
           iniciado_em?: string
           passos?: boolean[]
+          prazo_dias_uteis?: number | null
           processo_id?: string | null
         }
         Update: {
@@ -312,6 +359,7 @@ export type Database = {
           id?: string
           iniciado_em?: string
           passos?: boolean[]
+          prazo_dias_uteis?: number | null
           processo_id?: string | null
         }
         Relationships: [
@@ -973,6 +1021,24 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      assinar_enquadramento: {
+        Args: { _cnpj: string; _criterios: Json }
+        Returns: {
+          assinado_em: string
+          assinado_por: string
+          criterios: Json
+          empresa_cnpj: string
+          hash_sha256: string
+          id: string
+          porte: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "enquadramentos_agente"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       avaliar_fornecedor: {
         Args: {
           _estado: string
@@ -982,6 +1048,7 @@ export type Database = {
         }
         Returns: string
       }
+      calcular_porte_agente: { Args: { _criterios: Json }; Returns: string }
       catalogo_categorias_anpd: {
         Args: never
         Returns: {
@@ -1013,6 +1080,7 @@ export type Database = {
       cpf_valido: { Args: { _c: string }; Returns: boolean }
       empresa_ativa: { Args: { _cnpj: string }; Returns: boolean }
       encerrar_incidente: { Args: { _incidente: string }; Returns: Json }
+      enquadramento_vigente: { Args: { _cnpj: string }; Returns: boolean }
       enviar_comunicacao_anpd: {
         Args: { _form: Json; _incidente: string; _processo: string }
         Returns: string
@@ -1030,6 +1098,10 @@ export type Database = {
         Args: { _cnpj: string }
         Returns: boolean
       }
+      limite_anpd_uteis: {
+        Args: { _dias: number; _inicio: string }
+        Returns: string
+      }
       list_members: {
         Args: never
         Returns: {
@@ -1042,6 +1114,7 @@ export type Database = {
       meu_cpf: { Args: never; Returns: string }
       minha_empresa_cnpj: { Args: never; Returns: string }
       minha_empresa_id: { Args: never; Returns: string }
+      prazo_agente_anpd: { Args: { _cnpj: string }; Returns: number }
       registrar_acesso: {
         Args: {
           _campo: string

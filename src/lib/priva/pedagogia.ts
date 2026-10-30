@@ -73,13 +73,18 @@ export const NORMAS: Record<string, Norma> = {
   },
   "Res. CD/ANPD nº 15/2024": {
     citacao: "Res. CD/ANPD nº 15/2024",
-    resumo: "Regulamenta a comunicação de incidente de segurança à ANPD: prazo de 3 dias úteis, conteúdo mínimo da comunicação e obrigações de registro.",
-    porque: "Define o prazo de 3 dias úteis (art. 6º) e os campos obrigatórios que o formulário ANPD desta plataforma valida.",
+    resumo: "Regulamenta a comunicação de incidente de segurança: 3 dias úteis como regra geral e 6 para pequeno porte, conteúdo mínimo e registro.",
+    porque: "Define o prazo aplicável (art. 6º, § 8º) e os campos obrigatórios do formulário ANPD.",
   },
   "Res. CD/ANPD nº 15/2024, art. 6º": {
     citacao: "Res. CD/ANPD nº 15/2024, art. 6º",
-    resumo: "A comunicação de incidente à ANPD deve ocorrer em 3 (três) dias úteis, contados do conhecimento do incidente.",
+    resumo: "A comunicação à ANPD ocorre em 3 dias úteis; para agentes de pequeno porte, 6 dias úteis conforme o § 8º.",
     porque: "É o prazo que o contador do Bloco 4 mede — fins de semana e feriados não consomem o prazo.",
+  },
+  "Res. CD/ANPD nº 15/2024, art. 6º, § 8º": {
+    citacao: "Res. CD/ANPD nº 15/2024, art. 6º, § 8º",
+    resumo: "O prazo geral de 3 dias úteis é contado em dobro para agentes de pequeno porte: 6 dias úteis.",
+    porque: "O enquadramento assinado no Bloco 1 determina o prazo aplicável ao Bloco 4.",
   },
   "Res. CD/ANPD nº 15/2024, art. 3º": {
     citacao: "Res. CD/ANPD nº 15/2024, art. 3º",

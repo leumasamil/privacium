@@ -8,7 +8,9 @@ import { AlertTriangle, BookOpen, Lightbulb, Pencil, Plus, Trash2 } from "lucide
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DEPARTMENTS } from "@/lib/priva/data";
-import { AJUDA_CICLO, CITACAO_ANPD, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, GENEROS, NOTA_CICLO, alternar, cicloDaLinha, citacoesISO, formatarCiclo, generosMarcados, type CicloVida } from "@/lib/priva/cicloVida";
+import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, GENEROS, NOTA_CICLO, alternar, cicloDaLinha, citacoesISO, formatarCiclo, generosMarcados, type CicloVida } from "@/lib/priva/cicloVida";
+import { useEnquadramento } from '@/lib/priva/useEnquadramento';
+import { citacaoSimplificada } from '@/lib/priva/enquadramento';
 import { DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, SALVAGUARDAS, SENSIVEIS, TITULARES, hasSensivel, isRisky, normalizeHipoteses, sugerir, validateRot, type RotInput, type RotRow } from "@/lib/priva/rot";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ROT } from "@/lib/priva/demo";
@@ -306,9 +308,10 @@ function CicloCelula({ r }: { r: RotRow }) {
 }
 
 function CitacoesCiclo({ ciclo }: { ciclo: CicloVida }) {
+  const { porte } = useEnquadramento();
   return (
     <ul className="list-disc space-y-1 pl-4 text-[10px] leading-snug text-muted-foreground">
-      {[...CITACOES_LGPD, CITACAO_ANPD, ...citacoesISO(ciclo)].map((texto) => <li key={texto}>{texto}</li>)}
+      {[...CITACOES_LGPD, ...citacaoSimplificada(porte), ...citacoesISO(ciclo)].map((texto) => <li key={texto}>{texto}</li>)}
     </ul>
   );
 }

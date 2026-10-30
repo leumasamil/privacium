@@ -66,16 +66,16 @@ const HORA_MS = 3600000;
 const diaUtil = (t: number) => { const d = new Date(t).getUTCDay(); return d !== 0 && d !== 6; };
 
 /** Instantâneo limite: conhecimento + 3 dias úteis, preservando o horário do conhecimento. */
-export function limiteANPD(inicio: string): number {
+export function limiteANPD(inicio: string, dias: 3 | 6 = 3): number {
   let t = Date.parse(inicio);
-  let restantes = PRAZO_ANPD_DIAS_UTEIS;
+  let restantes: number = dias;
   while (restantes > 0) { t += DIA_MS; if (diaUtil(t)) restantes--; }
   return t;
 }
 
 /** Tempo útil restante até o limite: só soma horas de segunda a sexta; congela no instante de envio. */
-export function restanteANPD(inicio: string, enviado: string | null, agora: number): number {
-  const limite = limiteANPD(inicio);
+export function restanteANPD(inicio: string, enviado: string | null, agora: number, dias: 3 | 6 = 3): number {
+  const limite = limiteANPD(inicio, dias);
   let t = enviado ? Date.parse(enviado) : agora;
   if (t >= limite) return 0;
   let restante = 0;

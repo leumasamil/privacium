@@ -131,6 +131,7 @@ export function Bloco5() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow={`Bloco 5 · (A) Ciclo Privacium Semestral · Ano Fiscal ${anoAtual}`} title="Auditar o Sistema de Privacidade e Mitigar Riscos" />
+      <p className="text-sm">O RIPD segue o art. 38 da LGPD e os critérios de alto risco da ANPD, aplicáveis a todos os portes. O enquadramento não afasta sua exigência.</p>
       {AJUDA[5] && <AjudaTarefa {...AJUDA[5]} pendencias={pendencias} />}
 
       <Panel id="classificacao-ia" title="Classificação do Sistema de IA">

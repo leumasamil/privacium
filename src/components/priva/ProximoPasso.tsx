@@ -11,6 +11,7 @@ import { useDadosBloco } from "./TelaBloqueio";
 import { LinkPendencia } from './LinkPendencia';
 import { FornecedoresProximoPasso } from './AlertaFornecedorVazado';
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
+import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 
 const TOM: Record<Passo["tipo"], { caixa: string; icone: React.ReactNode; rotulo: string }> = {
   acao: { caixa: "border-l-andamento-border", icone: <Navigation className="h-4 w-4 text-andamento" aria-hidden />, rotulo: "Próximo passo" },
@@ -21,6 +22,7 @@ const TOM: Record<Passo["tipo"], { caixa: string; icone: React.ReactNode; rotulo
 
 /** Faixa única de condução, exibida no topo de todas as telas autenticadas. */
 export function ProximoPasso() {
+  const enquadramento = useEnquadramento();
   const location = useLocation();
   const { cnpj, signatures, roles, kanban, log, publicDemo, demo } = usePriva();
   const pathname = publicDemo ? `/${String((location.search as { aba?: string }).aba ?? 'painel')}` : location.pathname;
@@ -29,6 +31,7 @@ export function ProximoPasso() {
   const blocoBase = isUnlocked(signatures, blocoTela) ? blocoTela : blocoTela - 1;
   const { data } = useDadosBloco(blocoBase, cnpj);
   if (!cnpj || pathname.startsWith("/manual") || pathname.startsWith("/membros")) return null;
+  if (!demo && !enquadramento.vigente) return <section className="mb-6 flex flex-wrap items-center justify-between gap-3 border-l-4 border-pendencia p-4"><p className="text-sm">Assine a declaração de enquadramento do agente para continuar o ciclo.</p><Button asChild><Link to="/bloco-1" hash="enquadramento">Assinar enquadramento</Link></Button></section>;
 
   let itens = data ? montarChecklist(data, signatures) : [];
   if (pathname.startsWith("/kanban")) {

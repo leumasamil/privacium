@@ -8,6 +8,7 @@ import { usePriva, isUnlocked } from "@/lib/priva/store";
 import { PageHeader, Panel } from "@/components/priva/ui";
 import { cn } from "@/lib/utils";
 import { AdminDashboard, CSuiteDashboard } from "@/components/priva/RoleDashboards";
+import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 
 
 
@@ -19,7 +20,8 @@ export function Painel() {
 }
 
 function Index() {
-  const { signatures, cnpj, enterprise, audit, kanban } = usePriva();
+  const enquadramento = useEnquadramento();
+  const { signatures, cnpj, enterprise, audit, kanban, demo } = usePriva();
   const answers = useRespostas(cnpj);
   const questions = useQuestions();
   const { gm, score, bankMax } = computeGM(answers, questions);
@@ -43,7 +45,7 @@ function Index() {
           <div className="absolute left-0 right-0 top-[38px] h-1 bg-[repeating-linear-gradient(90deg,var(--border)_0_12px,transparent_12px_20px)]" />
           <ol className="relative grid gap-4 md:grid-cols-5">
             {BLOCKS.map((b) => {
-              const unlocked = isUnlocked(signatures, b.n);
+              const unlocked = isUnlocked(signatures, b.n) && (b.n === 1 || demo || enquadramento.vigente);
               const ok = !!signatures[`PI-0${b.n}`];
               return (
                 <li key={b.n} className="flex flex-col">

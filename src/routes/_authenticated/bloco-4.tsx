@@ -6,9 +6,9 @@ export const Route = createFileRoute("/_authenticated/bloco-4")({
   head: () => ({
     meta: [
       { title: "Bloco 4 · Vigiar e Responder — Privacium" },
-      { name: "description", content: "Console forense pgAudit com hash SHA-256, gestão de crise de ransomware e prazo de 3 dias úteis da ANPD (Res. CD/ANPD nº 15/2024, art. 6º)." },
+      { name: "description", content: "Console forense Privacium e gestão de incidentes com prazo ANPD de 3 ou 6 dias úteis conforme enquadramento (Res. 15/2024, art. 6º, § 8º)." },
       { property: "og:title", content: "Bloco 4 · Vigiar e Responder — Privacium" },
-      { property: "og:description", content: "Console forense pgAudit com hash SHA-256, gestão de crise de ransomware e prazo de 3 dias úteis da ANPD (Res. CD/ANPD nº 15/2024, art. 6º)." },
+      { property: "og:description", content: "Console forense Privacium e gestão de incidentes com prazo ANPD de 3 ou 6 dias úteis conforme enquadramento (Res. 15/2024, art. 6º, § 8º)." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

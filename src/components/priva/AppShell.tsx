@@ -13,6 +13,9 @@ import { FollowUpBanner, FollowUpBell } from "@/components/priva/FollowUp";
 import { ProximoPasso } from "@/components/priva/ProximoPasso";
 import { AvisoModoDemo } from "@/components/priva/AvisoModoDemo";
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
+import { useEnquadramento } from '@/lib/priva/useEnquadramento';
+import { rotuloPorte } from '@/lib/priva/enquadramento';
+import { Tag } from './ui';
 
 const ROLE_ACCESS: Record<Role, string[]> = {
   ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/pendencias", "/membros", "/manual", "/glossario"],
@@ -29,6 +32,7 @@ export function canAccess(role: Role, path: string) {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const enquadramento = useEnquadramento();
   const { role, roles, setRole, set, enterprise, signatures, reset, ready, email, cnpj, empresas, selectEmpresa, createEmpresa, log, demo, publicDemo, setDemo } = usePriva();
   const [demoAsk, setDemoAsk] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
@@ -157,7 +161,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {item("/painel", "Esteira BLLOCO", <LayoutDashboard className="h-4 w-4" />)}
           {(demo || canAccess(role, "/bloco")) && <p className="px-3 pb-1 pt-4 font-mono text-[10px] uppercase tracking-widest">Ciclo Privacium Semestral</p>}
           {BLOCKS.map((b) => {
-            const unlocked = isUnlocked(signatures, b.n);
+            const unlocked = isUnlocked(signatures, b.n) && (b.n === 1 || demo || enquadramento.vigente);
             const done = !!signatures[`PI-0${b.n}`];
             return (
               <div key={b.n}>
@@ -198,6 +202,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
       <main className="relative min-w-0 flex-1 px-4 py-8 sm:px-10">
         <AvisoModoDemo />
+        <div className="mb-5 flex flex-wrap items-center gap-3" data-testid="cabecalho-porte"><span className="text-xs font-semibold">Ciclo Privacium Semestral</span><Tag tone={enquadramento.porte ? 'primary' : 'warning'}>{enquadramento.porte ? rotuloPorte(enquadramento.porte) : 'Enquadramento pendente — assinatura do DPO'}</Tag></div>
         {(role === "DPO_OPERACIONAL" || role === "C_SUITE") && !demo && <FollowUpBanner />}
         {(role === "DPO_OPERACIONAL" || role === "C_SUITE") && <div className="mb-4 flex justify-end"><FollowUpBell /></div>}
         <AlertDialog open={demoAsk} onOpenChange={setDemoAsk}>
