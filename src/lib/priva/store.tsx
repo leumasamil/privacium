@@ -1,5 +1,5 @@
 import { assinaturasVigentes } from "@/lib/priva/ciclo";
-import { DEMO_CNPJ, DEMO_RAZAO, DEMO_SIGNATURES } from "./demo";
+import { DEMO_CNPJ, DEMO_RAZAO, DEMO_SIGNATURES, DEMO_PUBLIC_SIGNATURES } from "./demo";
 import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,6 +75,7 @@ type Ctx = Shared & {
   reset: () => void;
   refreshAudit: () => Promise<void>;
   demo: boolean;
+  publicDemo: boolean;
   setDemo: (on: boolean) => void;
 };
 
@@ -86,18 +87,18 @@ const ROLE_PREF = "priva2ec-active-role";
 const CNPJ_PREF = "priva2ec-active-cnpj";
 const ORDER: Role[] = ["DPO_OPERACIONAL", "ADMIN_SISTEMA", "C_SUITE"];
 
-export function PrivaProvider({ children }: { children: ReactNode }) {
+export function PrivaProvider({ children, initialDemo = false }: { children: ReactNode; initialDemo?: boolean }) {
   const [shared, setShared] = useState<Shared>(initialShared);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(initialDemo);
   const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [roles, setRoles] = useState<Role[]>(initialDemo ? ['DPO_OPERACIONAL'] : []);
   const [role, setRoleState] = useState<Role>("DPO_OPERACIONAL");
   const [audit, setAudit] = useState<AuditEntry[]>([]);
   const [cnpj, setCnpj] = useState<string | null>(null);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
-  const [demo, setDemoState] = useState(false);
-  const [demoShared, setDemoShared] = useState<Shared>(initialShared);
+  const [demo, setDemoState] = useState(initialDemo);
+  const [demoShared, setDemoShared] = useState<Shared>(() => ({ ...initialShared, signatures: initialDemo ? DEMO_PUBLIC_SIGNATURES : DEMO_SIGNATURES }));
   const cnpjRef = useRef<string | null>(null);
   cnpjRef.current = cnpj;
   const roleRef = useRef(role);
@@ -108,9 +109,10 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
   const canReadAudit = roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL");
 
   const refreshAudit = useCallback(async () => {
+    if (initialDemo || demo) return;
     const { data } = await supabase.from("trilha_auditoria_sistema").select("*").order("seq", { ascending: false }).limit(500);
     if (data) setAudit(data.reverse() as AuditEntry[]);
-  }, []);
+  }, [initialDemo, demo]);
 
   const loadEmpresa = async (c: string) => {
     const { data: ws } = await supabase.from("workspace_empresa").select("data").eq("cnpj", c).maybeSingle();
@@ -122,6 +124,7 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    if (initialDemo) return;
     let cancelled = false;
     (async () => {
       const { data: u } = await supabase.auth.getUser();
@@ -132,7 +135,8 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
       const granted = (r ?? []).map((x) => x.role as Role).sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
       setRoles(granted);
       const pref = localStorage.getItem(ROLE_PREF) as Role | null;
-      if (granted.length) setRoleState(pref && granted.includes(pref) ? pref : granted[0]!);
+      const first = granted[0];
+      if (first) setRoleState(pref && granted.includes(pref) ? pref : first);
       if (granted.length) {
         const { data: list } = await supabase.from("workspace_empresa").select("cnpj, razao_social").order("created_at");
         setEmpresas(list ?? []);
@@ -146,12 +150,12 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (ready && canReadAudit) void refreshAudit();
-  }, [ready, canReadAudit, refreshAudit]);
+    if (ready && canReadAudit && !demo) void refreshAudit();
+  }, [ready, canReadAudit, refreshAudit, demo]);
 
   // Atualizações em tempo real feitas por outros membros
   useEffect(() => {
-    if (!ready || !roles.length || !cnpj) return;
+    if (demo || initialDemo || !ready || !roles.length || !cnpj) return;
     const ch = supabase
       .channel(`workspace_empresa_${cnpj}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "workspace_empresa", filter: `cnpj=eq.${cnpj}` }, (payload) => {
@@ -160,7 +164,7 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
       })
       .subscribe();
     return () => { void supabase.removeChannel(ch); };
-  }, [ready, roles.length, userId, cnpj]);
+  }, [ready, roles.length, userId, cnpj, demo, initialDemo]);
 
   const persist = (next: Shared) => {
     pending.current = next;
@@ -176,11 +180,12 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
   };
 
   const log = useCallback((op: AuditEntry["op"], target: string, detail: string, campo?: string) => {
+    if (demo || initialDemo) return;
     void (async () => {
       const { data, error } = await supabase.rpc("registrar_acesso", { _role: roleRef.current, _op: op, _target: target, _detail: detail, _cnpj: cnpjRef.current ?? "", _campo: campo ?? "" });
       if (!error && data && (roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL"))) setAudit((a) => [...a, data as AuditEntry]);
     })();
-  }, [roles]);
+  }, [roles, demo, initialDemo]);
 
   const set: Ctx["set"] = (patch, l) => {
     setShared((s) => {
@@ -223,23 +228,22 @@ export function PrivaProvider({ children }: { children: ReactNode }) {
   const reset = () => set({ ...initialShared }, { op: "DELETE", target: "workspace", detail: "Reinício da esteira" });
 
   const setDemo = (on: boolean) => {
+    if (initialDemo) return;
     if (on && !(roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL"))) return;
-    if (on) log("SELECT", "modo_demonstracao", "Modo Demonstração Comercial ativado");
     setDemoShared({ ...initialShared, signatures: DEMO_SIGNATURES });
     setDemoState(on);
-    if (!on) log("SELECT", "modo_demonstracao", "Modo Demonstração Comercial encerrado");
   };
   const noop = () => undefined;
   // Em demonstração nada é persistido nem registrado: o estado vive só na memória do navegador.
   const value: Ctx = demo
     ? {
-        ...demoShared, ready, userId, email, roles, role, audit: [], cnpj: DEMO_CNPJ,
+        ...demoShared, ready, userId: initialDemo ? null : userId, email: initialDemo ? 'dpo@cenografica.com.br' : email, roles: ['DPO_OPERACIONAL'], role: 'DPO_OPERACIONAL', audit: [], cnpj: DEMO_CNPJ,
         empresas: [{ cnpj: DEMO_CNPJ, razao_social: DEMO_RAZAO }], selectEmpresa: noop,
-        createEmpresa: async () => "Indisponível no Modo Demonstração.", setRole,
-        set: (patch) => setDemoShared((s) => ({ ...s, ...patch })), log: noop, sign: async () => undefined,
-        reset: noop, refreshAudit: async () => undefined, demo, setDemo,
+        createEmpresa: async () => "Indisponível no Modo Demonstração.", setRole: noop,
+        set: noop, log: noop, sign: async () => undefined,
+        reset: noop, refreshAudit: async () => undefined, demo, publicDemo: initialDemo, setDemo,
       }
-    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, setDemo };
+    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, publicDemo: false, setDemo };
 
   return (
     <C.Provider value={value}>
