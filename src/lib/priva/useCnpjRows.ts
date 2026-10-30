@@ -11,7 +11,7 @@ type Row<K extends T> = Database["public"]["Tables"][K]["Row"];
 /** Lê as linhas de uma tabela vinculadas ao CNPJ ativo, com atualização em tempo real. */
 export function useCnpjRows<K extends T>(table: K, cnpj: string | null, order: string) {
   const qc = useQueryClient();
-  const demo = useDemo();
+  const { demo, demoSessao } = usePriva();
   const key = [table, cnpj] as const;
   const q = useQuery({
     queryKey: key,
