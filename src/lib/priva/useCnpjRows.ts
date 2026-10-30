@@ -5,7 +5,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { DEMO_ROWS, aplicarSessaoDemo } from "./demo";
 import { usePriva } from "./store";
 
-type T = "lotes_pgaudit" | "incidentes_seguranca" | "ripd_ia" | "ciclos_priva";
+type T = "lotes_pgaudit" | "incidentes_seguranca" | "ripd_ia" | "ciclos_priva" | "registro_operacoes";
 type Row<K extends T> = Database["public"]["Tables"][K]["Row"];
 
 /** Lê as linhas de uma tabela vinculadas ao CNPJ ativo, com atualização em tempo real. */

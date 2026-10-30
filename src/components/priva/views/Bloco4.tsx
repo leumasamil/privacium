@@ -8,7 +8,7 @@ import { linhasMedidas } from '@/lib/priva/medidasIncidente';
 import { linhasCategorias } from '@/lib/priva/categoriasANPD';
 import { useEncarregado } from "@/lib/priva/useEncarregado";
 import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
-import { Sigla } from "@/components/priva/Sigla";
+import { CitacaoNormativa } from "@/components/priva/CitacaoNormativa";
 import { AJUDA } from "@/lib/priva/ajuda";
 import { AppLink as Link } from "@/components/priva/AppLink";
 import { useEffect, useRef, useState } from "react";
@@ -165,7 +165,7 @@ function ConsolePgAudit({ cnpj, lotes, incidentes, canEdit, refresh }: { cnpj: s
   return (
     <Panel id="lotes" title="Console forense · pgAudit (trilhas mensais)" action={canEdit && <Button size="sm" onClick={extrair} disabled={!demo && busy}><Play className="h-4 w-4" /> Extrair lote de {mesAtual()}</Button>}>
       <p className="mb-3 text-xs text-muted-foreground" data-testid="mci-art15">
-        <Sigla termo="MCI art. 15" /> — guarda de registros de acesso a aplicações, sob sigilo, em ambiente controlado, pelo prazo de 6 meses.
+        <CitacaoNormativa citacao="MCI art. 15" /> — guarda de registros de acesso a aplicações, sob sigilo, em ambiente controlado, pelo prazo de 6 meses.
       </p>
       <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
         <ul className="space-y-2">

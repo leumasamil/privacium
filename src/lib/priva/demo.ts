@@ -119,7 +119,9 @@ export const DEMO_ROWS: {
   incidentes_seguranca: Tables["incidentes_seguranca"]["Row"][];
   ripd_ia: Tables["ripd_ia"]["Row"][];
   ciclos_priva: Tables["ciclos_priva"]["Row"][];
+  registro_operacoes: Tables["registro_operacoes"]["Row"][];
 } = {
+  registro_operacoes: DEMO_ROT,
   lotes_pgaudit: [{
     id: "demo-lote", empresa_cnpj: DEMO_CNPJ, mes_referencia: "2026-10", linhas: 3, gerado_por: null, gerado_em: ts,
     conteudo: "-- pgAudit · extração mensal 2026-10 · CNPJ 99.999.999/0001-99\n2026-10-01 09:12 | dpo@cenografica.com.br | SELECT registro_operacoes | Leitura do ROT\n2026-10-02 14:03 | rh@cenografica.com.br | UPDATE respostas_diagnostico | Resposta RH-04\n2026-10-03 08:47 | ti@cenografica.com.br | SELECT chaves_recuperacao | Consulta de chave BitLocker",
