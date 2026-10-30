@@ -258,10 +258,15 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
   const up = (p: Partial<RotInput>) => setEdit({ ...edit, form: { ...f, ...p } });
   const risk = isRisky(f);
   const sensitive = hasSensivel(f);
-  const dicas = sugerir(f);
+  const operador = f.papel_agente === "OPERADOR";
+  const dicas = [...sugerir(f), ...sugerirProduto(f)].filter((d) => !(operador && d.patch.finalidade_especifica));
   const coerencia = alertasCoerencia(f);
   const retencao = alertaRetencao(cicloDaLinha(f));
   const erro = validateRot(f);
+  const destino = f.destino_produto as DestinoProduto | null;
+  const destArea = (destino?.area_setor_destino ?? "").split("›")[0]?.trim() ?? "";
+  const destSetor = (destino?.area_setor_destino ?? "").split("›")[1]?.trim() ?? "";
+  const destSetores = AREAS_SETORES.find((a) => a.area === destArea)?.setores ?? [];
   const areaAtual = (f.area_setor ?? "").split("›")[0]?.trim() || AREAS_SETORES[0]!.area;
   const setorAtual = (f.area_setor ?? "").split("›")[1]?.trim() ?? "";
   const setoresDaArea = AREAS_SETORES.find((a) => a.area === areaAtual)?.setores ?? [];
@@ -302,6 +307,12 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
               {responsavel && <p className="text-[11px] text-muted-foreground" data-testid="responsavel-area">Responsável (R) vinculado: <b>{responsavel}</b> — cadastro de membros do Bloco 1.</p>}
             </Field>
           )}
+          <Field label="1A. Papel do agente neste tratamento — LGPD art. 5º, VI e VII" wide>
+            <select aria-label="Papel do agente" className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.papel_agente} onChange={(e) => up({ papel_agente: e.target.value as PapelAgente })}>
+              {PAPEIS_AGENTE.map((p) => <option key={p} value={p}>{ROTULO_PAPEL[p]}</option>)}
+            </select>
+            <p className="text-[11px] text-muted-foreground">Padrão herdado do enquadramento (Bloco 1), editável por linha. Art. 5º, VI: "{LITERAL_ART5_VI}". Art. 5º, VII: "{LITERAL_ART5_VII}".</p>
+          </Field>
           <Field label="2. Ciclo de vida do dado pessoal (gênero × espécie)" wide>
             <p className="text-[11px] text-muted-foreground">{AJUDA_CICLO}</p>
             <p className="rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="nota-metodo-ciclo">{NOTA_METODO_CICLO} {NOTA_RESPONSAVEL_ETAPAS}</p>
