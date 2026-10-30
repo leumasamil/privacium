@@ -21,6 +21,16 @@ export const NORMAS: Record<string, Norma> = {
     resumo: "Dado anonimizado: dado que, por meios técnicos razoáveis, não pode mais ser associado a um indivíduo.",
     porque: "Dado verdadeiramente anonimizado sai do escopo da LGPD — mas a anonimização precisa ser comprovável.",
   },
+  "LGPD art. 6º": {
+    citacao: "LGPD art. 6º",
+    resumo: "Princípios do tratamento: destaque para o IV (livre acesso dos titulares aos seus dados) e o V (transparência sobre o tratamento).",
+    porque: "Cada processo do seu ROT precisa ser explicável ao titular em linguagem clara.",
+  },
+  "LGPD art. 14": {
+    citacao: "LGPD art. 14",
+    resumo: "O tratamento de dados de crianças e adolescentes exige consentimento específico de ao menos um responsável legal.",
+    porque: "Se o seu ROT trata dado pessoal de menores, a hipótese e as salvaguardas são mais estritas.",
+  },
   "LGPD art. 7º": {
     citacao: "LGPD art. 7º",
     resumo: "Lista as dez hipóteses que autorizam o tratamento de dado pessoal (consentimento, obrigação legal, legítimo interesse, entre outras).",
@@ -64,7 +74,17 @@ export const NORMAS: Record<string, Norma> = {
   "Res. CD/ANPD nº 15/2024": {
     citacao: "Res. CD/ANPD nº 15/2024",
     resumo: "Regulamenta a comunicação de incidente de segurança à ANPD: prazo de 3 dias úteis, conteúdo mínimo da comunicação e obrigações de registro.",
-    porque: "Define o SLA de 72 horas e os campos obrigatórios que o formulário ANPD desta plataforma valida.",
+    porque: "Define o prazo de 3 dias úteis (art. 6º) e os campos obrigatórios que o formulário ANPD desta plataforma valida.",
+  },
+  "Res. CD/ANPD nº 15/2024, art. 6º": {
+    citacao: "Res. CD/ANPD nº 15/2024, art. 6º",
+    resumo: "A comunicação de incidente à ANPD deve ocorrer em 3 (três) dias úteis, contados do conhecimento do incidente.",
+    porque: "É o prazo que o contador do Bloco 4 mede — fins de semana e feriados não consomem o prazo.",
+  },
+  "Res. CD/ANPD nº 15/2024, art. 3º": {
+    citacao: "Res. CD/ANPD nº 15/2024, art. 3º",
+    resumo: "Define o que é incidente de segurança para fins de comunicação: qualquer evento adverso confirmado que afete a confidencialidade, integridade ou disponibilidade de dados pessoais.",
+    porque: "É o critério que decide se a sua ocorrência exige comunicação formal à ANPD.",
   },
   "Res. CD/ANPD nº 4/2023": {
     citacao: "Res. CD/ANPD nº 4/2023",

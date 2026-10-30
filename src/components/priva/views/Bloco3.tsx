@@ -13,6 +13,7 @@ import { sha256 } from "@/lib/priva/data";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ATIVOS, DEMO_ROT } from "@/lib/priva/demo";
 import { estruturaSugerida, padraoHostname } from "@/lib/privacium/bibliotecaMitigacao";
+import { CopiarModelo } from "@/components/priva/CopiarModelo";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,7 +98,8 @@ export function Bloco3() {
       <AIShield />
 
       <PIOutput dual pi="PI-03: Book de Evidências Tecnológicas e Contratuais" ready={endpoints.length > 0 && prot === endpoints.length && cofres.length > 0}
-        readyHint="Proteja todos os endpoints com BitLocker e catalogue ao menos um cofre Cryptomator.">
+        readyHint="Proteja todos os endpoints com BitLocker e catalogue ao menos um cofre Cryptomator."
+        acoesExtras={<CopiarModelo textoId="dossie-pi03" rotulo="Copiar dossiê (modelo)" />}>
         <h3 className="font-semibold">Laudo técnico · Art. 46 da LGPD · ISO/IEC 27701 cl. 6.9</h3>
         <p className="mt-2"><b>1. Criptografia de endpoint (BitLocker):</b> {prot}/{endpoints.length} máquinas protegidas, com chaves de recuperação custodiadas offline pelo DPO.</p>
         <ul className="list-disc pl-5">{endpoints.map((a) => <li key={a.id}>{a.identificador} {a.descricao && `· ${a.descricao}`} — {a.protegido ? "protegido" : "pendente"}</li>)}</ul>
@@ -111,6 +113,7 @@ export function Bloco3() {
 
 function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { endpoints: Ativo[]; prot: number; cnpj: string; canEdit: boolean; refresh: () => void; remove: (a: Ativo) => void }) {
   const sugestaoHost = padraoHostname(endpoints.map((a) => a.descricao).filter((d): d is string => !!d));
+  const padraoLocal = endpoints.map((a) => a.localizacao).find((l): l is string => !!l?.trim()) ?? null;
   const { log, demo } = usePriva();
   const [hw, setHw] = useState("");
   const [host, setHost] = useState("");
@@ -163,6 +166,12 @@ function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { en
           <Input aria-label="Responsável pelo endpoint" placeholder="Responsável / fornecedor (opcional)" value={responsavel} onChange={e=>setResponsavel(e.target.value)} />
           <Input aria-label="Localização do endpoint" placeholder="Localização / domínio (opcional)" value={localizacao} onChange={e=>setLocalizacao(e.target.value)} />
           <Button onClick={() => void add()}><Plus className="h-4 w-4" /></Button>
+          <div className="flex w-full flex-wrap items-center gap-2">
+            <span className="text-[11px] text-muted-foreground">Padrão (nunca preenche ID, hostname ou hash):</span>
+            {!responsavel && <Button type="button" variant="ghost" size="sm" className="h-auto min-h-6 px-2 text-xs" onClick={() => setResponsavel('TI Interno')}>Usar padrão de responsável</Button>}
+            {padraoLocal && !localizacao && <Button type="button" variant="ghost" size="sm" className="h-auto min-h-6 px-2 text-xs" onClick={() => setLocalizacao(padraoLocal)}>Herdar domínio: {padraoLocal}</Button>}
+            <CopiarModelo textoId="convencao-hostname" rotulo="Copiar convenção (modelo)" />
+          </div>
         </div>
       )}
     </Panel>
@@ -284,6 +293,8 @@ function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove, setoresRot, l
                 setRotuloEstrutura(`${s.rotulo} · ${s.cenarios.join(", ")}`);
               }}>Usar estrutura sugerida</Button>
               {rotuloEstrutura && <span className="text-[11px] text-muted-foreground" data-testid="rotulo-estrutura">{rotuloEstrutura} (editável)</span>}
+              {rotuloEstrutura && <CopiarModelo textoId="estrutura-pasta-rot" rotulo="Copiar estrutura (modelo)" />}
+              {rotuloEstrutura && <CopiarModelo textoId="inventario-cofre" rotulo="Copiar inventário (modelo)" />}
             </div>
           </div>
           <Input aria-label="Responsável pelo cofre" placeholder="Responsável / fornecedor (opcional)" value={responsavel} onChange={e=>setResponsavel(e.target.value)} />

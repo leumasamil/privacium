@@ -5,14 +5,19 @@ import { sugerirRiscos, textoRiscos, vincularRisco } from './riscosIncidente';
 import { sugerirMedidas, textoMedidas, vincularMedida } from './medidasIncidente';
 import { categoriasDoROT, vincularCategorias } from './categoriasANPD';
 import { carregarEstadoIncidente, type FonteIncidente } from './estadoIncidente';
+import { restanteANPD } from './anpd';
 
 /** Modo Demonstração Comercial: dados cenográficos que vivem só no estado do navegador. Nada aqui é gravado no banco. */
 export const DEMO_CNPJ = "99999999000199";
 export const DEMO_RAZAO = "Empresa Cenográfica S.A.";
 export const DEMO_CPF = "00000000000";
 export const DEMO_SCORE = 1075;
-export const DEMO_SLA_MS = 58 * 3600 * 1000;
 export const DEMO_MULTA_BASE = 100_000;
+const DEMO_INICIO_INCIDENTE = "2026-10-01T12:00:00.000Z";
+/** Relógio cenográfico fixo: 14h após o conhecimento do incidente, dentro do prazo de 3 dias úteis. */
+export const DEMO_AGORA = Date.parse(DEMO_INICIO_INCIDENTE) + 14 * 3600000;
+export const DEMO_AGORA_ISO = new Date(DEMO_AGORA).toISOString();
+export const DEMO_SLA_MS = restanteANPD(DEMO_INICIO_INCIDENTE, null, DEMO_AGORA);
 
 /** Static public scenario mirrors the diagnostic catalog, never queries tenant data. */
 const departamentosDemo = ['RH', 'TI', 'Marketing', 'Compras', 'Recepção', 'Jurídico', 'Financeiro'];
@@ -135,18 +140,57 @@ export const DEMO_ROWS: {
     empresa_cnpj: DEMO_CNPJ, sistema_avaliado: "Assistente LLM de triagem de currículos e atendimento", atualizado_por: null, atualizado_em: ts,
     escudo_digital: "O Escudo Digital do Bloco 3 tokeniza localmente CPFs, e-mails e nomes antes do envio a qualquer IA externa e reverte os tokens apenas no navegador do usuário autorizado.",
     riscos: {
-      // Probabilidade, impacto e mitigação derivam da biblioteca estática (PI-05); o seed guarda só a descrição.
-      vazamento: { descricao: "Colaboradores colando currículos no chat.", mitig: "" },
-      vies: { descricao: "Ranqueamento de candidatos por gênero ou idade.", mitig: "" },
-      injecao: { descricao: "Currículos com instruções ocultas.", mitig: "" },
+      // Descrição, mitigação, probabilidade e impacto nascem da biblioteca estática (PI-05); o seed fica vazio.
+      vazamento: { descricao: "", mitig: "" },
+      vies: { descricao: "", mitig: "" },
+      injecao: { descricao: "", mitig: "" },
     },
   }],
   ciclos_priva: [],
 };
 
-/** Presentation-only demo progress: never treats a staged step as a real ANPD submission. */
+/** Estado da sessão de demonstração: vive só na memória do navegador, nunca no banco. */
+export type DemoSessao = { enviadoEm: string | null; encerradoEm: string | null };
+export const DEMO_SESSAO_INICIAL: DemoSessao = { enviadoEm: null, encerradoEm: null };
+
+/** A etapa 06 (Comunicação à ANPD) é CONSEQUÊNCIA do envio, nunca pré-requisito: a derivação canônica já a lê de enviado_anpd_em. */
 export function carregarEstadoIncidenteDemo(incidenteId: string, fonte: FonteIncidente) {
-  const estado = carregarEstadoIncidente(incidenteId, fonte);
-  const itens = estado.etapas.itens.map(item => ({ ...item, concluida: estado.incidente.passos[item.numero - 1] === true }));
-  return { ...estado, etapas: { ...estado.etapas, itens, concluidas: itens.filter(item => item.concluida).length } };
+  return carregarEstadoIncidente(incidenteId, fonte);
 }
+
+type IncidenteRow = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
+/** Sobrepõe o envio/encerramento simulados na linha cenográfica, sem gravar nada. */
+export function aplicarSessaoDemo(i: IncidenteRow, s: DemoSessao): IncidenteRow {
+  if (!s.enviadoEm && !s.encerradoEm) return i;
+  const registro = { ...(i.etapas_registro as Record<string, unknown>) };
+  if (s.enviadoEm) registro['6'] = { data: s.enviadoEm, responsavel: 'DPO Cenográfico', evidencia: 'Comunicação à ANPD enviada pelo formulário assistido (simulação).' };
+  return { ...i, enviado_anpd_em: s.enviadoEm, encerrado_em: s.encerradoEm, etapas_registro: registro as IncidenteRow["etapas_registro"] };
+}
+
+/** Evento da trilha cenográfica (mesma forma do AuditEntry, sem importar o store para evitar ciclo). */
+export type DemoEvento = {
+  seq: number; ts: string; role: string; cnpj: string | null; user_email: string | null;
+  op: "SELECT" | "INSERT" | "UPDATE" | "DELETE"; target: string; detail: string; prev_hash: string; hash: string;
+};
+const hex = (s: string) => s.toLowerCase().replace(/[^0-9a-f]/g, '').padEnd(64, '0').slice(0, 64);
+const seed = (seq: number, ts: string, op: DemoEvento['op'], target: string, detail: string, prev: string): DemoEvento =>
+  ({ seq, ts, role: 'DPO_OPERACIONAL', cnpj: DEMO_CNPJ, user_email: 'dpo@cenografica.com.br', op, target, detail, prev_hash: prev, hash: hex(`de${seq}${target}${detail}`) });
+
+/** Trilho Core cenográfico: declaração, 5 etapas, lote pgAudit selado e chancelas PI-01 a PI-03. */
+export const DEMO_TRILHA_SEED: DemoEvento[] = (() => {
+  const eventos: [string, DemoEvento['op'], string, string][] = [
+    ["2026-10-01T12:00:00.000Z", "INSERT", "incidentes_seguranca", "Incidente de ransomware declarado · prazo de 3 dias úteis iniciado"],
+    ["2026-10-01T12:20:00.000Z", "UPDATE", "incidentes_seguranca", "Etapa 01 (Isolamento) concluída · DPO Cenográfico"],
+    ["2026-10-01T12:40:00.000Z", "UPDATE", "incidentes_seguranca", "Etapa 02 (Invocação) concluída · DPO Cenográfico"],
+    ["2026-10-01T13:10:00.000Z", "UPDATE", "incidentes_seguranca", "Etapa 03 (Sandbox) concluída · DPO Cenográfico"],
+    ["2026-10-01T15:30:00.000Z", "UPDATE", "incidentes_seguranca", "Etapa 04 (Descriptografia) concluída · DPO Cenográfico"],
+    ["2026-10-01T18:00:00.000Z", "UPDATE", "incidentes_seguranca", "Etapa 05 (Validação) concluída · DPO Cenográfico"],
+    ["2026-10-01T09:12:00.000Z", "INSERT", "lotes_pgaudit", "Extração mensal 2026-10 (3 linhas)"],
+    ["2026-10-01T09:15:00.000Z", "UPDATE", "lotes_pgaudit", "Hash SHA-256 do lote 2026-10 selado"],
+    ["2026-09-20T10:00:00.000Z", "INSERT", "signatures", "PI-01 chancelado · DPO Cenográfico"],
+    ["2026-09-25T10:00:00.000Z", "INSERT", "signatures", "PI-02 chancelado · DPO + Diretoria"],
+    ["2026-09-28T10:00:00.000Z", "INSERT", "signatures", "PI-03 chancelado · DPO + Diretoria"],
+  ];
+  let prev = hex('genesistrilha');
+  return eventos.map(([ts, op, target, detail], i) => { const e = seed(i + 1, ts, op, target, detail, prev); prev = e.hash; return e; });
+})();

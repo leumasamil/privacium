@@ -1,5 +1,5 @@
 import { createFileRoute, useHydrated } from '@tanstack/react-router';
-import { PrivaProvider } from '@/lib/priva/store';
+import { PrivaProvider, usePriva } from '@/lib/priva/store';
 import { AppShell } from '@/components/priva/AppShell';
 import { BlockGate } from '@/components/priva/ui';
 import { Painel } from '@/components/priva/views/Painel';
@@ -15,9 +15,8 @@ import { Glossario } from '@/components/priva/views/Glossario';
 import { Auditoria } from '@/components/priva/views/Auditoria';
 import { FormularioANPD } from '@/components/priva/FormularioANPD';
 import { EncarregadoDPO } from '@/components/priva/EncarregadoDPO';
-import { DEMO_ROWS, DEMO_PUBLIC_SIGNATURES, carregarEstadoIncidenteDemo } from '@/lib/priva/demo';
 import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
-import { avisarAcaoDemo } from '@/lib/priva/demoAction';
+import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
 
 const ABAS = ['painel', 'bloco-1', 'bloco-2', 'bloco-3', 'bloco-4', 'bloco-5', 'anpd', 'kanban', 'pendencias', 'manual', 'glossario', 'auditoria', 'encarregado'];
 export const Route = createFileRoute('/demo')({
@@ -53,12 +52,17 @@ function DemoConteudo({ aba }: { aba: string }) {
     case 'glossario': return <Glossario />;
     case 'auditoria': return <Auditoria />;
     case 'encarregado': return <EncarregadoDPO />;
-    case 'anpd': {
-      const incidente = DEMO_ROWS.incidentes_seguranca[0];
-      if (!incidente) return null;
-      const estado = carregarEstadoIncidenteDemo(incidente.id, { incidentes: DEMO_ROWS.incidentes_seguranca, lotes: DEMO_ROWS.lotes_pgaudit, assinaturas: DEMO_PUBLIC_SIGNATURES, agora: Date.parse(incidente.iniciado_em) });
-      return <FormularioANPD incidente={incidente} estado={estado} canEdit refresh={() => undefined} encerramento={<EncerrarIncidente estado={estado} busy={false} onClick={avisarAcaoDemo} />} />;
-    }
+    case 'anpd': return <DemoANPD />;
     default: return <Painel />;
   }
+}
+
+/** Aba ANPD da demonstração: lê a MESMA fonte de estado do Bloco 4 (seed + sessão simulada em memória). */
+function DemoANPD() {
+  const { cnpj } = usePriva();
+  const consulta = useEstadoBloco4(cnpj);
+  const incidente = consulta.data?.incidentes[0];
+  const estado = consulta.data?.estados.find(e => e.incidente.id === incidente?.id);
+  if (!incidente || !estado) return <p role="status" className="p-4 text-muted-foreground">Lendo o estado do incidente…</p>;
+  return <FormularioANPD incidente={incidente} estado={estado} canEdit refresh={() => undefined} encerramento={<EncerrarIncidente estado={estado} busy={false} onClick={() => undefined} />} />;
 }

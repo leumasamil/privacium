@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Panel, Tag } from "./ui";
 import { CitacaoNormativa } from "./CitacaoNormativa";
+import { CopiarModelo } from "./CopiarModelo";
 import { EXEMPLOS_ESCUDO, type ExemploEscudo } from "@/lib/privacium/bibliotecaMitigacao";
 import { usePriva } from "@/lib/priva/store";
 
@@ -139,6 +140,12 @@ export function AIShield() {
                 Ver exemplo · {ex.rotulo}
               </button>
             ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2" aria-label="Modelos contextualizados">
+            <span className="text-[11px] text-muted-foreground">Modelos contextualizados:</span>
+            <CopiarModelo textoId="politica-ia" rotulo="Copiar modelo · Política de IA" />
+            <CopiarModelo textoId="clausula-llm" rotulo="Copiar modelo · Cláusula de fornecedor" />
+            <CopiarModelo textoId="rot-llm" rotulo="Copiar modelo · Entrada de ROT" />
           </div>
           {exemplo && (
             <div className="rounded-sm border bg-muted/40 p-3 text-xs" data-testid="exemplo-antes-depois">

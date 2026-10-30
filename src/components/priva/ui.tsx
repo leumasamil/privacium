@@ -101,8 +101,8 @@ export function Masked({ value, kind }: { value: string; kind: "cpf" | "cnpj" | 
   );
 }
 
-export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string; ready: boolean; readyHint: string; children: ReactNode; dual?: boolean }) {
-  const { signatures, sign, set, email, cnpj, log, demo } = usePriva();
+export function PIOutput({ pi, ready, readyHint, children, dual, acoesExtras }: { pi: string; ready: boolean; readyHint: string; children: ReactNode; dual?: boolean; acoesExtras?: ReactNode }) {
+  const { signatures, sign, set, email, cnpj, log, demo, demoAssinar } = usePriva();
   const code = pi.slice(0, 5).replace(" ", "");
   const sig = signatures[code];
   const encarregado = useEncarregado();
@@ -119,9 +119,12 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
             <p className="mt-1 text-xs text-muted-foreground">{ready ? "Pronto para chancela digital." : readyHint}</p>
           )}
         </div>
-        <Button variant="outline" onClick={() => setOpen(true)} disabled={!demo && !ready && !sig}>
-          <FileSignature className="h-4 w-4" /> {sig ? "Ver documento" : "Gerar e assinar"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {acoesExtras}
+          <Button variant="outline" onClick={() => setOpen(true)} disabled={!demo && !ready && !sig}>
+            <FileSignature className="h-4 w-4" /> {sig ? "Ver documento" : "Gerar e assinar"}
+          </Button>
+        </div>
       </div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
@@ -150,7 +153,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
                     const done = signatures[k];
                     return (
                       <Button key={who} variant={done ? "outline" : "default"} disabled={!demo && !!done} onClick={async () => {
-                        if (demo) return avisarAcaoDemo();
+                        if (demo) return void demoAssinar(code, who);
                         const ts = new Date().toISOString();
                         const by = who === "DPO" ? `DPO ${email} · CPF · Gov.br (simulado)` : `Diretoria · CNPJ ${maskCNPJ(cnpj ?? "")} · Gov.br (simulado)`;
                         const hash = await sha256(`${k}|${ts}|${by}`);
@@ -165,7 +168,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
                   })}
                 </div>
               ) : (
-                <Button onClick={async () => { if (demo) return avisarAcaoDemo(); await sign(code); }}>
+                <Button onClick={async () => { await sign(code); }}>
                   <ShieldCheck className="h-4 w-4" /> Assinar com Gov.br (simulado)
                 </Button>
               )

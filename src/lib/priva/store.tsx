@@ -1,5 +1,5 @@
 import { assinaturasVigentes } from "@/lib/priva/ciclo";
-import { DEMO_CNPJ, DEMO_RAZAO, DEMO_SIGNATURES, DEMO_PUBLIC_SIGNATURES } from "./demo";
+import { DEMO_CNPJ, DEMO_RAZAO, DEMO_SIGNATURES, DEMO_PUBLIC_SIGNATURES, DEMO_TRILHA_SEED, DEMO_SESSAO_INICIAL, DEMO_AGORA_ISO, type DemoSessao, type DemoEvento } from "./demo";
 import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -77,6 +77,12 @@ type Ctx = Shared & {
   demo: boolean;
   publicDemo: boolean;
   setDemo: (on: boolean) => void;
+  /** Sessão cenográfica em memória: envio/encerramento simulados e trilha local. Nunca toca o banco. */
+  demoSessao: DemoSessao;
+  demoEnviarANPD: () => Promise<void>;
+  demoEncerrarIncidente: () => Promise<void>;
+  demoAssinar: (code: string, who: "DPO" | "DIR") => Promise<void>;
+  demoRegistrarEvento: (op: AuditEntry["op"], target: string, detail: string) => Promise<void>;
 };
 
 // Contexto estável entre recargas de módulo (HMR): evita que o provedor e as páginas
@@ -99,6 +105,8 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [demo, setDemoState] = useState(initialDemo);
   const [demoShared, setDemoShared] = useState<Shared>(() => ({ ...initialShared, signatures: initialDemo ? DEMO_PUBLIC_SIGNATURES : DEMO_SIGNATURES }));
+  const [demoSessao, setDemoSessao] = useState<DemoSessao>(DEMO_SESSAO_INICIAL);
+  const [demoEventos, setDemoEventos] = useState<DemoEvento[]>(DEMO_TRILHA_SEED);
   const cnpjRef = useRef<string | null>(null);
   cnpjRef.current = cnpj;
   const roleRef = useRef(role);
@@ -231,19 +239,55 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
     if (initialDemo) return;
     if (on && !(roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL"))) return;
     setDemoShared({ ...initialShared, signatures: DEMO_SIGNATURES });
+    setDemoSessao(DEMO_SESSAO_INICIAL);
+    setDemoEventos(DEMO_TRILHA_SEED);
+    demoUltimoHash.current = DEMO_TRILHA_SEED[DEMO_TRILHA_SEED.length - 1]?.hash ?? "";
     setDemoState(on);
+  };
+
+  // Eventos cenográficos: hash SHA-256 real encadeado ao anterior, só na memória do navegador.
+  const demoUltimoHash = useRef(DEMO_TRILHA_SEED[DEMO_TRILHA_SEED.length - 1]?.hash ?? "");
+  const registrarEventoDemo = async (op: AuditEntry["op"], target: string, detail: string) => {
+    const prev = demoUltimoHash.current;
+    const hash = await sha256(`${prev}|${op}|${target}|${detail}|${DEMO_AGORA_ISO}`);
+    demoUltimoHash.current = hash;
+    setDemoEventos((ev) => [...ev, { seq: ev.length + 1, ts: DEMO_AGORA_ISO, role: "DPO_OPERACIONAL", cnpj: DEMO_CNPJ, user_email: "dpo@cenografica.com.br", op, target, detail, prev_hash: prev, hash }]);
+  };
+  /** Envio simulado: a etapa 06 nasce pendente e só conclui como efeito deste ato. */
+  const demoEnviarANPD = async () => {
+    if (demoSessao.enviadoEm) return;
+    setDemoSessao((s) => ({ ...s, enviadoEm: DEMO_AGORA_ISO }));
+    await registrarEventoDemo("INSERT", "incidentes_seguranca", "Comunicação à ANPD enviada (simulação) · etapa 06 concluída");
+  };
+  const demoEncerrarIncidente = async () => {
+    if (!demoSessao.enviadoEm || demoSessao.encerradoEm) return;
+    setDemoSessao((s) => ({ ...s, encerradoEm: DEMO_AGORA_ISO }));
+    await registrarEventoDemo("UPDATE", "incidentes_seguranca", "Incidente encerrado (simulação) · PI-04 liberado para chancela");
+  };
+  /** Chancela cenográfica: DPO e Diretoria são personas distintas; a segregação real permanece no modo autenticado. */
+  const demoAssinar = async (code: string, who: "DPO" | "DIR") => {
+    const k = `${code}-${who}`;
+    if (demoShared.signatures[k]) return;
+    const by = who === "DPO" ? "DPO Cenográfico · Gov.br (simulado)" : "Diretoria Cenográfica · Gov.br (simulado)";
+    const hash = await sha256(`${k}|${DEMO_AGORA_ISO}|${by}`);
+    const next: Record<string, Signature> = { ...demoShared.signatures, [k]: { by, ts: DEMO_AGORA_ISO, hash } };
+    const other = demoShared.signatures[`${code}-${who === "DPO" ? "DIR" : "DPO"}`];
+    if (other) next[code] = { by: `${other.by} + ${by}`, ts: DEMO_AGORA_ISO, hash: await sha256(`${code}|${other.hash}|${hash}`) };
+    setDemoShared((s) => ({ ...s, signatures: next }));
+    await registrarEventoDemo("INSERT", "signatures", `${k} assinado${other ? ` · ${code} CHANCELADO` : ""} (simulação)`);
   };
   const noop = () => undefined;
   // Em demonstração nada é persistido nem registrado: o estado vive só na memória do navegador.
   const value: Ctx = demo
     ? {
-        ...demoShared, ready, userId: initialDemo ? null : userId, email: initialDemo ? 'dpo@cenografica.com.br' : email, roles: ['DPO_OPERACIONAL'], role: 'DPO_OPERACIONAL', audit: [], cnpj: DEMO_CNPJ,
+        ...demoShared, ready, userId: initialDemo ? null : userId, email: initialDemo ? 'dpo@cenografica.com.br' : email, roles: ['DPO_OPERACIONAL'], role: 'DPO_OPERACIONAL', audit: demoEventos as AuditEntry[], cnpj: DEMO_CNPJ,
         empresas: [{ cnpj: DEMO_CNPJ, razao_social: DEMO_RAZAO }], selectEmpresa: noop,
         createEmpresa: async () => "Indisponível no Modo Demonstração.", setRole: noop,
-        set: noop, log: noop, sign: async () => undefined,
+        set: noop, log: noop, sign: async (pi: string) => demoAssinar(pi, "DPO"),
         reset: noop, refreshAudit: async () => undefined, demo, publicDemo: initialDemo, setDemo,
+        demoSessao, demoEnviarANPD, demoEncerrarIncidente, demoAssinar, demoRegistrarEvento: registrarEventoDemo,
       }
-    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, publicDemo: false, setDemo };
+    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, publicDemo: false, setDemo, demoSessao: DEMO_SESSAO_INICIAL, demoEnviarANPD: async () => undefined, demoEncerrarIncidente: async () => undefined, demoAssinar: async () => undefined, demoRegistrarEvento: async () => undefined };
 
   return (
     <C.Provider value={value}>

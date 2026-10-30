@@ -56,6 +56,29 @@ export function prepararComunicacaoANPD(form: ComunicacaoANPD) {
     natureza_outro: form.natureza === OUTRO || naturezasSecundarias.includes(OUTRO) ? naturezaOutro.trim() : "",
     taxonomia_versao: VERSAO_NATUREZAS };
 }
+/** Res. CD/ANPD nº 15/2024, art. 6º: 3 dias úteis contados do conhecimento do incidente. */
+export const PRAZO_ANPD_DIAS_UTEIS = 3;
+export const PRAZO_ANPD_REGRA = "3 dias úteis (Res. CD/ANPD nº 15/2024, art. 6º)";
+export const PRAZO_ANPD_DETALHE = "contados do conhecimento do incidente; não inclui fins de semana e feriados";
+const DIA_MS = 24 * 3600000;
+const HORA_MS = 3600000;
+/** Dia útil = segunda a sexta (UTC). Feriados não constam de calendário local; a regra exibida os menciona. */
+const diaUtil = (t: number) => { const d = new Date(t).getUTCDay(); return d !== 0 && d !== 6; };
+
+/** Instantâneo limite: conhecimento + 3 dias úteis, preservando o horário do conhecimento. */
+export function limiteANPD(inicio: string): number {
+  let t = Date.parse(inicio);
+  let restantes = PRAZO_ANPD_DIAS_UTEIS;
+  while (restantes > 0) { t += DIA_MS; if (diaUtil(t)) restantes--; }
+  return t;
+}
+
+/** Tempo útil restante até o limite: só soma horas de segunda a sexta; congela no instante de envio. */
 export function restanteANPD(inicio: string, enviado: string | null, agora: number): number {
-  return Math.max(0, 72 * 3600000 - ((enviado ? Date.parse(enviado) : agora) - Date.parse(inicio)));
+  const limite = limiteANPD(inicio);
+  let t = enviado ? Date.parse(enviado) : agora;
+  if (t >= limite) return 0;
+  let restante = 0;
+  while (t < limite) { const passo = Math.min(HORA_MS, limite - t); if (diaUtil(t)) restante += passo; t += passo; }
+  return restante;
 }

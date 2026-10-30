@@ -31,9 +31,11 @@ export function acaoLegivel(l: Pick<Linha, "op" | "target" | "detail">): string 
 }
 
 export function Auditoria() {
-  const { role, cnpj, empresas, demo } = usePriva();
-  const master = role === "ADMIN_SISTEMA";
-  const [rows, setRows] = useState<Linha[]>([]);
+  const { role, cnpj, empresas, demo, audit } = usePriva();
+  const master = role === "ADMIN_SISTEMA" && !demo;
+  const [rowsDb, setRows] = useState<Linha[]>([]);
+  // No demo, a trilha cenográfica (seed + ações da sessão) vem da memória, com hash encadeado.
+  const rows: Linha[] = demo ? audit.map((a) => ({ ...a, usuario_id: null, ip_origem: null, hash_integridade_sha256: null })) : rowsDb;
   const [cpfs, setCpfs] = useState<Record<string, string>>({});
   const [verified, setVerified] = useState<null | boolean>(null);
 

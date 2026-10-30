@@ -39,3 +39,13 @@
 - [x] Executar os seis testes do anexo: todos passaram na visualização local; fluxo demo sem requisições ao banco.
 - [x] Exibir responsável cenográfico nas seis etapas do Bloco 4 e completar as evidências específicas do anexo.
 - [x] Executar os sete critérios do checklist demo: a–g passaram localmente, com zero requisições ao banco ou funções internas.
+- [x] Quebrar o circuito fechado do incidente: etapa 06 como consequência do envio, não pré-requisito (regra, não seed).
+- [x] Demo em memória: envio ANPD simulado → etapa 06 → encerramento → chancela PI-04 → Bloco 5 na mesma sessão, delta 0 no banco.
+- [x] Substituir "SLA de 72 horas" por 3 dias úteis (Res. CD/ANPD nº 15/2024, art. 6º) com contador de dias úteis.
+- [x] Corrigir atalhos do Dashboard e do Bloco 4 para aba=anpd; auditar todos os atalhos.
+- [x] Popular Trilho Core no demo com eventos do seed + eventos em memória com SHA-256 encadeado.
+- [x] Executar provas de aceitação (a) a (j) e atualizar testes que codificavam o comportamento antigo.
+- [x] Envio 2: bibliotecaTextos.ts determinística com modelos copiáveis (cabeçalho/rodapé obrigatórios) e evento de cópia na trilha.
+- [x] Envio 2: PI-03 — "Copiar modelo" nos chips do Escudo, estrutura+inventário no Cryptomator, padrão de nomenclatura no BitLocker, "Copiar dossiê (modelo)".
+- [x] Envio 2: PI-05 — botões de copiar nas sugestões; pedagogia normativa expansível (LGPD arts. 5º/6º/14/20/46/48; Res. 15/2024 arts. 3º e 6º).
+- [ ] Envio 2: provas e2e de cópia com clipboard (e, f, h, i) — unitárias feitas; e2e de clipboard pendente.

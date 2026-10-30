@@ -27,7 +27,7 @@ import { DEMO_ROT } from '@/lib/priva/demo';
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 type Incidente = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
 export function FormularioANPD({ incidente, estado, encerramento, canEdit, refresh }: { incidente: Incidente; estado: EstadoIncidente; encerramento: React.ReactNode; canEdit: boolean; refresh: () => void | Promise<unknown> }) {
-  const { demo } = usePriva();
+  const { demo, demoEnviarANPD } = usePriva();
   const navigate = useNavigate();
   const dpo = useEncarregado();
   const qc = useQueryClient();
@@ -90,7 +90,12 @@ export function FormularioANPD({ incidente, estado, encerramento, canEdit, refre
   }, [editavel, rot.isLoading, dpo.isLoading, processo, form.categorias.length]);
   const copiarNumero = async () => { try { await navigator.clipboard.writeText(incidente.id); toast.success('Número do incidente copiado.'); } catch { toast.error('Não foi possível copiar o número.'); } };
   const enviar = async () => {
-    if (demo) return avisarAcaoDemo();
+    if (demo) {
+      // Envio cenográfico: conclui a etapa 06 em memória, registra evento na trilha local e não grava nada.
+      await demoEnviarANPD();
+      toast.success('Envio simulado registrado nesta sessão de demonstração. Nada foi gravado no banco.');
+      return;
+    }
     if (!editavel || motivos.length || busy) return;
     setBusy(true); setFalha("");
     try {

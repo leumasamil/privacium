@@ -11,6 +11,7 @@ export const NOMES_PI: Record<string, string> = {
   "PI-02": "Registro de Operações de Tratamento (ROT)",
   "PI-03": "Book de Evidências Tecnológicas e Contratuais",
   "PI-04": "Dossiê de Auditoria de Logs e Resposta de Célula",
+  "PI-05": "Escudo Jurídico de Dosimetria",
 };
 
 export type RiscoId = "vazamento" | "vies" | "injecao";
