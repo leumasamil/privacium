@@ -122,10 +122,13 @@ export function Bloco2() {
 
   const remove = async (r: RotRow) => {
     if (demo) return avisarAcaoDemo();
-    if (!confirm(`Excluir ${r.codigo}?`)) return;
-    const { error } = await supabase.from("registro_operacoes").delete().eq("id", r.id);
-    if (error) { toast.error("Não foi possível excluir."); return; }
-    log("DELETE", "registro_operacoes", `Processo ${r.codigo}`);
+    // Exclusão lógica (LGPD art. 37): a linha permanece no banco com data, autor e motivo; a RPC grava a trilha.
+    const motivo = prompt(`Motivo da exclusão de ${r.codigo} (mínimo 10 caracteres). A linha sai da planilha, mas permanece no registro histórico (LGPD art. 37).`);
+    if (motivo === null) return;
+    if (motivo.trim().length < 10) { toast.error("Informe o motivo da exclusão (mínimo 10 caracteres)."); return; }
+    const { error } = await supabase.rpc("excluir_linha_rot", { _rot_id: r.id, _motivo: motivo.trim() });
+    if (error) { toast.error(error.message); return; }
+    toast.success(`${r.codigo} excluída logicamente — permanece no registro histórico`);
     void qc.invalidateQueries({ queryKey: key });
   };
 
@@ -138,6 +141,9 @@ export function Bloco2() {
     void qc.invalidateQueries({ queryKey: key });
   };
 
+  const todas = rows;
+  const excluidas = linhasExcluidas(todas);
+  { const ativas = linhasAtivas(todas); (rows as RotRow[]) = ativas; }
   const riskyCount = rows.filter(isRisky).length;
   const semDestino = rows.filter((r) => !destinoDeclarado(r)).length;
   const semProduto = rows.filter((r) => alertaProdutoAusente(r)).length;
