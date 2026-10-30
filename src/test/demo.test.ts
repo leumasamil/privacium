@@ -18,6 +18,6 @@ describe("Modo Demonstração", () => {
     expect(riskZone(r.gm).tone).toBe("success");
   });
   it("multa de R$ 100.000 cai para R$ 25.000 com todos os PIs chancelados", () => {
-    expect(multaComAtenuantes(DEMO_MULTA_BASE, reducaoDosimetria(DEMO_SIGNATURES))).toBe(25_000);
+    expect(multaComAtenuantes(DEMO_MULTA_BASE, reducaoDosimetria({ ...DEMO_SIGNATURES, "PI-05": 1 }))).toBe(25_000);
   });
 });
