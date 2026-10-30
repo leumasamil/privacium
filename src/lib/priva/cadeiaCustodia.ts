@@ -110,11 +110,11 @@ export function incisoSustentado(trilhas: TrilhaPRT[]): string {
 }
 
 /** C.3 — relatório "Prova de cadeia de custódia" (texto anexável ao dossiê). */
-export function relatorioProvaCadeia(args: { noSelecionado: Linha; trilhas: TrilhaPRT[]; linhas: Linha[]; incidenteId: string; art43Literal: string; art43Url: string; geradoEm: string }): string {
-  const { noSelecionado, trilhas, linhas, incidenteId, art43Literal, art43Url, geradoEm } = args;
+export function relatorioProvaCadeia(args: { noSelecionado: Linha; trilhas: TrilhaPRT[]; linhas: Linha[]; incidenteId: string; art43Literal: string; art43Url: string; geradoEm: string; selecao?: { ts: string; hash: string; simulado?: boolean } | null }): string {
+  const { noSelecionado, trilhas, linhas, incidenteId, art43Literal, art43Url, geradoEm, selecao } = args;
   const porId = new Map(linhas.map((l) => [l.id, l]));
   const out: string[] = [];
-  out.push("PROVA DE CADEIA DE CUSTÓDIA", `Incidente: ${incidenteId}`, `Nó do incidente: ${rotuloNo(noSelecionado)}`, `Gerado em: ${geradoEm}`, `Nota: ${NOTA_HASH_ASSINATURA}`, "");
+  out.push("PROVA DE CADEIA DE CUSTÓDIA", `Incidente: ${incidenteId}`, `Nó do incidente: ${rotuloNo(noSelecionado)}`, `Gerado em: ${geradoEm}`, ...(selecao ? [`Seleção do nó registrada na trilha: ${selecao.ts} · SHA-256 ${selecao.hash}${selecao.simulado ? " (simulação)" : ""}`] : []), `Nota: ${NOTA_HASH_ASSINATURA}`, "");
   for (const t of trilhas) {
     out.push(`PRT: ${t.prt} — ${t.nomePRT} (origem ${t.origem.rotulo}${t.origem.removido ? ` — REMOVIDA: ${descreverRemocao(t.origem)}` : ""})`);
     for (const a of t.arestas) {
