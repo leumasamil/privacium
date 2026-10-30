@@ -113,6 +113,7 @@ export function Bloco3() {
 
 function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { endpoints: Ativo[]; prot: number; cnpj: string; canEdit: boolean; refresh: () => void; remove: (a: Ativo) => void }) {
   const sugestaoHost = padraoHostname(endpoints.map((a) => a.descricao).filter((d): d is string => !!d));
+  const padraoLocal = endpoints.map((a) => a.localizacao).find((l): l is string => !!l?.trim()) ?? null;
   const { log, demo } = usePriva();
   const [hw, setHw] = useState("");
   const [host, setHost] = useState("");
