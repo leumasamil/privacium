@@ -102,7 +102,7 @@ export function Masked({ value, kind }: { value: string; kind: "cpf" | "cnpj" | 
 }
 
 export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string; ready: boolean; readyHint: string; children: ReactNode; dual?: boolean }) {
-  const { signatures, sign, set, email, cnpj, log, demo } = usePriva();
+  const { signatures, sign, set, email, cnpj, log, demo, demoAssinar } = usePriva();
   const code = pi.slice(0, 5).replace(" ", "");
   const sig = signatures[code];
   const encarregado = useEncarregado();
