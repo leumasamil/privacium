@@ -1,4 +1,4 @@
-- [ ] Implementar enquadramento calculado e assinado por CNPJ no Bloco 1, trava do gatilho crítico e renovação semestral; badge, citações condicionais ROT e prazo ANPD 3/6 dias úteis; corrigir blueprint e executar provas com referências revisadas.
+- [x] Implementar enquadramento calculado e assinado por CNPJ, trava do gatilho e renovação semestral; badge, ROT/PI-02 condicional e prazo ANPD 3/6; blueprint corrigido. 88 testes e 3 E2E passaram; recusa, assinatura, releitura e trilha verificadas em empresa explicitamente de teste; cenário real original restaurado. Feriados continuam sem calendário (limitação documentada).
 - [x] Conferir citações do ROT (HTML cru não reproduzido em produção), compartilhar listas JSX com PI-02 e corrigir terminologia de apresentação do diagnóstico (21 + 21 rótulos); conferir três linhas demo, sete setores e testes sem alterar dados.
 - [x] Volumetria total na Trilha Forense Master + checar isolamento RLS
 - [x] Cadastrar contato do encarregado por CNPJ com isolamento e auditoria.
