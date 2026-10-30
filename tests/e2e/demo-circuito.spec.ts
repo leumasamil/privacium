@@ -51,8 +51,8 @@ test('a-i) circuito completo: envio → encerramento → chancela PI-04 → Bloc
   await expect(page.getByRole('heading', { name: 'Auditar o Sistema de Privacidade e Mitigar Riscos' })).toBeVisible();
 
   // e) PI-05: sugestões determinísticas da biblioteca estática, derivação e simulador coerentes.
-  await expect(page.locator('[data-testid="rotulo-desc-vazamento"]')).toContainText('Sugerido a partir de');
-  await expect(page.locator('[data-testid="rotulo-vazamento"]')).toContainText('Sugerido a partir de');
+  await expect(page.locator('[data-testid="rotulo-desc-vazamento"]')).toContainText('Sugerido a partir do PI-0');
+  await expect(page.locator('[data-testid="rotulo-vazamento"]')).toContainText('Sugerido a partir do PI-0');
   await expect(page.locator('[data-testid="derivado-vazamento"]')).toContainText('risco inerente 5×5 = 25');
   await expect(page.locator('[data-testid="calculo-reducao"]')).toContainText('Redução = 75% ×');
   await expect(page.locator('[data-testid="reducao"]')).toBeVisible();
