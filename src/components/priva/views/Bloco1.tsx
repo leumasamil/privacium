@@ -14,6 +14,7 @@ import { Masked, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui"
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { EnquadramentoAgente } from '../EnquadramentoAgente';
+import { MembrosEmpresa } from '../MembrosEmpresa';
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { FUNDAMENTO_PORTE, rotuloPorte } from '@/lib/priva/enquadramento';
 
