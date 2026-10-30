@@ -30,6 +30,10 @@ export function useCnpjRows<K extends T>(table: K, cnpj: string | null, order: s
       .subscribe();
     return () => { void supabase.removeChannel(ch); };
   }, [table, cnpj, qc, demo]);
-  if (demo) return { rows: DEMO_ROWS[table] as unknown as Row<K>[], refresh: () => undefined };
+  if (demo) {
+    // O Dashboard lê a mesma fonte do Bloco 4: seed cenográfico + sessão simulada em memória.
+    const rows = table === "incidentes_seguranca" ? DEMO_ROWS[table].map(i => aplicarSessaoDemo(i, demoSessao)) : DEMO_ROWS[table];
+    return { rows: rows as unknown as Row<K>[], refresh: () => undefined };
+  }
   return { rows: q.data ?? [], refresh: () => void qc.invalidateQueries({ queryKey: key }) };
 }
