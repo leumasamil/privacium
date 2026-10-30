@@ -60,3 +60,6 @@
 - [x] Painel AIA com 4 eixos + rótulo de escopo + ressalva PL 2338 em tramitação.
 - [x] Testes unitários + e2e (a)–(i); provar delta 0, guards/migrations intactos.
 - [x] ROT: papel do agente (Bloco 1 + por linha) e camada de produto interno com destino ancorado — TAREFA A/B/C do anexo
+
+- [x] Etapa 2 como lista de PRT + cadastro de Terceiros (migração 0040).
+- [ ] Divergência normativa: texto de "art. 39, caput, §§ 1º e 2º" fornecido não consta da LGPD — aguardando decisão do usuário.

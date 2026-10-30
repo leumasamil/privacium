@@ -10,7 +10,7 @@ const base = (p: Partial<RotInput> = {}): RotInput => ({
   dados_sensiveis: ["N/A"], finalidade_especifica: "", hipotese_tratamento: "", hipotese_sensivel: null, tempo_retencao: "",
   base_prazo: "", compartilhamento: "Não Compartilhado", salvaguardas: [], infraestrutura: "Servidor Local",
   justificativa_mitigacao: null, area_setor: null, insumo: null, meio_fornecimento: null,
-  papel_agente: "CONTROLADOR", contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null, ...p,
+  papel_agente: "CONTROLADOR", contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null, produtos_tratamento: [], ...p,
 });
 
 describe("Área › Setor", () => {

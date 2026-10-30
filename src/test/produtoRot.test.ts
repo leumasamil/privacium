@@ -1,3 +1,4 @@
+import { produtosDaLinha } from "@/lib/priva/rot";
 import { describe, expect, it } from "vitest";
 import { criteriosSchema } from "@/lib/priva/enquadramento";
 import { DEMO_ROT } from "@/lib/priva/demo";
@@ -12,7 +13,7 @@ const base = (p: Partial<RotInput> = {}): RotInput => ({
   dados_sensiveis: ["N/A"], finalidade_especifica: "Seleção e recrutamento de candidatos", hipotese_tratamento: "Art. 7º, V – Execução de contrato ou procedimentos preliminares",
   hipotese_sensivel: null, tempo_retencao: "1 ano", base_prazo: "Política interna", compartilhamento: "Não Compartilhado", salvaguardas: [], infraestrutura: "Servidor Local",
   justificativa_mitigacao: null, area_setor: "Recursos Humanos › Seleção e Recrutamento", insumo: "currículo", meio_fornecimento: "site",
-  papel_agente: "CONTROLADOR", contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null, ...p,
+  papel_agente: "CONTROLADOR", contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null, produtos_tratamento: [], ...p,
 });
 
 describe("papel do agente (item A)", () => {
@@ -87,8 +88,9 @@ describe("demonstração cenográfica", () => {
     for (const r of DEMO_ROT) if (temProcessar(r.ciclo_vida as never)) expect(r.produto_interno).toBeTruthy();
     const origem = DEMO_ROT.find((r) => r.codigo === "PRIVA-RH-001")!;
     const receptor = DEMO_ROT.find((r) => r.codigo === "PRIVA-FIN-001")!;
-    expect((origem.destino_produto as { linha_receptor_codigo?: string }).linha_receptor_codigo).toBe("PRIVA-FIN-001");
+    const prt = produtosDaLinha(origem).find((p) => p.destino?.linha_receptor_codigo === "PRIVA-FIN-001");
+    expect(prt?.nome).toBe("Relatório de folha consolidado");
     expect((receptor.origem_compartilhamento as { codigo_origem?: string }).codigo_origem).toBe("PRIVA-RH-001");
-    expect(receptor.insumo).toBe(origem.produto_interno);
+    expect(receptor.insumo).toBe(prt?.nome);
   });
 });

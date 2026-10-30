@@ -11,10 +11,12 @@ import { AREAS_SETORES, ROTULO_AREA_SETOR, areaSetorCompleto, chaveDaArea, exibi
 import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, ETAPA1, ETAPA2, NOTA_CICLO, NOTA_ETAPA2_COMPARTILHAR, NOTA_ETAPA2_ELIMINAR, NOTA_METODO_CICLO, NOTA_RESPONSAVEL_ETAPAS, ROTULO_ETAPA1, ROTULO_ETAPA2, alertaRetencao, alternar, cicloDaLinha, citacoesISO, destinoDeclarado, formatarCiclo, formatarCicloEtapas, generosMarcados, temEtapa2, type CicloVida, type Genero } from "@/lib/priva/cicloVida";
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { citacaoSimplificada } from '@/lib/priva/enquadramento';
-import { ALERTA_FINALIDADE_OPERADOR, ALERTA_PRODUTO_AUSENTE, DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, LITERAL_ART5_VI, LITERAL_ART5_VII, MEIOS, NOTA_DESTINO_OPERADOR, NOTA_PRODUTO, PAPEIS_AGENTE, ROTULO_PAPEL, SALVAGUARDAS, SENSIVEIS, TITULARES, alertaFinalidadeOperador, alertaProdutoAusente, alertasCoerencia, finalidadeDoContrato, hasSensivel, isRisky, montarLinhaReceptora, normalizeHipoteses, sugerir, sugerirProduto, validateRot, type DestinoProduto, type OrigemCompartilhamento, type PapelAgente, type RotInput, type RotRow } from "@/lib/priva/rot";
+import { ALERTA_FINALIDADE_OPERADOR, ALERTA_PRODUTO_AUSENTE, DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, LITERAL_ART5_VI, LITERAL_ART5_VII, MEIOS, NOTA_DESTINO_OPERADOR, NOTA_PRT, PAPEIS_AGENTE, ROTULO_PRT, alertasPRTSemDestino, descreverDestinoPRT, prtExternosBloqueados, produtosDaLinha, rotuloPRT, alertaPRTSemDestino, destinoPRTCompleto, type ProdutoTratamento, ROTULO_PAPEL, SALVAGUARDAS, SENSIVEIS, TITULARES, alertaFinalidadeOperador, alertaProdutoAusente, alertasCoerencia, finalidadeDoContrato, hasSensivel, isRisky, montarLinhaReceptora, normalizeHipoteses, sugerir, sugerirProduto, validateRot, type DestinoProduto, type OrigemCompartilhamento, type PapelAgente, type RotInput, type RotRow } from "@/lib/priva/rot";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ROT } from "@/lib/priva/demo";
 import { responsavelDaArea, useMembros } from "@/components/priva/MembrosEmpresa";
+import { useTerceiros, type Terceiro } from "@/components/priva/TerceirosEmpresa";
+import { ALERTA_TERCEIRO_SEM_CONTRATO, terceiroBloqueado } from "@/lib/priva/terceiros";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -28,13 +30,13 @@ import { BadgeFornecedorROT } from '@/components/priva/AlertaFornecedorVazado';
 
 const HEADS = ["ID Processo", "Área › Setor", "Papel do agente", "Ciclo de vida (gênero × espécie)", "Categoria de Titulares", "Dado pessoal", "Dado pessoal sensível", "Finalidade Específica",
   "7A. Hipótese art. 7º (dado pessoal)", "7B. Hipótese art. 11 (dado pessoal sensível)", "Tempo de Retenção", "Base do Prazo", "Comunicação e transferência / Destinatários",
-  "Insumo (documento de entrada)", "Produto interno gerado", "Meio de fornecimento", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
+  "Insumo (documento de entrada)", ROTULO_PRT, "Meio de fornecimento", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
 
 const empty = (cnpj: string, papel: PapelAgente = "CONTROLADOR"): RotInput => ({
   empresa_cnpj: cnpj, setor: "RH", genero_verbo: "Coletar", ciclo_vida: {}, categoria_titulares: [], dados_pessoais: [], dados_sensiveis: ["N/A"],
   finalidade_especifica: "", hipotese_tratamento: "", hipotese_sensivel: null, tempo_retencao: "", base_prazo: "", compartilhamento: "Não Compartilhado",
   salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null, area_setor: null, insumo: null, meio_fornecimento: null,
-  papel_agente: papel, contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null,
+  papel_agente: papel, contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null, produtos_tratamento: [],
 });
 
 export function Bloco2() {
@@ -42,6 +44,7 @@ export function Bloco2() {
   const enq = useEnquadramento();
   const papelPadrao = ((enq.declaracao?.criterios as { papelAgente?: PapelAgente } | null)?.papelAgente) ?? "CONTROLADOR";
   const qc = useQueryClient();
+  const { data: terceiros = [] } = useTerceiros();
   const canEdit = (roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA"));
   const key = ["registro_operacoes", cnpj] as const;
   const { data: rows = [] } = useQuery({
@@ -75,7 +78,8 @@ export function Bloco2() {
     const err = validateRot(normalizeHipoteses(form));
     if (err) { toast.error(err); return; }
     const ciclo = cicloDaLinha(form);
-    const payload = { ...normalizeHipoteses(form), ciclo_vida: ciclo, genero_verbo: generosMarcados(ciclo)[0] ?? "Coletar", justificativa_mitigacao: isRisky(form) ? form.justificativa_mitigacao : null };
+    const prts = produtosDaLinha(form).filter((p) => p.nome.trim());
+    const payload = { ...normalizeHipoteses(form), produtos_tratamento: prts, produto_interno: prts[0]?.nome ?? null, ciclo_vida: ciclo, genero_verbo: generosMarcados(ciclo)[0] ?? "Coletar", justificativa_mitigacao: isRisky(form) ? form.justificativa_mitigacao : null };
     const { data, error } = edit.id
       ? await supabase.from("registro_operacoes").update(payload).eq("id", edit.id).select("id, codigo").single()
       : await supabase.from("registro_operacoes").insert(payload).select("id, codigo").single();
@@ -84,19 +88,23 @@ export function Bloco2() {
     log(edit.id ? "UPDATE" : "INSERT", "registro_operacoes", `Processo ${data.codigo}`);
     for (const a of alertasCoerencia(form)) log("INSERT", "registro_operacoes", `Alerta de coerência dado × hipótese em ${data.codigo}: ${a}`);
     if (alertaFinalidadeOperador(edit.form)) log("INSERT", "registro_operacoes", `Alerta em ${data.codigo}: ${ALERTA_FINALIDADE_OPERADOR}`);
-    // Destino INTERNO do produto: cria a linha receptora no ROT do setor de destino, com origem rastreada.
-    const destino = form.destino_produto as DestinoProduto | null;
-    if (destino?.tipo === "INTERNO" && destino.area_setor_destino && !destino.linha_receptor_id && form.produto_interno) {
-      const areaDestino = destino.area_setor_destino.split("›")[0]?.trim() ?? "";
-      const receptor = montarLinhaReceptora({ ...payload, id: rotId, codigo: data.codigo }, destino.area_setor_destino, chaveDaArea(areaDestino));
-      const ins = await supabase.from("registro_operacoes").insert(receptor).select("id, codigo").single();
-      if (ins.error) toast.error(`Linha receptora não criada: ${ins.error.message}`);
-      else {
-        await supabase.from("registro_operacoes").update({ destino_produto: { ...destino, linha_receptor_id: ins.data.id, linha_receptor_codigo: ins.data.codigo } }).eq("id", rotId);
-        log("INSERT", "registro_operacoes", `Compartilhamento interno: ${data.codigo} → ${ins.data.codigo} (${destino.area_setor_destino})`);
-        toast.success(`Linha ${ins.data.codigo} criada no setor receptor (${destino.area_setor_destino})`);
-      }
+    // Destino INTERNO de cada PRT: cria a linha receptora no ROT do setor de destino, com origem rastreada.
+    let mudou = false;
+    const atualizados: ProdutoTratamento[] = [];
+    for (const [i, p] of prts.entries()) {
+      const d = p.destino;
+      if (d?.tipo === "INTERNO" && d.area_setor_destino && !d.linha_receptor_id) {
+        const areaDestino = d.area_setor_destino.split("›")[0]?.trim() ?? "";
+        const receptor = montarLinhaReceptora({ ...payload, id: rotId, codigo: data.codigo }, d.area_setor_destino, chaveDaArea(areaDestino), p.nome);
+        const ins = await supabase.from("registro_operacoes").insert(receptor).select("id, codigo").single();
+        if (ins.error) { toast.error(`Linha receptora de ${rotuloPRT(i)} não criada: ${ins.error.message}`); atualizados.push(p); continue; }
+        atualizados.push({ ...p, destino: { ...d, linha_receptor_id: ins.data.id, linha_receptor_codigo: ins.data.codigo } });
+        mudou = true;
+        log("INSERT", "registro_operacoes", `Compartilhamento interno: ${data.codigo} ${rotuloPRT(i)} → ${ins.data.codigo} (${d.area_setor_destino})`);
+        toast.success(`Linha ${ins.data.codigo} criada no setor receptor (${d.area_setor_destino})`);
+      } else atualizados.push(p);
     }
+    if (mudou) await supabase.from("registro_operacoes").update({ produtos_tratamento: atualizados }).eq("id", rotId);
     toast.success(`${data.codigo} salvo`);
     setEdit(null);
     void qc.invalidateQueries({ queryKey: key });
@@ -123,6 +131,8 @@ export function Bloco2() {
   const riskyCount = rows.filter(isRisky).length;
   const semDestino = rows.filter((r) => !destinoDeclarado(r)).length;
   const semProduto = rows.filter((r) => alertaProdutoAusente(r)).length;
+  const semDestinoPRT = rows.filter((r) => alertasPRTSemDestino(r).length > 0).length;
+  const externosBloqueados = rows.filter((r) => prtExternosBloqueados(r, terceiros).length > 0).length;
   const NUMS = ["", "1. ", "1A. ", "2. ", "3. ", "4. ", "5. ", "6. ", "", "", "8. ", "9. ", "10. ", "10A. ", "10C. ", "10B. ", "11. ", "12. "];
 
   return (
@@ -142,7 +152,7 @@ export function Bloco2() {
           <table className="w-full min-w-[2400px] text-xs">
             <thead>
               <tr className="border-b text-left">
-                {HEADS.map((h, i) => <th key={h} className="px-2 py-2 font-mono font-medium uppercase tracking-wider text-muted-foreground">{NUMS[i]}{h}</th>)}
+                {HEADS.map((h, i) => <th key={h} className={cn("px-2 py-2 font-mono font-medium uppercase tracking-wider text-muted-foreground", h === ROTULO_PRT && "min-w-80")}>{NUMS[i]}{h}{h === ROTULO_PRT && <span className="mt-1 block font-sans text-[10px] font-normal normal-case tracking-normal" data-testid="nota-prt-coluna">{NOTA_PRT}</span>}</th>)}
                 <th />
               </tr>
             </thead>
@@ -178,10 +188,8 @@ export function Bloco2() {
                       {r.insumo ?? "—"}
                       {(r.origem_compartilhamento as OrigemCompartilhamento | null) && <p className="mt-1 rounded-sm border border-dashed px-1 py-0.5 text-[10px] text-muted-foreground" data-testid={`origem-${r.codigo}`}>Insumo recebido de {(r.origem_compartilhamento as OrigemCompartilhamento).codigo_origem} ({(r.origem_compartilhamento as OrigemCompartilhamento).area_setor_origem})</p>}
                     </td>
-                    <td className="max-w-64 px-2 py-2" data-testid={`produto-${r.codigo}`}>
-                      {r.produto_interno ?? "—"}
-                      {alertaProdutoAusente(r) && <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> {ALERTA_PRODUTO_AUSENTE}</p>}
-                      <DestinoProdutoCelula r={r} />
+                    <td className="max-w-80 px-2 py-2" data-testid={`produto-${r.codigo}`}>
+                      <PRTCelula r={r} terceiros={terceiros} />
                     </td>
                     <td className="px-2 py-2">{r.meio_fornecimento ?? "—"}</td>
                     <td className="px-2 py-2"><Tags items={r.salvaguardas} /></td>
@@ -208,15 +216,17 @@ export function Bloco2() {
 
       {edit && <RotDialog edit={edit} setEdit={setEdit} onSave={save} />}
 
-      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0 && semDestino === 0 && semProduto === 0} readyHint={rows.length === 0 ? "Cadastre ao menos um processo na planilha mestre." : [
+      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0 && semDestino === 0 && semProduto === 0 && semDestinoPRT === 0 && externosBloqueados === 0} readyHint={rows.length === 0 ? "Cadastre ao menos um processo na planilha mestre." : [
         semDestino > 0 ? `${semDestino} processo(s) sem destino declarado: a Etapa 2 (compartilhamento com destinatário identificado ou eliminação com prazo e fundamento — LGPD art. 16) é obrigatória para chancelar o PI-02.` : "",
-        semProduto > 0 ? `${semProduto} processo(s) com Processar sem produto interno declarado — art. 6º, I não comprovado; a chancela do PI-02 fica bloqueada neste estado.` : "",
+        semProduto > 0 ? `${semProduto} processo(s) com Processar sem PRT declarado — art. 6º, I não comprovado; a chancela do PI-02 fica bloqueada neste estado.` : "",
+        semDestinoPRT > 0 ? `${semDestinoPRT} processo(s) com PRT sem destino declarado — art. 16 não comprovado; todo PRT precisa de destino individual na Etapa 2.` : "",
+        externosBloqueados > 0 ? `${externosBloqueados} processo(s) com PRT destinado a terceiro sem contrato com cláusulas do art. 39 — compartilhamento externo não pode ser chancelado.` : "",
       ].filter(Boolean).join(" ")}>
-        <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico{semDestino > 0 ? `, ${semDestino} sem destino declarado (Etapa 2)` : ""}{semProduto > 0 ? `, ${semProduto} sem produto interno declarado (art. 6º, I)` : ""}.</p>
+        <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico{semDestino > 0 ? `, ${semDestino} sem destino declarado (Etapa 2)` : ""}{semProduto > 0 ? `, ${semProduto} sem PRT declarado (art. 6º, I)` : ""}{semDestinoPRT > 0 ? `, ${semDestinoPRT} com PRT sem destino` : ""}.</p>
         <p className="mt-2"><b>Ciclo de vida do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO} {NOTA_METODO_CICLO}</p>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           {rows.map((r) => (
-            <li key={r.id}><b>{r.codigo}</b> — {exibirAreaSetor(r)}. Papel do agente: {ROTULO_PAPEL[(r.papel_agente as PapelAgente) ?? "CONTROLADOR"]}. Ciclo de vida: {formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção do insumo: {r.tempo_retencao} ({r.base_prazo}).{r.insumo && <> Insumo: {r.insumo}.</>}{r.produto_interno && <> Produto interno: {r.produto_interno}{r.prazo_produto ? ` (eliminação: ${r.prazo_produto} — ${r.fundamento_produto})` : ""}.</>}{r.meio_fornecimento && <> Meio de fornecimento: {r.meio_fornecimento}.</>}{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
+            <li key={r.id}><b>{r.codigo}</b> — {exibirAreaSetor(r)}. Papel do agente: {ROTULO_PAPEL[(r.papel_agente as PapelAgente) ?? "CONTROLADOR"]}. Ciclo de vida: {formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção do insumo: {r.tempo_retencao} ({r.base_prazo}).{r.insumo && <> Insumo: {r.insumo}.</>}{produtosDaLinha(r).map((p, i) => <span key={i}> {rotuloPRT(i)} · {p.nome} → {descreverDestinoPRT(p.destino)}.</span>)}{r.meio_fornecimento && <> Meio de fornecimento: {r.meio_fornecimento}.</>}{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
           ))}
         </ul>
       </PIOutput>
@@ -254,6 +264,7 @@ function Chips({ options, value, onChange, exclusive }: { options: string[]; val
 function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form: RotInput }; setEdit: (e: { id: string | null; form: RotInput } | null) => void; onSave: () => void }) {
   const { demo } = usePriva();
   const { data: membros = [] } = useMembros();
+  const { data: terceiros = [] } = useTerceiros();
   const f = edit.form;
   const up = (p: Partial<RotInput>) => setEdit({ ...edit, form: { ...f, ...p } });
   const risk = isRisky(f);
@@ -263,10 +274,9 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
   const coerencia = alertasCoerencia(f);
   const retencao = alertaRetencao(cicloDaLinha(f));
   const erro = validateRot(f);
-  const destino = f.destino_produto as DestinoProduto | null;
-  const destArea = (destino?.area_setor_destino ?? "").split("›")[0]?.trim() ?? "";
-  const destSetor = (destino?.area_setor_destino ?? "").split("›")[1]?.trim() ?? "";
-  const destSetores = AREAS_SETORES.find((a) => a.area === destArea)?.setores ?? [];
+  const prts = produtosDaLinha(f);
+  const setPrts = (l: ProdutoTratamento[]) => up({ produtos_tratamento: l, produto_interno: l[0]?.nome || null });
+  const upPrt = (i: number, p: Partial<ProdutoTratamento>) => setPrts(prts.map((x, j) => (j === i ? { ...x, ...p } : x)));
   const areaAtual = (f.area_setor ?? "").split("›")[0]?.trim() || AREAS_SETORES[0]!.area;
   const setorAtual = (f.area_setor ?? "").split("›")[1]?.trim() ?? "";
   const setoresDaArea = AREAS_SETORES.find((a) => a.area === areaAtual)?.setores ?? [];
@@ -315,6 +325,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
           </Field>
           <Field label="2. Ciclo de vida do dado pessoal (gênero × espécie)" wide>
             <p className="text-[11px] text-muted-foreground">{AJUDA_CICLO}</p>
+            <p className="rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="nota-prt-campo2">{NOTA_PRT}</p>
             <p className="rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="nota-metodo-ciclo">{NOTA_METODO_CICLO} {NOTA_RESPONSAVEL_ETAPAS}</p>
             <div className="space-y-2" data-testid="ciclo-vida">
               <div>
@@ -332,47 +343,28 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
             </div>
             {retencao && <p role="alert" className="flex items-center gap-1 text-xs font-semibold text-warning-foreground" data-testid="alerta-retencao"><AlertTriangle className="h-3 w-3" /> {retencao}</p>}
           </Field>
-          <Field label="10C. Produto interno gerado — obrigatório quando houver Processar (Etapa 1)" wide>
-            <p className="text-[11px] text-muted-foreground">{NOTA_PRODUTO}</p>
-            <Input value={f.produto_interno ?? ""} placeholder="Ex.: Ficha de candidato" onChange={(e) => up({ produto_interno: e.target.value || null })} />
+          <Field label={`10C. ${ROTULO_PRT} — obrigatório quando houver Processar (Etapa 1)`} wide>
+            <p className="text-[11px] text-muted-foreground">{NOTA_PRT}</p>
+            <div className="space-y-1" data-testid="lista-prt">
+              {prts.map((p, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="w-14 font-mono text-xs font-semibold text-primary">{rotuloPRT(i)}</span>
+                  <Input value={p.nome} placeholder="Ex.: Ficha cadastral" onChange={(e) => upPrt(i, { nome: e.target.value })} />
+                  <button type="button" aria-label={`Remover ${rotuloPRT(i)}`} onClick={() => setPrts(prts.filter((_, j) => j !== i))}><Trash2 className="h-3 w-3 text-muted-foreground" /></button>
+                </div>
+              ))}
+              <Button type="button" size="sm" variant="outline" onClick={() => setPrts([...prts, { nome: "" }])}><Plus className="h-3 w-3" /> Adicionar PRT</Button>
+            </div>
             {alertaProdutoAusente(f) && <p role="alert" data-testid="alerta-produto" className="flex items-center gap-1 text-xs font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> {ALERTA_PRODUTO_AUSENTE} A chancela do PI-02 fica bloqueada neste estado.</p>}
           </Field>
-          {temEtapa2(cicloDaLinha(f)) && !operador && (
-            <Field label={`Etapa 2 — O que acontece com o produto "${f.produto_interno?.trim() || "…"}"?`} wide>
-              <select aria-label="Destino do produto" className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={destino?.tipo ?? ""} onChange={(e) => { const t = e.target.value; up({ destino_produto: t ? { tipo: t as DestinoProduto["tipo"] } : null }); }}>
-                <option value="">Selecione…</option>
-                <option value="INTERNO">Compartilhamento interno — Área › Setor de destino</option>
-                <option value="EXTERNO">Compartilhamento externo — terceiro</option>
-                <option value="ELIMINACAO">Eliminação — prazo e fundamento (LGPD art. 16)</option>
-              </select>
-              {destino?.tipo === "INTERNO" && (
-                <div className="grid gap-2 sm:grid-cols-2" data-testid="destino-interno">
-                  <select aria-label="Área de destino" className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={destArea} onChange={(e) => up({ destino_produto: { tipo: "INTERNO", area_setor_destino: areaSetorCompleto(e.target.value, "") } })}>
-                    <option value="">Área…</option>
-                    {AREAS_SETORES.map((a) => <option key={a.area} value={a.area}>{a.area}</option>)}
-                  </select>
-                  <select aria-label="Setor de destino" className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={destSetores.includes(destSetor) ? destSetor : destSetor ? "__outro__" : ""} onChange={(e) => up({ destino_produto: { tipo: "INTERNO", area_setor_destino: areaSetorCompleto(destArea, e.target.value === "__outro__" ? "" : e.target.value) } })}>
-                    <option value="">Setor…</option>
-                    {destSetores.map((s) => <option key={s} value={s}>{s}</option>)}
-                    <option value="__outro__">outro (especificar)</option>
-                  </select>
-                  {(destSetor && !destSetores.includes(destSetor)) && <Input value={destSetor} onChange={(e) => up({ destino_produto: { tipo: "INTERNO", area_setor_destino: areaSetorCompleto(destArea, e.target.value) } })} placeholder="Especifique o setor" />}
-                  <p className="text-[11px] text-muted-foreground sm:col-span-2">Ao salvar, uma linha em estado "insumo recebido" é criada automaticamente no ROT do setor receptor, com o produto como insumo (10A) e origem rastreada.</p>
+          {!operador && (prts.length > 0 || temEtapa2(cicloDaLinha(f))) && (
+            <Field label={ROTULO_ETAPA2} wide>
+              <div className="space-y-2" data-testid="etapa2-lista">
+                {prts.map((p, i) => <DestinoPRTEditor key={i} indice={i} prt={p} terceiros={terceiros} onChange={(d) => upPrt(i, { destino: d })} />)}
+                <div className="rounded-sm border border-dashed p-2 text-xs" data-testid="insumo-residual">
+                  <b>(insumo residual)</b> → {f.tempo_retencao.trim() ? `Eliminar em ${f.tempo_retencao} (${f.base_prazo || "fundamento a definir"})` : "preencha os campos 8 e 9 (prazo e fundamento do insumo original — LGPD art. 16)"}
                 </div>
-              )}
-              {destino?.tipo === "EXTERNO" && (
-                <div data-testid="destino-externo">
-                  <Input value={destino.terceiro ?? ""} placeholder="Terceiro destinatário (do cadastro de fornecedores)" onChange={(e) => up({ destino_produto: { ...destino, terceiro: e.target.value } })} />
-                  {!(destino.terceiro ?? "").trim() && <p role="alert" className="mt-1 flex items-center gap-1 text-xs font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> Terceiro não cadastrado — cadastre o destinatário antes de chancelar o PI-02.</p>}
-                </div>
-              )}
-              {destino?.tipo === "ELIMINACAO" && (
-                <div className="grid gap-2 sm:grid-cols-2" data-testid="destino-eliminacao">
-                  <Input value={f.prazo_produto ?? ""} placeholder="Prazo do produto (ex.: 6 meses)" onChange={(e) => up({ prazo_produto: e.target.value || null })} />
-                  <Input value={f.fundamento_produto ?? ""} placeholder="Fundamento (LGPD art. 16)" onChange={(e) => up({ fundamento_produto: e.target.value || null })} />
-                  <p className="text-[11px] text-muted-foreground sm:col-span-2">A eliminação do insumo não elimina o produto: os dois prazos (insumo e produto) são exibidos separadamente, cada um com seu fundamento.</p>
-                </div>
-              )}
+              </div>
             </Field>
           )}
           <Field label="3. Categoria de Titulares" wide><Chips options={TITULARES} value={f.categoria_titulares} onChange={(v) => up({ categoria_titulares: v })} /></Field>
@@ -471,20 +463,86 @@ function CicloCelula({ r }: { r: RotRow }) {
   return (
     <div className="space-y-1" data-testid={`ciclo-${r.codigo}`}>
       {e1 && <p><span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">Etapa 1 · Perímetro: </span><span className="font-medium">{e1}</span></p>}
-      {e2 && <p><span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">Etapa 2 · Destino: </span><span className="font-medium">{e2}</span></p>}
-      {!e2 && <p className="text-[10px] italic text-muted-foreground">Etapa 2 · Destino: não declarado</p>}
+      {e2 && <p><span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">Etapa 2 · Destino dos produtos gerados: </span><span className="font-medium">{e2}</span></p>}
+      {!e2 && <p className="text-[10px] italic text-muted-foreground">Etapa 2 · Destino dos produtos gerados: não declarado</p>}
       <CitacoesCiclo ciclo={c} />
     </div>
   );
 }
 
-/** Vínculo do destino do produto na linha de origem (Etapa 2 ancorada no produto). */
-function DestinoProdutoCelula({ r }: { r: RotRow }) {
-  const d = r.destino_produto as DestinoProduto | null;
-  if (!d) return null;
-  if (d.tipo === "INTERNO") return <p className="mt-1 text-[10px] text-muted-foreground" data-testid={`vinculo-${r.codigo}`}>Compartilhado com {d.area_setor_destino} — linha {d.linha_receptor_codigo ?? "a criar"}</p>;
-  if (d.tipo === "EXTERNO") return <p className="mt-1 text-[10px] text-muted-foreground">Compartilhado externamente: {d.terceiro ?? "terceiro não identificado"}</p>;
-  return <p className="mt-1 text-[10px] text-muted-foreground">Eliminação do produto: {r.prazo_produto ?? "prazo a definir"} ({r.fundamento_produto ?? "fundamento a definir"})</p>;
+/** Lista de PRT na planilha: cada um com seu destino individual (Etapa 2) e o insumo residual. */
+function PRTCelula({ r, terceiros }: { r: RotRow; terceiros: Terceiro[] }) {
+  const prts = produtosDaLinha(r);
+  const bloqueados = prtExternosBloqueados(r, terceiros);
+  return (
+    <div className="space-y-1">
+      {!prts.length && <p>—</p>}
+      {prts.map((p, i) => {
+        const semDestino = r.papel_agente !== "OPERADOR" && !destinoPRTCompleto(p.destino);
+        return (
+          <div key={i} data-testid={`prt-${r.codigo}-${i + 1}`}>
+            <p><span className="font-mono font-semibold text-primary">{rotuloPRT(i)}</span> · {p.nome} <span className="text-muted-foreground">→ {r.papel_agente === "OPERADOR" ? NOTA_DESTINO_OPERADOR : descreverDestinoPRT(p.destino)}</span></p>
+            {semDestino && <p className="flex items-center gap-1 text-[10px] font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> {alertaPRTSemDestino(p.nome)}</p>}
+            {bloqueados.includes(p) && <p className="flex items-center gap-1 text-[10px] font-semibold text-destructive"><AlertTriangle className="h-3 w-3" /> {ALERTA_TERCEIRO_SEM_CONTRATO}</p>}
+          </div>
+        );
+      })}
+      {prts.length > 0 && <p className="text-muted-foreground">(insumo residual) → {r.tempo_retencao ? `Eliminar em ${r.tempo_retencao} (${r.base_prazo})` : "prazo a definir"}</p>}
+      {alertaProdutoAusente(r) && <p className="flex items-center gap-1 text-[10px] font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> {ALERTA_PRODUTO_AUSENTE}</p>}
+    </div>
+  );
+}
+
+/** Destino individual de um PRT (Etapa 2): interno, externo (terceiro do cadastro) ou eliminação. */
+function DestinoPRTEditor({ indice, prt, terceiros, onChange }: { indice: number; prt: ProdutoTratamento; terceiros: Terceiro[]; onChange: (d: DestinoProduto | null) => void }) {
+  const d = prt.destino ?? null;
+  const area = (d?.area_setor_destino ?? "").split("›")[0]?.trim() ?? "";
+  const setor = (d?.area_setor_destino ?? "").split("›")[1]?.trim() ?? "";
+  const setores = AREAS_SETORES.find((a) => a.area === area)?.setores ?? [];
+  const t = terceiros.find((x) => x.id === d?.terceiro_id);
+  return (
+    <fieldset className="rounded-sm border p-2" data-testid={`destino-prt-${indice + 1}`}>
+      <legend className="px-1 text-xs font-semibold"><span className="font-mono text-primary">{rotuloPRT(indice)}</span> · {prt.nome || "sem nome"}</legend>
+      <select aria-label={`Destino do ${rotuloPRT(indice)}`} className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={d?.tipo ?? ""} onChange={(e) => onChange(e.target.value ? { tipo: e.target.value as DestinoProduto["tipo"] } : null)}>
+        <option value="">Selecione o destino…</option>
+        <option value="INTERNO">Interno — Área › Setor de destino</option>
+        <option value="EXTERNO">Externo — terceiro do cadastro</option>
+        <option value="ELIMINACAO">Eliminação — prazo e fundamento (LGPD art. 16)</option>
+      </select>
+      {d?.tipo === "INTERNO" && (
+        <div className="mt-1 grid gap-2 sm:grid-cols-2">
+          <select aria-label={`Área de destino do ${rotuloPRT(indice)}`} className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={area} onChange={(e) => onChange({ tipo: "INTERNO", area_setor_destino: areaSetorCompleto(e.target.value, "") })}>
+            <option value="">Área…</option>
+            {AREAS_SETORES.map((a) => <option key={a.area} value={a.area}>{a.area}</option>)}
+          </select>
+          <select aria-label={`Setor de destino do ${rotuloPRT(indice)}`} className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={setores.includes(setor) ? setor : setor ? "__outro__" : ""} onChange={(e) => onChange({ tipo: "INTERNO", area_setor_destino: areaSetorCompleto(area, e.target.value === "__outro__" ? "" : e.target.value) })}>
+            <option value="">Setor…</option>
+            {setores.map((s) => <option key={s} value={s}>{s}</option>)}
+            <option value="__outro__">outro (especificar)</option>
+          </select>
+          {(setor && !setores.includes(setor)) && <Input value={setor} onChange={(e) => onChange({ tipo: "INTERNO", area_setor_destino: areaSetorCompleto(area, e.target.value) })} placeholder="Especifique o setor" />}
+          <p className="text-[11px] text-muted-foreground sm:col-span-2">Ao salvar, uma linha em estado "insumo recebido" é criada no ROT do setor receptor, com este PRT como insumo e origem rastreada.</p>
+        </div>
+      )}
+      {d?.tipo === "EXTERNO" && (
+        <div className="mt-1">
+          <select aria-label={`Terceiro do ${rotuloPRT(indice)}`} className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={d.terceiro_id ?? ""} onChange={(e) => { const x = terceiros.find((y) => y.id === e.target.value); onChange({ tipo: "EXTERNO", terceiro_id: x?.id, terceiro_nome: x?.razao_social }); }}>
+            <option value="">Não cadastrado</option>
+            {terceiros.map((x) => <option key={x.id} value={x.id}>{x.razao_social}</option>)}
+          </select>
+          {!d.terceiro_id && <p role="alert" className="mt-1 flex items-center gap-1 text-xs font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> Terceiro não cadastrado — cadastre-o na seção Terceiros (Bloco 1) antes de chancelar o PI-02.</p>}
+          {t && terceiroBloqueado(t) && <p role="alert" data-testid="alerta-terceiro-bloqueante" className="mt-1 flex items-center gap-1 text-xs font-semibold text-destructive"><AlertTriangle className="h-3 w-3" /> {ALERTA_TERCEIRO_SEM_CONTRATO}</p>}
+        </div>
+      )}
+      {d?.tipo === "ELIMINACAO" && (
+        <div className="mt-1 grid gap-2 sm:grid-cols-2">
+          <Input value={d.prazo ?? ""} placeholder="Prazo (ex.: 6 meses)" onChange={(e) => onChange({ ...d, prazo: e.target.value })} />
+          <Input value={d.fundamento ?? ""} placeholder="Fundamento (LGPD art. 16)" onChange={(e) => onChange({ ...d, fundamento: e.target.value })} />
+        </div>
+      )}
+      {!destinoPRTCompleto(d) && <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-warning-foreground" data-testid={`alerta-prt-${indice + 1}`}><AlertTriangle className="h-3 w-3" /> {alertaPRTSemDestino(prt.nome || "sem nome")}</p>}
+    </fieldset>
+  );
 }
 
 type Assinatura = { assinante: string; email: string; etapa: number; em: string; sha256: string };

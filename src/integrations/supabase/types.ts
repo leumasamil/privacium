@@ -721,6 +721,7 @@ export type Database = {
           papel_agente: string
           prazo_produto: string | null
           produto_interno: string | null
+          produtos_tratamento: Json
           salvaguardas: string[]
           setor: string
           tempo_retencao: string
@@ -756,6 +757,7 @@ export type Database = {
           papel_agente?: string
           prazo_produto?: string | null
           produto_interno?: string | null
+          produtos_tratamento?: Json
           salvaguardas?: string[]
           setor: string
           tempo_retencao: string
@@ -791,6 +793,7 @@ export type Database = {
           papel_agente?: string
           prazo_produto?: string | null
           produto_interno?: string | null
+          produtos_tratamento?: Json
           salvaguardas?: string[]
           setor?: string
           tempo_retencao?: string
@@ -883,6 +886,78 @@ export type Database = {
           sistema_avaliado?: string
         }
         Relationships: []
+      }
+      terceiros_empresa: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          checklist_art39: Json
+          clausulas_art39: boolean
+          cnpj: string
+          contrato_vigente: boolean
+          criado_em: string
+          data_contrato: string | null
+          empresa_id: string
+          encarregado_contato: string | null
+          hipotese_art33: string | null
+          id: string
+          operador_principal_id: string | null
+          papel_cadeia: string
+          razao_social: string
+          transferencia_internacional: boolean
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          checklist_art39?: Json
+          clausulas_art39?: boolean
+          cnpj: string
+          contrato_vigente?: boolean
+          criado_em?: string
+          data_contrato?: string | null
+          empresa_id: string
+          encarregado_contato?: string | null
+          hipotese_art33?: string | null
+          id?: string
+          operador_principal_id?: string | null
+          papel_cadeia: string
+          razao_social: string
+          transferencia_internacional?: boolean
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          checklist_art39?: Json
+          clausulas_art39?: boolean
+          cnpj?: string
+          contrato_vigente?: boolean
+          criado_em?: string
+          data_contrato?: string | null
+          empresa_id?: string
+          encarregado_contato?: string | null
+          hipotese_art33?: string | null
+          id?: string
+          operador_principal_id?: string | null
+          papel_cadeia?: string
+          razao_social?: string
+          transferencia_internacional?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terceiros_empresa_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "terceiros_empresa_operador_principal_id_fkey"
+            columns: ["operador_principal_id"]
+            isOneToOne: false
+            referencedRelation: "terceiros_empresa"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trilha_auditoria_sistema: {
         Row: {
@@ -1290,6 +1365,7 @@ export type Database = {
         Args: { _bloqueios: number; _cnpj: string; _tokens: number }
         Returns: undefined
       }
+      revelar_cnpj_terceiro: { Args: { _id: string }; Returns: string }
       revelar_documento_membro: { Args: { _id: string }; Returns: string }
       verificar_trilha: {
         Args: never
