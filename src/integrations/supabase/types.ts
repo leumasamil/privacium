@@ -700,12 +700,15 @@ export type Database = {
           ciclo_vida: Json
           codigo: string
           compartilhamento: string
+          contrato_controlador: string | null
           criado_em: string
           criado_por: string | null
           dados_pessoais: string[]
           dados_sensiveis: string[]
+          destino_produto: Json | null
           empresa_cnpj: string
           finalidade_especifica: string
+          fundamento_produto: string | null
           genero_verbo: string
           hipotese_sensivel: string | null
           hipotese_tratamento: string
@@ -714,6 +717,10 @@ export type Database = {
           insumo: string | null
           justificativa_mitigacao: string | null
           meio_fornecimento: string | null
+          origem_compartilhamento: Json | null
+          papel_agente: string
+          prazo_produto: string | null
+          produto_interno: string | null
           salvaguardas: string[]
           setor: string
           tempo_retencao: string
@@ -728,12 +735,15 @@ export type Database = {
           ciclo_vida?: Json
           codigo?: string
           compartilhamento?: string
+          contrato_controlador?: string | null
           criado_em?: string
           criado_por?: string | null
           dados_pessoais?: string[]
           dados_sensiveis?: string[]
+          destino_produto?: Json | null
           empresa_cnpj: string
           finalidade_especifica: string
+          fundamento_produto?: string | null
           genero_verbo: string
           hipotese_sensivel?: string | null
           hipotese_tratamento: string
@@ -742,6 +752,10 @@ export type Database = {
           insumo?: string | null
           justificativa_mitigacao?: string | null
           meio_fornecimento?: string | null
+          origem_compartilhamento?: Json | null
+          papel_agente?: string
+          prazo_produto?: string | null
+          produto_interno?: string | null
           salvaguardas?: string[]
           setor: string
           tempo_retencao: string
@@ -756,12 +770,15 @@ export type Database = {
           ciclo_vida?: Json
           codigo?: string
           compartilhamento?: string
+          contrato_controlador?: string | null
           criado_em?: string
           criado_por?: string | null
           dados_pessoais?: string[]
           dados_sensiveis?: string[]
+          destino_produto?: Json | null
           empresa_cnpj?: string
           finalidade_especifica?: string
+          fundamento_produto?: string | null
           genero_verbo?: string
           hipotese_sensivel?: string | null
           hipotese_tratamento?: string
@@ -770,6 +787,10 @@ export type Database = {
           insumo?: string | null
           justificativa_mitigacao?: string | null
           meio_fornecimento?: string | null
+          origem_compartilhamento?: Json | null
+          papel_agente?: string
+          prazo_produto?: string | null
+          produto_interno?: string | null
           salvaguardas?: string[]
           setor?: string
           tempo_retencao?: string
