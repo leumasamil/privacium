@@ -7,13 +7,14 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, BookOpen, Lightbulb, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { DEPARTMENTS } from "@/lib/priva/data";
-import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, GENEROS, NOTA_CICLO, alternar, cicloDaLinha, citacoesISO, formatarCiclo, generosMarcados, type CicloVida } from "@/lib/priva/cicloVida";
+import { AREAS_SETORES, ROTULO_AREA_SETOR, areaSetorCompleto, chaveDaArea, exibirAreaSetor } from "@/lib/priva/areasSetores";
+import { AJUDA_CICLO, ALERTA_RETENCAO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, ETAPA1, ETAPA2, GENEROS, NOTA_CICLO, NOTA_ETAPA2_COMPARTILHAR, NOTA_ETAPA2_ELIMINAR, NOTA_METODO_CICLO, NOTA_RESPONSAVEL_ETAPAS, ROTULO_ETAPA1, ROTULO_ETAPA2, alertaRetencao, alternar, cicloDaLinha, citacoesISO, destinoDeclarado, formatarCiclo, generosMarcados, type CicloVida, type Genero } from "@/lib/priva/cicloVida";
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { citacaoSimplificada } from '@/lib/priva/enquadramento';
-import { DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, SALVAGUARDAS, SENSIVEIS, TITULARES, hasSensivel, isRisky, normalizeHipoteses, sugerir, validateRot, type RotInput, type RotRow } from "@/lib/priva/rot";
+import { DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, MEIOS, SALVAGUARDAS, SENSIVEIS, TITULARES, alertasCoerencia, hasSensivel, isRisky, normalizeHipoteses, sugerir, validateRot, type RotInput, type RotRow } from "@/lib/priva/rot";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ROT } from "@/lib/priva/demo";
+import { responsavelDaArea, useMembros } from "@/components/priva/MembrosEmpresa";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -25,13 +26,14 @@ import { BadgeFornecedorROT } from '@/components/priva/AlertaFornecedorVazado';
 
 
 
-const HEADS = ["ID Processo", "Ciclo de vida (gênero × espécie)", "Categoria de Titulares", "Dado pessoal", "Dado pessoal sensível", "Finalidade Específica",
-  "7A. Hipótese art. 7º (dado pessoal)", "7B. Hipótese art. 11 (dado pessoal sensível)", "Tempo de Retenção", "Base do Prazo", "Comunicação e transferência / Destinatários", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
+const HEADS = ["ID Processo", "Área › Setor", "Ciclo de vida (gênero × espécie)", "Categoria de Titulares", "Dado pessoal", "Dado pessoal sensível", "Finalidade Específica",
+  "7A. Hipótese art. 7º (dado pessoal)", "7B. Hipótese art. 11 (dado pessoal sensível)", "Tempo de Retenção", "Base do Prazo", "Comunicação e transferência / Destinatários",
+  "Insumo (documento de entrada)", "Meio de fornecimento", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
 
 const empty = (cnpj: string): RotInput => ({
   empresa_cnpj: cnpj, setor: "RH", genero_verbo: "Coletar", ciclo_vida: {}, categoria_titulares: [], dados_pessoais: [], dados_sensiveis: ["N/A"],
   finalidade_especifica: "", hipotese_tratamento: "", hipotese_sensivel: null, tempo_retencao: "", base_prazo: "", compartilhamento: "Não Compartilhado",
-  salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null,
+  salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null, area_setor: null, insumo: null, meio_fornecimento: null,
 });
 
 export function Bloco2() {
