@@ -166,7 +166,7 @@ export interface ClassificacaoIA {
 
 /**
  * Classificação determinística a partir das respostas do RIPO:
- * - Risco Excessivo: uso de IA sobre dados pessoais sensíveis (saúde/rastreamento ativos);
+ * - Risco Excessivo: uso de IA sobre dado pessoal sensível (saúde/rastreamento ativos);
  * - Alto Risco: decisão exclusivamente automatizada sobre pessoa natural (LGPD art. 20);
  * - Risco Limitado: dados pessoais tratados com apoio de IA, sem decisão automatizada;
  * - Risco Mínimo: nenhuma das condições acima.
@@ -181,8 +181,8 @@ export function classificarRiscoIA(r: {
     return {
       nivel: "Risco Excessivo",
       derivadoDe: [
-        "RIPO: uso de IA sobre dados pessoais sensíveis (saúde / rastreamento)",
-        "Setor declarado com categorias de dados pessoais sensíveis ativas",
+        "RIPO: uso de IA sobre dado pessoal sensível (saúde / rastreamento)",
+        "Setor declarado com categorias de dado pessoal sensível ativas",
       ],
     };
   }
@@ -227,7 +227,7 @@ export function respostasAIA(r: {
     },
     afetados: {
       resposta: r.sens_ai
-        ? "Titulares de dados pessoais sensíveis (saúde / rastreamento), conforme categorias ativas no RIPO."
+        ? "Titulares de dado pessoal sensível (saúde / rastreamento), conforme categorias ativas no RIPO."
         : r.pessoais
           ? "Titulares de dados pessoais comuns declarados no RIPO."
           : "Nenhuma categoria de afetados declarada no RIPO.",
@@ -241,7 +241,7 @@ export function respostasAIA(r: {
     },
     mitigacao: {
       resposta: r.sens_ai
-        ? "Mitigações reforçadas: testes de viés, minimização de dados pessoais sensíveis e supervisão humana contínua."
+        ? "Mitigações reforçadas: testes de viés, minimização de dado pessoal sensível e supervisão humana contínua."
         : "Mitigações padrão: validação periódica do modelo, registro de versões e higienização de entradas (Escudo Digital).",
       sugerida,
     },

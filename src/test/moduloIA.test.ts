@@ -8,7 +8,7 @@ describe("módulo Lei de IA — classificação determinística", () => {
   it("IA sobre dado pessoal sensível → Risco Excessivo, com critérios", () => {
     const c = classificarRiscoIA({ saud_tracking: true, sens_ai: true, decisao_automatizada: false, pessoais: true });
     expect(c.nivel).toBe("Risco Excessivo");
-    expect(c.derivadoDe.join(" ")).toContain("dados pessoais sensíveis");
+    expect(c.derivadoDe.join(" ")).toContain("dado pessoal sensível");
   });
   it("decisão automatizada sem dado sensível → Alto Risco (LGPD art. 20)", () => {
     expect(classificarRiscoIA({ saud_tracking: false, sens_ai: false, decisao_automatizada: true, pessoais: true }).nivel).toBe("Alto Risco");
