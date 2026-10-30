@@ -110,7 +110,7 @@ export function Bloco5() {
   const sobrescreverIA = (n: NivelRiscoIA) => {
     setOverrideIA(n);
     const detalhe = `Classificação de risco de IA sobrescrita pelo DPO: ${derivadaIA.nivel} → ${n}`;
-    if (demo) demoRegistrarEvento(detalhe); else log("UPDATE", "ripd_ia", detalhe);
+    if (demo) void demoRegistrarEvento("UPDATE", "ripd_ia", detalhe); else log("UPDATE", "ripd_ia", detalhe);
     toast.success("Classificação sobrescrita e registrada na trilha.");
   };
   const PROVEDORES = ["OpenAI", "Anthropic", "Google", "Meta", "Mistral", "Microsoft", "Azure", "AWS"];

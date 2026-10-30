@@ -26,13 +26,13 @@ describe("módulo Lei de IA — classificação determinística", () => {
 describe("módulo Lei de IA — AIA e ressalvas", () => {
   it("AIA tem os quatro eixos exigidos", () => {
     expect(DIMENSOES_AIA.map((d) => d.id)).toEqual(["autonomia", "afetados", "revisao", "mitigacao"]);
-    expect(DIMENSOES_AIA[2].titulo).toContain("LGPD art. 20");
+    expect(DIMENSOES_AIA[2]!.titulo).toContain("LGPD art. 20");
   });
   it("respostas AIA marcam 'sugerida' quando o RIPO tem dados", () => {
     const r = respostasAIA({ decisao_automatizada: true, sens_ai: false, pessoais: true });
-    expect(r.autonomia.sugerida).toBe(true);
-    expect(r.autonomia.resposta).toContain("LGPD art. 20");
-    expect(respostasAIA({ decisao_automatizada: false, sens_ai: false, pessoais: false }).afetados.sugerida).toBe(false);
+    expect(r["autonomia"]!.sugerida).toBe(true);
+    expect(r["autonomia"]!.resposta).toContain("LGPD art. 20");
+    expect(respostasAIA({ decisao_automatizada: false, sens_ai: false, pessoais: false })["afetados"]!.sugerida).toBe(false);
   });
   it("ressalva de escopo e PL 2338 em tramitação, nunca como lei vigente", () => {
     expect(ROTULO_ESCOPO_IA).toContain("não substitui parecer jurídico");
