@@ -55,7 +55,7 @@ export function FormularioANPD({ incidente, estado, encerramento, canEdit, refre
     setProcesso(incidente.processo_id ?? "");
   }, [incidente.id, incidente.enviado_anpd_em]);
   const rot = useQuery({ queryKey: ["anpd_rot", incidente.empresa_cnpj, demo], enabled: !demo, queryFn: async () => {
-    const { data, error } = await supabase.from("registro_operacoes").select("id,codigo,finalidade_especifica,dados_pessoais,dados_sensiveis").eq("empresa_cnpj", incidente.empresa_cnpj).order("codigo");
+    const { data, error } = await supabase.from("registro_operacoes").select("id,codigo,finalidade_especifica,dados_pessoais,dados_sensiveis").eq("empresa_cnpj", incidente.empresa_cnpj).is("excluido_em", null).order("codigo");
     if (error) throw error; return data;
   }});
   const rotRows = demo ? DEMO_ROT : rot.data;

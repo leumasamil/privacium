@@ -52,7 +52,7 @@ export function Bloco3() {
     enabled: !!cnpj,
     queryFn: async (): Promise<string[]> => {
       if (demo) return DEMO_ROT.map((r) => r.setor);
-      const { data, error } = await supabase.from("registro_operacoes").select("setor").eq("empresa_cnpj", cnpj ?? "");
+      const { data, error } = await supabase.from("registro_operacoes").select("setor").eq("empresa_cnpj", cnpj ?? "").is("excluido_em", null);
       if (error) throw error;
       return [...new Set(data.map((r) => r.setor))];
     },

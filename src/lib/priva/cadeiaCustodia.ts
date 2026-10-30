@@ -6,12 +6,12 @@
 import { produtosDaLinha, descreverDestinoPRT, destinoPRTCompleto, rotuloPRT, type DestinoProduto, type OrigemCompartilhamento, type RotRow } from "./rot";
 
 export type AssinaturaRot = { assinante: string; email?: string; etapa: number; em: string; sha256: string };
-type Linha = Pick<RotRow, "id" | "codigo" | "area_setor" | "setor" | "produtos_tratamento" | "produto_interno" | "destino_produto" | "prazo_produto" | "fundamento_produto" | "origem_compartilhamento" | "assinatura_etapa1" | "assinatura_etapa2" | "salvaguardas" | "justificativa_mitigacao" | "insumo">;
+type Linha = Pick<RotRow, "id" | "codigo" | "area_setor" | "setor" | "produtos_tratamento" | "produto_interno" | "destino_produto" | "prazo_produto" | "fundamento_produto" | "origem_compartilhamento" | "assinatura_etapa1" | "assinatura_etapa2" | "salvaguardas" | "justificativa_mitigacao" | "insumo"> & Partial<Pick<RotRow, "excluido_em" | "excluido_por" | "motivo_exclusao">>;
 
-export type NoCadeia = { id: string; codigo: string; rotulo: string; removido: boolean };
+export type NoCadeia = { id: string; codigo: string; rotulo: string; removido: boolean; excluidoEm?: string | null; excluidoPor?: string | null; motivoExclusao?: string | null };
 export type ArestaCadeia = {
   prt: string; indicePRT: number; nomePRT: string;
-  de: NoCadeia; para: NoCadeia | null; destino: string;
+  de: NoCadeia; para: NoCadeia | null; destino: string; tipoDestino: "INTERNO" | "EXTERNO" | "ELIMINACAO" | null;
   data: string | null; assinaturaOrigem: AssinaturaRot | null; assinaturaDestino: AssinaturaRot | null; hash: string | null;
 };
 export type StatusPRT = { tipo: "COMPLETA" } | { tipo: "ROMPE"; no: NoCadeia; motivo: string };
@@ -22,7 +22,28 @@ export type TrilhaPRT = {
 
 const asAss = (v: unknown): AssinaturaRot | null => (v && typeof v === "object" && "sha256" in v ? (v as AssinaturaRot) : null);
 export const rotuloNo = (r: Pick<Linha, "codigo" | "area_setor" | "setor">) => `${r.area_setor ?? r.setor} · ${r.codigo}`;
-const no = (r: Linha): NoCadeia => ({ id: r.id, codigo: r.codigo, rotulo: rotuloNo(r), removido: false });
+const no = (r: Linha): NoCadeia => ({ id: r.id, codigo: r.codigo, rotulo: rotuloNo(r), removido: !!r.excluido_em, excluidoEm: r.excluido_em ?? null, excluidoPor: r.excluido_por ?? null, motivoExclusao: r.motivo_exclusao ?? null });
+
+/** Linhas visíveis na planilha mestre: as excluídas logicamente (art. 37) ficam só no grafo e no PI-02. */
+export const linhasAtivas = <T extends { excluido_em?: string | null }>(rows: T[]) => rows.filter((r) => !r.excluido_em);
+export const linhasExcluidas = <T extends { excluido_em?: string | null }>(rows: T[]) => rows.filter((r) => !!r.excluido_em);
+
+const dataBR = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+/** Descrição do nó removido: data e motivo da exclusão lógica, ou lacuna anterior à migração 0044. */
+export function descreverRemocao(n: NoCadeia): string {
+  if (!n.removido) return "";
+  if (n.excluidoEm) return `excluída logicamente em ${dataBR(n.excluidoEm)}${n.excluidoPor ? ` por ${n.excluidoPor}` : ""} — motivo: ${n.motivoExclusao ?? "não informado"}`;
+  return "excluída antes da migração 0044 — data e motivo não recuperáveis";
+}
+
+/** B.1 — "não se aplica" só para destino Externo e Eliminação; destino Interno sem receptor é "ausente". */
+export function rotuloEtapa1Receptor(a: Pick<ArestaCadeia, "para" | "assinaturaDestino" | "tipoDestino">): string {
+  if (a.assinaturaDestino) return `✓ ${a.assinaturaDestino.assinante}`;
+  if (a.para || a.tipoDestino === "INTERNO") return "ausente";
+  return "não se aplica";
+}
+
+export const NOTA_HASH_ASSINATURA = "O hash exibido é da assinatura da Etapa 2 (ato do DPO), não do conteúdo individual de cada PRT. Produtos distintos compartilham o mesmo hash porque derivam do mesmo ato de assinatura.";
 export const rotuloStatus = (s: StatusPRT) => (s.tipo === "COMPLETA" ? "Completa" : `Rompe em: ${s.no.rotulo}`);
 
 /**
@@ -50,10 +71,11 @@ export function montarCadeia(linhas: Linha[]): TrilhaPRT[] {
       const a1r = receptor ? asAss(receptor.assinatura_etapa1) : null;
       const aresta: ArestaCadeia = {
         prt: rotuloPRT(i), indicePRT: i, nomePRT: p.nome, de: origem, para: receptor ? no(receptor) : null,
-        destino: descreverDestinoPRT(d), data: a2?.em ?? null, assinaturaOrigem: a2, assinaturaDestino: a1r, hash: a2?.sha256 ?? null,
+        destino: descreverDestinoPRT(d), tipoDestino: (d?.tipo as ArestaCadeia["tipoDestino"]) ?? null, data: a2?.em ?? null, assinaturaOrigem: a2, assinaturaDestino: a1r, hash: a2?.sha256 ?? null,
       };
       let status: StatusPRT = { tipo: "COMPLETA" };
-      if (!destinoPRTCompleto(d)) status = { tipo: "ROMPE", no: origem, motivo: "destino não declarado" };
+      if (l.excluido_em) status = { tipo: "ROMPE", no: origem, motivo: descreverRemocao(origem) };
+      else if (!destinoPRTCompleto(d)) status = { tipo: "ROMPE", no: origem, motivo: "destino não declarado" };
       else if (!a2) status = { tipo: "ROMPE", no: origem, motivo: "assinatura da Etapa 2 (DPO) ausente" };
       else if (d?.tipo === "INTERNO" && !receptor) status = { tipo: "ROMPE", no: origem, motivo: "linha receptora não registrada no setor de destino" };
       else if (receptor && !a1r) status = { tipo: "ROMPE", no: no(receptor), motivo: "assinatura da Etapa 1 (gestor) ausente no receptor" };
@@ -62,12 +84,12 @@ export function montarCadeia(linhas: Linha[]): TrilhaPRT[] {
     });
     const o = l.origem_compartilhamento as OrigemCompartilhamento | null;
     if (o?.linha_origem_id && !porId.has(o.linha_origem_id)) {
-      const removida: NoCadeia = { id: o.linha_origem_id, codigo: o.codigo_origem, rotulo: `${o.area_setor_origem} · ${o.codigo_origem}`, removido: true };
+      const removida: NoCadeia = { id: o.linha_origem_id, codigo: o.codigo_origem, rotulo: `${o.area_setor_origem} · ${o.codigo_origem}`, removido: true, excluidoEm: null, excluidoPor: null, motivoExclusao: null };
       trilhas.push({
         chave: `${l.id}:origem`, origem: removida, prt: "PRT", nomePRT: l.insumo ?? "insumo recebido",
-        arestas: [{ prt: "PRT", indicePRT: -1, nomePRT: l.insumo ?? "", de: removida, para: no(l), destino: `Interno: ${l.area_setor ?? l.setor}`, data: null, assinaturaOrigem: null, assinaturaDestino: asAss(l.assinatura_etapa1), hash: null }],
+        arestas: [{ prt: "PRT", indicePRT: -1, nomePRT: l.insumo ?? "", de: removida, para: no(l), destino: `Interno: ${l.area_setor ?? l.setor}`, tipoDestino: "INTERNO", data: null, assinaturaOrigem: null, assinaturaDestino: asAss(l.assinatura_etapa1), hash: null }],
         novoTratamento: produtosDaLinha(l).map((x, j) => `${rotuloPRT(j)} ${x.nome}`),
-        status: { tipo: "ROMPE", no: removida, motivo: "origem removida" },
+        status: { tipo: "ROMPE", no: removida, motivo: `origem ${descreverRemocao(removida)}` },
       });
     }
   }
@@ -88,18 +110,19 @@ export function incisoSustentado(trilhas: TrilhaPRT[]): string {
 }
 
 /** C.3 — relatório "Prova de cadeia de custódia" (texto anexável ao dossiê). */
-export function relatorioProvaCadeia(args: { noSelecionado: Linha; trilhas: TrilhaPRT[]; linhas: Linha[]; incidenteId: string; art43Literal: string; art43Url: string; geradoEm: string }): string {
-  const { noSelecionado, trilhas, linhas, incidenteId, art43Literal, art43Url, geradoEm } = args;
+export function relatorioProvaCadeia(args: { noSelecionado: Linha; trilhas: TrilhaPRT[]; linhas: Linha[]; incidenteId: string; art43Literal: string; art43Url: string; geradoEm: string; selecao?: { ts: string; hash: string; simulado?: boolean } | null }): string {
+  const { noSelecionado, trilhas, linhas, incidenteId, art43Literal, art43Url, geradoEm, selecao } = args;
   const porId = new Map(linhas.map((l) => [l.id, l]));
   const out: string[] = [];
-  out.push("PROVA DE CADEIA DE CUSTÓDIA", `Incidente: ${incidenteId}`, `Nó do incidente: ${rotuloNo(noSelecionado)}`, `Gerado em: ${geradoEm}`, "");
+  out.push("PROVA DE CADEIA DE CUSTÓDIA", `Incidente: ${incidenteId}`, `Nó do incidente: ${rotuloNo(noSelecionado)}`, `Gerado em: ${geradoEm}`, ...(selecao ? [`Seleção do nó registrada na trilha: ${selecao.ts} · SHA-256 ${selecao.hash}${selecao.simulado ? " (simulação)" : ""}`] : []), `Nota: ${NOTA_HASH_ASSINATURA}`, "");
   for (const t of trilhas) {
-    out.push(`PRT: ${t.prt} — ${t.nomePRT} (origem ${t.origem.rotulo}${t.origem.removido ? " — REMOVIDA" : ""})`);
+    out.push(`PRT: ${t.prt} — ${t.nomePRT} (origem ${t.origem.rotulo}${t.origem.removido ? ` — REMOVIDA: ${descreverRemocao(t.origem)}` : ""})`);
     for (const a of t.arestas) {
       out.push(`  ${a.de.rotulo} → ${a.para?.rotulo ?? a.destino}`);
+      if (a.para?.removido) out.push(`    Receptor REMOVIDO: ${descreverRemocao(a.para)}`);
       out.push(`    Data: ${a.data ?? "não registrada"}`);
       out.push(`    Assinatura origem (Etapa 2): ${a.assinaturaOrigem ? `${a.assinaturaOrigem.assinante} · SHA-256 ${a.assinaturaOrigem.sha256}` : "ausente"}`);
-      out.push(`    Assinatura destino (Etapa 1): ${a.assinaturaDestino ? `${a.assinaturaDestino.assinante} · SHA-256 ${a.assinaturaDestino.sha256}` : a.para ? "ausente" : "não se aplica"}`);
+      out.push(`    Assinatura destino (Etapa 1): ${a.assinaturaDestino ? `${a.assinaturaDestino.assinante} · SHA-256 ${a.assinaturaDestino.sha256}` : rotuloEtapa1Receptor(a)}`);
     }
     if (t.novoTratamento.length) out.push(`  Novo tratamento no receptor: ${t.novoTratamento.join("; ")}`);
     out.push(`  Status: ${rotuloStatus(t.status)}${t.status.tipo === "ROMPE" ? ` (${t.status.motivo})` : ""}`, "");

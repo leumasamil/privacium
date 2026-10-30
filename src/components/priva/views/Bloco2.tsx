@@ -3,14 +3,15 @@ import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
 import { AJUDA } from "@/lib/priva/ajuda";
 import { AppLink as Link } from "@/components/priva/AppLink";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { CitacaoNormativa } from "@/components/priva/CitacaoNormativa";
 import { AlertTriangle, BookOpen, Lightbulb, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AREAS_SETORES, ROTULO_AREA_SETOR, areaSetorCompleto, chaveDaArea, exibirAreaSetor } from "@/lib/priva/areasSetores";
 import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, ETAPA1, ETAPA2, NOTA_CICLO, NOTA_ETAPA2_COMPARTILHAR, NOTA_ETAPA2_ELIMINAR, NOTA_METODO_CICLO, NOTA_RESPONSAVEL_ETAPAS, ROTULO_ETAPA1, ROTULO_ETAPA2, alertaRetencao, alternar, cicloDaLinha, citacoesISO, destinoDeclarado, formatarCiclo, formatarCicloEtapas, generosMarcados, temEtapa2, type CicloVida, type Genero } from "@/lib/priva/cicloVida";
 import { GrafoCadeiaCustodia } from "@/components/priva/CadeiaCustodia";
-import { receptoraExistente } from "@/lib/priva/cadeiaCustodia";
+import { linhasAtivas, linhasExcluidas, receptoraExistente } from "@/lib/priva/cadeiaCustodia";
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { citacaoSimplificada } from '@/lib/priva/enquadramento';
 import { ALERTA_FINALIDADE_OPERADOR, ALERTA_PRODUTO_AUSENTE, DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, LITERAL_ART5_VI, LITERAL_ART5_VII, MEIOS, NOTA_DESTINO_OPERADOR, NOTA_PRT, PAPEIS_AGENTE, ROTULO_PRT, alertasPRTSemDestino, descreverDestinoPRT, prtExternosBloqueados, produtosDaLinha, rotuloPRT, alertaPRTSemDestino, destinoPRTCompleto, type ProdutoTratamento, ROTULO_PAPEL, SALVAGUARDAS, SENSIVEIS, TITULARES, alertaFinalidadeOperador, alertaProdutoAusente, alertasCoerencia, finalidadeDoContrato, hasSensivel, isRisky, montarLinhaReceptora, normalizeHipoteses, sugerir, sugerirProduto, sugestaoFinalidade, finalidadeEquivalente, contadorPadronizadas, FONTE_LGPD, validateRot, type DestinoProduto, type OrigemCompartilhamento, type PapelAgente, type RotInput, type RotRow } from "@/lib/priva/rot";
@@ -49,7 +50,7 @@ export function Bloco2() {
   const { data: terceiros = [] } = useTerceiros();
   const canEdit = (roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA"));
   const key = ["registro_operacoes", cnpj] as const;
-  const { data: rows = [] } = useQuery({
+  const { data: todas = [] } = useQuery({
     queryKey: [...key, demo],
     enabled: !!cnpj,
     queryFn: async (): Promise<RotRow[]> => {
@@ -59,6 +60,9 @@ export function Bloco2() {
       return data;
     },
   });
+  // Planilha mestre e gates do PI-02 só com linhas ativas; o grafo e a seção histórica do PI-02 recebem todas.
+  const rows = useMemo(() => linhasAtivas(todas), [todas]);
+  const excluidas = useMemo(() => linhasExcluidas(todas), [todas]);
   useEffect(() => {
     if (!cnpj || demo) return;
     const ch = supabase.channel(`rot_${cnpj}`)
@@ -122,10 +126,13 @@ export function Bloco2() {
 
   const remove = async (r: RotRow) => {
     if (demo) return avisarAcaoDemo();
-    if (!confirm(`Excluir ${r.codigo}?`)) return;
-    const { error } = await supabase.from("registro_operacoes").delete().eq("id", r.id);
-    if (error) { toast.error("Não foi possível excluir."); return; }
-    log("DELETE", "registro_operacoes", `Processo ${r.codigo}`);
+    // Exclusão lógica (LGPD art. 37): a linha permanece no banco com data, autor e motivo; a RPC grava a trilha.
+    const motivo = prompt(`Motivo da exclusão de ${r.codigo} (mínimo 10 caracteres). A linha sai da planilha, mas permanece no registro histórico (LGPD art. 37).`);
+    if (motivo === null) return;
+    if (motivo.trim().length < 10) { toast.error("Informe o motivo da exclusão (mínimo 10 caracteres)."); return; }
+    const { error } = await supabase.rpc("excluir_linha_rot", { _rot_id: r.id, _motivo: motivo.trim() });
+    if (error) { toast.error(error.message); return; }
+    toast.success(`${r.codigo} excluída logicamente — permanece no registro histórico`);
     void qc.invalidateQueries({ queryKey: key });
   };
 
@@ -154,7 +161,7 @@ export function Bloco2() {
       {AJUDA[2] && <AjudaTarefa {...AJUDA[2]} />}
       <CicloResumo />
 
-      <GrafoCadeiaCustodia rows={rows} />
+      <GrafoCadeiaCustodia rows={todas} />
 
       <Panel id="rot" title={`Planilha mestre · ${rows.length} processos · ${riskyCount} em alerta`} action={canEdit && (
         <Button size="sm" onClick={() => demo ? avisarAcaoDemo() : setEdit({ id: null, form: empty(cnpj, papelPadrao) })}><Plus className="h-4 w-4" /> Novo processo</Button>
@@ -210,7 +217,7 @@ export function Bloco2() {
                       {canEdit && <>
                         <button aria-label="Editar" className="mr-2" onClick={() => {
                           if (demo) return avisarAcaoDemo();
-                          const { id, codigo: _c, criado_por: _p, criado_em: _e, atualizado_em: _a, ...form } = r;
+                          const { id, codigo: _c, criado_por: _p, criado_em: _e, atualizado_em: _a, excluido_em: _x, excluido_por: _xp, motivo_exclusao: _xm, ...form } = r;
                           setEdit({ id, form: normalizeHipoteses(form) });
                         }}><Pencil className="h-3 w-3 text-muted-foreground" /></button>
                         <button aria-label="Excluir" onClick={() => void remove(r)}><Trash2 className="h-3 w-3 text-muted-foreground" /></button>
@@ -241,6 +248,16 @@ export function Bloco2() {
             <li key={r.id}><b>{r.codigo}</b> — {exibirAreaSetor(r)}. Papel do agente: {ROTULO_PAPEL[(r.papel_agente as PapelAgente) ?? "CONTROLADOR"]}. Ciclo de vida: {formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção do insumo: {r.tempo_retencao} ({r.base_prazo}).{r.insumo && <> Insumo: {r.insumo}.</>}{produtosDaLinha(r).map((p, i) => <span key={i}> {rotuloPRT(i)} · {p.nome} → {descreverDestinoPRT(p.destino)}.</span>)}{r.meio_fornecimento && <> Meio de fornecimento: {r.meio_fornecimento}.</>}{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
           ))}
         </ul>
+        <section className="mt-4 border-t pt-3" data-testid="pi02-excluidas">
+          <p><b>Linhas excluídas logicamente</b> — registro histórico mantido conforme <CitacaoNormativa citacao="LGPD art. 37" />. Linhas excluídas antes da migração 0044 não são recuperáveis — o histórico anterior tem lacunas.</p>
+          {excluidas.length === 0 ? <p className="mt-1 text-muted-foreground">Nenhuma linha excluída logicamente.</p> : (
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              {excluidas.map((r) => (
+                <li key={r.id}><b>{r.codigo}</b> — {exibirAreaSetor(r)}. Finalidade: {r.finalidade_especifica}. Excluída em {new Date(r.excluido_em ?? "").toLocaleString("pt-BR")}{r.excluido_por && <> por {r.excluido_por}</>}. Motivo: {r.motivo_exclusao}.</li>
+              ))}
+            </ul>
+          )}
+        </section>
       </PIOutput>
     </div>
   );
