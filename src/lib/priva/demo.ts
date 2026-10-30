@@ -164,7 +164,7 @@ export function aplicarSessaoDemo(i: IncidenteRow, s: DemoSessao): IncidenteRow 
   if (!s.enviadoEm && !s.encerradoEm) return i;
   const registro = { ...(i.etapas_registro as Record<string, unknown>) };
   if (s.enviadoEm) registro['6'] = { data: s.enviadoEm, responsavel: 'DPO Cenográfico', evidencia: 'Comunicação à ANPD enviada pelo formulário assistido (simulação).' };
-  return { ...i, enviado_anpd_em: s.enviadoEm, encerrado_em: s.encerradoEm, etapas_registro: registro };
+  return { ...i, enviado_anpd_em: s.enviadoEm, encerrado_em: s.encerradoEm, etapas_registro: registro as IncidenteRow["etapas_registro"] };
 }
 
 /** Evento da trilha cenográfica (mesma forma do AuditEntry, sem importar o store para evitar ciclo). */

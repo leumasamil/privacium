@@ -82,6 +82,7 @@ type Ctx = Shared & {
   demoEnviarANPD: () => Promise<void>;
   demoEncerrarIncidente: () => Promise<void>;
   demoAssinar: (code: string, who: "DPO" | "DIR") => Promise<void>;
+  demoRegistrarEvento: (op: AuditEntry["op"], target: string, detail: string) => Promise<void>;
 };
 
 // Contexto estável entre recargas de módulo (HMR): evita que o provedor e as páginas
