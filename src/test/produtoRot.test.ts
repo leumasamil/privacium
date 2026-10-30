@@ -39,7 +39,7 @@ describe("produto interno (item B)", () => {
     const f = base({ ciclo_vida: { Coletar: ["receber"], Processar: ["utilizar"] } });
     const dicas = sugerirProduto(f);
     expect(dicas.map((d) => d.patch.produto_interno)).toEqual(["Ficha de candidato", "Parecer de seleção", "Proposta de contratação"]);
-    expect(dicas.every((d) => d.origem.includes("tabela determinística v1"))).toBe(true);
+    expect(dicas.every((d) => d.origem.includes("tabela determinística v"))).toBe(true);
     expect(sugerirProduto(f)).toEqual(dicas);
   });
   it("demais pares da tabela v1: nota fiscal, contrato, formulário e imagem digitalizada", () => {

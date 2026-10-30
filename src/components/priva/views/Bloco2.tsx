@@ -152,7 +152,7 @@ export function Bloco2() {
           <table className="w-full min-w-[2400px] text-xs">
             <thead>
               <tr className="border-b text-left">
-                {HEADS.map((h, i) => <th key={h} className={cn("px-2 py-2 font-mono font-medium uppercase tracking-wider text-muted-foreground", h === ROTULO_PRT && "min-w-80")}>{NUMS[i]}{h}{h === ROTULO_PRT && <span className="mt-1 block font-sans text-[10px] font-normal normal-case tracking-normal" data-testid="nota-prt-coluna">{NOTA_PRT}</span>}</th>)}
+                {HEADS.map((h, i) => <th key={h} className={cn("px-2 py-2 font-mono font-medium uppercase tracking-wider text-muted-foreground", h === ROTULO_PRT && "min-w-80")}>{NUMS[i]}{h}{h === ROTULO_PRT && <span className="mt-1 block font-sans text-[10px] font-normal normal-case tracking-normal" data-testid="nota-prt-coluna">{NOTA_PRT}</span>}{h === "Finalidade Específica" && <span className="mt-1 block font-sans text-[10px] font-normal normal-case tracking-normal" data-testid="contador-finalidades">{contadorPadronizadas(rows)}</span>}</th>)}
                 <th />
               </tr>
             </thead>

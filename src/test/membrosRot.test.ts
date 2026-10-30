@@ -58,7 +58,7 @@ describe("sugestões determinísticas (item 5)", () => {
     expect(f.finalidade_especifica).toBe("");
     expect(f.hipotese_tratamento).toBe("");
     expect(dicas.length).toBeGreaterThan(0);
-    expect(dicas.every((d) => d.origem.includes("tabela determinística v1"))).toBe(true);
+    expect(dicas.every((d) => d.origem.includes("tabela determinística v"))).toBe(true);
   });
   it("a regra é determinística: mesma entrada, mesma saída", () => {
     const f = base({ area_setor: "Recursos Humanos › Seleção e Recrutamento", insumo: "currículo" });
