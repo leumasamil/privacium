@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 - Brand: Privacium (privacium.com.br), never "PRIVA 2EC".
+- Subdirectories have their own AGENTS.md (e.g. src/lib/priva); read it before changing files there.
 
 - BLLOCO: realtime `workspace_empresa` JSON per CNPJ; localStorage holds active CNPJ/role to preserve company-bound progress.
 - Audit entries are only written via the `registrar_trilha` security-definer RPC into `trilha_auditoria_sistema` (server-side SHA-256 chain incl. CNPJ, no update/delete grants); checked with `verificar_trilha`; opening screens with personal data logs a SELECT. Why: blueprint forensic traceability. `audit_log`/`workspace_state` are deprecated.
@@ -23,7 +24,6 @@
 - DPO-only enquadramento RPC calculates, checks triggers and audits SHA-256 per CNPJ/semester. Shared hook drives gates/citations/badge. ANPD uses 3/6 weekdays and preserves sent snapshots; cycle closure resets signatures. Why: signed evidence controls benefits.
 - Super-admin data (`faturamento_saas`, `metricas_uso_ia`) is ADMIN_SISTEMA-only via RLS; rows auto-created per empresa by trigger; GM per company via `admin_gm_empresas` RPC; AI shield usage via `registrar_uso_ia`; suspended companies are blocked server-side by RESTRICTIVE `cnpj_liberado` policies on every per-CNPJ table (admin bypasses); DPOs read only the trail of their own `usuarios.empresa_id`, set by admin in Membros or on first company creation. Why: multi-tenant isolation.
 - Public /demo: static fixtures, shared views, AppLink tabs, toast-only operations; guard untouched. Demo-only step presentation never changes submission/closure rules. Authenticated exit restores real data. Why: isolation without false evidence.
-- ROT field 7 is split: `hipotese_tratamento` = 7A (art. 7º, dado pessoal, always required) and `hipotese_sensivel` = 7B (art. 11, required only when a dado pessoal sensível is listed, cleared otherwise); legacy rows with art. 11 in 7A are migrated on edit. Rules live in `src/lib/priva/rot.ts` and the DB trigger. Why: LGPD separates arts. 7º and 11.
 - DPO public contact is stored per company in `encarregado_dpo`, separately from login credentials; changes are audited by trigger. ANPD submissions use `enviar_comunicacao_anpd` to validate ROT categories, tenant, contact and response steps and append the audit atomically. Why: prevent forged contacts and incomplete or unaudited communications.
 - Block 4 reads one CNPJ snapshot through useEstadoBloco4 and derives incident state exclusively through carregarEstadoIncidente; step evidence and closure use audited transactional RPCs. PI-04 signatures follow incident closure, never precede it. Why: prevent conflicting states, unaudited closure and circular BLLOCO prerequisites.
 - External DTOs are authenticated, RLS-scoped, read-only and cached; comparisons stay outside PIOutput, audit and progress. ANPD catalogs use DB-canonicalized JSON pairs and shared PI-04 formatters; legacy submissions stay intact. Categories come from linked ROT, with closed fallback for empty fields; stage evidence is required. Suggestions respect DPO deselection.
@@ -33,4 +33,3 @@
 - Tenant tables require restrictive company policies beyond role checks; only admins change company linkage and audit writes use RPCs. Why: prevent cross-company access.
 - Glossary terms and dashboard indicators come from one shared glossary module. Why: no bare acronyms; every metric shows definition, formula and action.
 - PI-05 uses static mitigation; dosimetria.ts owns calculation and display. Why: signed-PI weights minus RIPO residuals must match; never AI.
-- National holidays for ANPD deadline counting live in `src/lib/priva/feriados.ts` and are mirrored in the `limite_anpd_uteis` DB function; extend both together per year. Why: client counter and server lateness flag must agree.

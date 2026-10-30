@@ -1,0 +1,2 @@
+- ROT field 7 is split: `hipotese_tratamento` = 7A (art. 7º, dado pessoal, always required) and `hipotese_sensivel` = 7B (art. 11, required only when a dado pessoal sensível is listed, cleared otherwise); legacy rows with art. 11 in 7A are migrated on edit. Rules live in `src/lib/priva/rot.ts` and the DB trigger. Why: LGPD separates arts. 7º and 11.
+- National holidays for ANPD deadline counting live in `src/lib/priva/feriados.ts` and are mirrored in the `limite_anpd_uteis` DB function; extend both together per year. Why: client counter and server lateness flag must agree.
