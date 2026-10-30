@@ -122,22 +122,18 @@ export function Bloco5() {
       <Panel title="Simulador do Escudo Jurídico de Dosimetria · Res. CD/ANPD nº 4/2023">
         <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
           <div className="space-y-3">
-            {DOSIMETRIA.map((d) => {
-              const ok = fatorAtivo(d.pis, signatures);
-              return (
-                <div key={d.id}>
-                  <div className="flex items-center gap-2 text-sm">
-                    {ok ? <CheckCircle2 className="h-4 w-4 text-success" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
-                    <span className="w-24 font-mono text-xs">{d.pis.join(" + ")}</span>
-                    <span className="flex-1 text-xs">{d.rule}</span>
-                    <span className="font-mono text-xs">−{d.pct}%</span>
-                  </div>
-                  <div className="mt-1 h-2 rounded-full bg-muted"><div className={`h-2 rounded-full ${ok ? "bg-success" : "bg-muted-foreground/30"}`} style={{ width: `${(d.pct / TETO_REDUCAO) * 100}%` }} /></div>
+            <p className="text-xs text-muted-foreground">A redução é calculada a partir dos mesmos riscos do RIPD acima: risco inerente 5×5 = {INE} contra o risco residual de cada linha.</p>
+            {efetivos.map((e) => (
+              <div key={e.id} data-testid={`sim-${e.id}`}>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="flex-1 text-xs">{e.label}</span>
+                  <span className="font-mono text-xs">{INE} → {e.prob}×{e.imp} = {e.prob * e.imp}</span>
                 </div>
-              );
-            })}
+                <div className="mt-1 h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-success" style={{ width: `${((INE - e.prob * e.imp) / (INE - 1)) * 100}%` }} /></div>
+              </div>
+            ))}
             <div className="pt-2">
-              <p className="text-xs text-muted-foreground">Redução acumulada (teto {TETO_REDUCAO}%)</p>
+              <p className="text-xs text-muted-foreground" data-testid="calculo-reducao">Redução = {TETO_REDUCAO}% × ({efetivos.map((e) => `${INE}−${e.prob * e.imp}`).join(" + ")}) ÷ ({efetivos.length} × {INE - 1}) = {TETO_REDUCAO}% × {ganho} ÷ {efetivos.length * (INE - 1)} = {reducao}% (teto {TETO_REDUCAO}%)</p>
               <div className="mt-1 h-4 rounded-full bg-muted"><div className="h-4 rounded-full bg-success transition-all" style={{ width: `${(reducao / TETO_REDUCAO) * 100}%` }} /></div>
             </div>
           </div>
@@ -146,21 +142,27 @@ export function Bloco5() {
               <Input type="number" min={0} value={base} onChange={(e) => setBase(Math.max(0, +e.target.value))} />
             </label>
             <div className="flex items-end gap-3">
-              <div className="flex-1 text-center"><div className="mx-auto w-10 rounded-t bg-destructive" style={{ height: 120 }} /><p className="mt-1 text-[10px]">Sem PIs</p><p className="font-mono text-xs">{brl(base)}</p></div>
-              <div className="flex-1 text-center"><div className="mx-auto w-10 rounded-t bg-success" style={{ height: 120 * (1 - reducao / 100) }} /><p className="mt-1 text-[10px]">Com PIs</p><p className="font-mono text-xs">{brl(multaComAtenuantes(base, reducao))}</p></div>
+              <div className="flex-1 text-center"><div className="mx-auto w-10 rounded-t bg-destructive" style={{ height: 120 }} /><p className="mt-1 text-[10px]">Risco inerente</p><p className="font-mono text-xs">{brl(base)}</p></div>
+              <div className="flex-1 text-center"><div className="mx-auto w-10 rounded-t bg-success" style={{ height: 120 * (1 - reducao / 100) }} /><p className="mt-1 text-[10px]">Risco residual</p><p className="font-mono text-xs">{brl(multaComAtenuantes(base, reducao))}</p></div>
             </div>
-            <p className="text-center font-mono text-3xl font-semibold text-success">−{reducao}%</p>
-            <p className="text-xs text-muted-foreground">Estimativa ilustrativa; a dosimetria concreta depende da análise da ANPD.</p>
+            <p className="text-center font-mono text-3xl font-semibold text-success" data-testid="reducao">−{reducao}%</p>
+            <p className="text-xs text-muted-foreground">Estimativa facultativa; o valor real da sanção depende da análise da ANPD.</p>
           </div>
         </div>
       </Panel>
 
+      <Panel title="Responsáveis pelas assinaturas do PI-05">
+        <ul className="space-y-1 text-sm">
+          {pendSig.map((p) => <li key={p.id} data-testid={`resp-${p.id}`} className="flex flex-wrap justify-between gap-2"><span>{p.titulo}</span><span className="text-xs text-muted-foreground">{p.estado === "ok" ? "Assinado" : p.exige}</span></li>)}
+        </ul>
+      </Panel>
+
       <PIOutput pi="PI-05: Escudo Jurídico de Dosimetria" ready={ready} readyHint="Preencha o sistema avaliado, o Escudo Digital e a mitigação de cada risco de IA." dual>
         <h3 className="font-semibold">RIPD – {sistema}</h3>
-        <ul className="list-disc pl-5">{RISKS.map((r) => { const v = { ...DEF, ...ripd[r.id] }; return <li key={r.id}>{r.label}: risco {v.prob * v.imp}. {v.descricao} Mitigação: {v.mitig}</li>; })}</ul>
+        <ul className="list-disc pl-5">{efetivos.map((e) => <li key={e.id}>{e.label}: risco residual {e.prob * e.imp} (inerente {INE}). {e.descricao} Mitigação: {e.mitig}</li>)}</ul>
         <p className="mt-2"><b>Barreira principal:</b> {escudo}</p>
         <h3 className="mt-4 font-semibold">Dosimetria</h3>
-        <p>Atenuantes comprovadas pelos PIs chancelados: redução de {reducao}% da multa-base (Res. CD/ANPD nº 4/2023).</p>
+        <p>Redução de {reducao}% da multa-base, derivada dos riscos residuais acima (Res. CD/ANPD nº 4/2023). Estimativa facultativa; o valor real da sanção depende da análise da ANPD.</p>
       </PIOutput>
 
       {signatures["PI-05"] && (
