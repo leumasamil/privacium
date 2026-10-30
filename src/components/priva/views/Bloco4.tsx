@@ -1,3 +1,4 @@
+import { FERIADOS_NACIONAIS, FONTE_FERIADOS } from '@/lib/priva/feriados';
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 import { FormularioANPD } from "@/components/priva/FormularioANPD";
 import { restanteANPD } from "@/lib/priva/anpd";
@@ -321,7 +322,10 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
         <ul className="space-y-1 text-xs text-foreground">
           <li><b>O que mede:</b> Prazo de comunicação à ANPD — {dias} dias úteis (<CitacaoNormativa citacao="Res. CD/ANPD nº 15/2024, art. 6º, § 8º" />), contados do conhecimento do incidente. Vinculado à etapa 6 (Reporte).</li>
           <li><b>Ao zerar:</b> Após o prazo, o incidente é marcado como comunicado em atraso e a trilha registra o descumprimento.</li>
-          <li><b>Contador:</b> considera segunda a sexta, sem calendário de feriados configurado; confira os feriados aplicáveis. Após a comunicação simulada, congela no instante de envio.</li>
+          <li><b>Contador:</b> considera segunda a sexta e exclui os feriados nacionais de 2026 e 2027 listados abaixo. Após a comunicação simulada, congela no instante de envio.
+            <details className="mt-1" data-testid="feriados"><summary className="cursor-pointer">Feriados nacionais configurados ({FERIADOS_NACIONAIS.length})</summary>
+              <ul className="mt-1 grid gap-x-4 sm:grid-cols-2">{FERIADOS_NACIONAIS.map(f => <li key={f.data}>{f.data.split('-').reverse().join('/')} — {f.nome}</li>)}</ul>
+              <p className="mt-1 text-xs">Fonte: {FONTE_FERIADOS}</p></details></li>
         </ul>
       </div>
 

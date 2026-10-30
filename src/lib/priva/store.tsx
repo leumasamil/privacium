@@ -1,6 +1,7 @@
 import { assinaturasVigentes } from "@/lib/priva/ciclo";
 import type { Porte } from './enquadramento';
 import { DEMO_CNPJ, DEMO_RAZAO, DEMO_SIGNATURES, DEMO_PUBLIC_SIGNATURES, DEMO_TRILHA_SEED, DEMO_SESSAO_INICIAL, DEMO_AGORA_ISO, type DemoSessao, type DemoEvento } from "./demo";
+import { razaoDemo } from "./enquadramento";
 import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -290,7 +291,7 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
   const value: Ctx = demo
     ? {
         ...demoShared, ready, userId: initialDemo ? null : userId, email: initialDemo ? 'dpo@cenografica.com.br' : email, roles: ['DPO_OPERACIONAL'], role: 'DPO_OPERACIONAL', audit: demoEventos as AuditEntry[], cnpj: DEMO_CNPJ,
-        empresas: [{ cnpj: DEMO_CNPJ, razao_social: DEMO_RAZAO }], selectEmpresa: noop,
+        empresas: [{ cnpj: DEMO_CNPJ, razao_social: razaoDemo(demoPorte) }], selectEmpresa: noop,
         createEmpresa: async () => "Indisponível no Modo Demonstração.", setRole: noop,
         set: noop, log: noop, sign: async (pi: string) => demoAssinar(pi, "DPO"),
         reset: noop, refreshAudit: async () => undefined, demo, publicDemo: initialDemo, setDemo, demoPorte, setDemoPorte,
