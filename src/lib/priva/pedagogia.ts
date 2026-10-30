@@ -133,7 +133,7 @@ export const NORMAS: Record<string, Norma> = {
   },
   "CIS Control 03": {
     citacao: "CIS Control 03",
-    resumo: "Proteção de dados: inventariar, classificar e proteger dados sensíveis contra exfiltração (inclui DLP e mascaramento).",
+    resumo: "Proteção de dados: inventariar, classificar e proteger dado pessoal e dado pessoal sensível contra exfiltração (inclui DLP e mascaramento).",
     porque: "É o controle que o Escudo Digital implementa ao tokenizar dado pessoal antes de enviar a uma IA externa.",
   },
   "CIS Control 16": {
