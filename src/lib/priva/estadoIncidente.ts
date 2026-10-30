@@ -35,7 +35,7 @@ export function carregarEstadoIncidente(incidenteId: string, fonte: FonteInciden
   return {
     incidente,
     etapas: { total: 6 as const, concluidas: itens.filter(i => i.concluida).length, itens },
-    anpd: { enviado, enviado_em: incidente.enviado_anpd_em, prazo_vencido: (incidente.enviado_anpd_em ? Date.parse(incidente.enviado_anpd_em) : fonte.agora) > Date.parse(incidente.iniciado_em) + 72 * 3600000 },
+    anpd: { enviado, enviado_em: incidente.enviado_anpd_em, prazo_vencido: (incidente.enviado_anpd_em ? Date.parse(incidente.enviado_anpd_em) : fonte.agora) > limiteANPD(incidente.iniciado_em) },
     assinaturas: { dpo: !!(fonte.assinaturas['PI-04-DPO'] || fonte.assinaturas['PI-04']), diretoria: !!(fonte.assinaturas['PI-04-DIR'] || fonte.assinaturas['PI-04']) },
     lotes: { total: fonte.lotes.length, abertos: fonte.lotes.filter(l => !l.hash_sha256 && l.mes_referencia < atual) },
     podeEncerrar: correcoes.length === 0,

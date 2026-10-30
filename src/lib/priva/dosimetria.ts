@@ -22,8 +22,9 @@ export function multaComAtenuantes(base: number, reducao: number) {
   return Math.round(base * (1 - reducao / 100));
 }
 
-export const SLA_MS = 72 * 3600 * 1000;
+/** Orçamento total do prazo ANPD: 3 dias úteis = 72 horas úteis (Res. CD/ANPD nº 15/2024, art. 6º). */
+export const SLA_MS = 3 * 24 * 3600 * 1000;
 export function slaRestante(inicio: string | null, agora: number) {
   if (!inicio) return SLA_MS;
-  return Math.max(0, SLA_MS - (agora - new Date(inicio).getTime()));
+  return restanteANPD(inicio, null, agora);
 }
