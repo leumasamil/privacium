@@ -71,7 +71,7 @@ export function Bloco4() {
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 4 · (V) Ciclo Privacium Semestral · ISO 27037" title="Vigiar a Privacidade e Processar Incidentes" />
       <AlertaFornecedorVazado />
-      {AJUDA[4] && {AJUDA[4] && <AjudaTarefa {...AJUDA[4]} pendencias={montarChecklist(consulta.data, signatures)} />}}
+      {AJUDA[4] && <AjudaTarefa {...AJUDA[4]} pendencias={montarChecklist(consulta.data, signatures)} />}
       <ConsolePgAudit cnpj={cnpj} lotes={lotes.rows} incidentes={incs.rows} canEdit={canEdit} refresh={lotes.refresh} />
       <CriseRansomware cnpj={cnpj} ativo={ativo} estado={estado} canEdit={canEdit} refresh={incs.refresh} />
       <PIOutput pi="PI-04: Dossiê de Auditoria de Logs e Resposta de Célula" ready={pronto} readyHint="Gere ao menos um lote pgAudit com hash e conclua um incidente com os 6 passos e comunicação à ANPD." dual>
