@@ -274,6 +274,13 @@
       "when": 1793380712987,
       "tag": "0038_corrigir_nome_perfil_assinatura",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1793381806166,
+      "tag": "0039_papel_agente_e_produto_rot",
+      "breakpoints": true
     }
   ]
 }

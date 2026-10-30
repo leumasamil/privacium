@@ -8,9 +8,10 @@ import { Panel, Tag } from './ui';
 import { usePriva } from '@/lib/priva/store';
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { calcularPorte, CRITERIOS_DEMO, criteriosSchema, FUNDAMENTO_PORTE, rotuloPorte, travaPorte, type CriteriosPorte } from '@/lib/priva/enquadramento';
+import { FONTE_LGPD, LITERAL_ART5_VI, LITERAL_ART5_VII, PAPEIS_AGENTE, ROTULO_PAPEL } from '@/lib/priva/rot';
 import { toast } from 'sonner';
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
-const inicial: CriteriosPorte = { grupoGrande: false, receitaAcimaTeto: false, tipo: 'ME', titulares: 0, infraLimitada: false, descricaoInfra: '', sensivelLargaEscala: false, altoRisco: false, menoresAltoRisco: false };
+const inicial: CriteriosPorte = { grupoGrande: false, receitaAcimaTeto: false, tipo: 'ME', titulares: 0, infraLimitada: false, descricaoInfra: '', sensivelLargaEscala: false, altoRisco: false, menoresAltoRisco: false, papelAgente: 'CONTROLADOR' };
 const perguntas = [ ['grupoGrande', 'Faz parte de grupo econômico com receita global acima do teto aplicável?'], ['receitaAcimaTeto', 'Receita bruta anual do agente acima do teto aplicável?'], ['infraLimitada', 'Infraestrutura limitada?'], ['sensivelLargaEscala', 'Dado pessoal sensível em larga escala?'], ['altoRisco', 'Tratamento de alto risco (critério geral e específico do art. 4º)?'], ['menoresAltoRisco', 'Dado pessoal de crianças e adolescentes com perfil de risco alto?'] ] as const;
 export function EnquadramentoAgente() {
   const { cnpj, enterprise, demo, roles, refreshAudit, demoPorte, setDemoPorte } = usePriva();
@@ -36,6 +37,13 @@ export function EnquadramentoAgente() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1"><Label htmlFor="porte-tipo">Tipo societário / enquadramento empresarial</Label><select id="porte-tipo" className="w-full rounded-sm border bg-background p-2 text-sm" value={c.tipo} onChange={v => setC({ ...c, tipo: v.target.value as CriteriosPorte['tipo'] })}>{[['ME','ME'],['EPP','EPP'],['LTDA','LTDA'],['SA','S.A.'],['ASSOCIACAO','Associação'],['OUTRO','Outro']].map(([v,t]) => <option key={v} value={v}>{t}</option>)}</select></div>
         <div className="space-y-1"><Label htmlFor="porte-titulares">Número de titulares/mês</Label><Input id="porte-titulares" type="number" min="0" step="1" value={c.titulares} onChange={v => setC({ ...c, titulares: Number(v.target.value) })} /></div>
+        <div className="space-y-1 sm:col-span-2" data-testid="papel-agente-bloco1">
+          <Label htmlFor="papel-agente">Papel do agente neste tratamento — LGPD art. 5º, VI e VII</Label>
+          <select id="papel-agente" className="w-full rounded-sm border bg-background p-2 text-sm" value={c.papelAgente} onChange={v => setC({ ...c, papelAgente: v.target.value as CriteriosPorte['papelAgente'] })}>
+            {PAPEIS_AGENTE.map((p) => <option key={p} value={p}>{ROTULO_PAPEL[p]}</option>)}
+          </select>
+          <p className="text-[11px] text-muted-foreground">Art. 5º, VI: "{LITERAL_ART5_VI}". Art. 5º, VII: "{LITERAL_ART5_VII}". Fonte: {FONTE_LGPD}. O papel escolhido aqui é o padrão herdado por cada linha do ROT (Bloco 2), editável por linha.</p>
+        </div>
         {perguntas.map(([k,t]) => <Label key={k} className="flex items-start gap-3 leading-relaxed"><Checkbox checked={c[k]} onCheckedChange={v => setC({ ...c, [k]: v === true })} />{t}</Label>)}
         {c.infraLimitada && <div className="space-y-1 sm:col-span-2"><Label htmlFor="porte-infra">Descrição da infraestrutura limitada</Label><Textarea id="porte-infra" maxLength={2000} value={c.descricaoInfra} onChange={v => setC({ ...c, descricaoInfra: v.target.value })} /></div>}
       </div>

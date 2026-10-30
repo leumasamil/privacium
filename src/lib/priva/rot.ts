@@ -1,8 +1,40 @@
 import type { Database } from "@/integrations/supabase/types";
-import { cicloDaLinha, validarCiclo } from "./cicloVida";
+import { cicloDaLinha, temProcessar, validarCiclo } from "./cicloVida";
 
 export type RotRow = Database["public"]["Tables"]["registro_operacoes"]["Row"];
 export type RotInput = Omit<RotRow, "id" | "codigo" | "criado_por" | "criado_em" | "atualizado_em" | "assinatura_etapa1" | "assinatura_etapa2">;
+
+/** Papel do agente na linha (LGPD art. 5º, VI e VII); o padrão vem do enquadramento do Bloco 1 e é editável por linha. */
+export const PAPEIS_AGENTE = ["CONTROLADOR", "OPERADOR", "CONTROLADOR_OPERADOR"] as const;
+export type PapelAgente = (typeof PAPEIS_AGENTE)[number];
+export const ROTULO_PAPEL: Record<PapelAgente, string> = {
+  CONTROLADOR: "Controlador",
+  OPERADOR: "Operador",
+  CONTROLADOR_OPERADOR: "Controlador e operador simultaneamente",
+};
+/** Textos literais — fonte: https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm */
+export const FONTE_LGPD = "https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm";
+export const LITERAL_ART5_VI = "controlador: pessoa natural ou jurídica, de direito público ou privado, a quem competem as decisões referentes ao tratamento de dados pessoais";
+export const LITERAL_ART5_VII = "operador: pessoa natural ou jurídica, de direito público ou privado, que realiza o tratamento de dados pessoais em nome do controlador";
+/** Nota exibida quando a linha é OPERADOR: o destino (Etapa 2) é definido pelo controlador. */
+export const NOTA_DESTINO_OPERADOR = "Definido pelo controlador — LGPD art. 5º, VII e art. 39";
+/** Nota de método do produto interno (LGPD art. 5º, X). */
+export const NOTA_PRODUTO = "Produto interno é o resultado material das operações de tratamento (LGPD art. 5º, X). É conceito de método, não categoria jurídica autônoma.";
+/** Alerta bloqueante de chancela: Processar sem produto declarado (LGPD art. 6º, I). */
+export const ALERTA_PRODUTO_AUSENTE = "Tratamento com processamento sem produto declarado — art. 6º, I não comprovado.";
+/** Alerta não bloqueante: operador não declara finalidade própria (LGPD art. 39). */
+export const ALERTA_FINALIDADE_OPERADOR = "Operador não declara finalidade própria — a finalidade desta linha é a do contrato com o controlador (LGPD art. 39).";
+
+/** Destino do produto (Etapa 2): interno (Área › Setor), externo (terceiro) ou eliminação (LGPD art. 16). */
+export type DestinoProduto = {
+  tipo: "INTERNO" | "EXTERNO" | "ELIMINACAO";
+  area_setor_destino?: string;
+  terceiro?: string;
+  linha_receptor_id?: string;
+  linha_receptor_codigo?: string;
+};
+/** Linha criada automaticamente no setor receptor (compartilhamento interno), com origem rastreada. */
+export type OrigemCompartilhamento = { estado: "insumo recebido"; linha_origem_id: string; codigo_origem: string; area_setor_origem: string };
 
 export const TITULARES = ["Colaboradores", "Clientes", "Fornecedores", "Visitantes", "Candidatos", "Menores de Idade"];
 export const DADOS = ["Nome", "CPF", "RG", "Telefone", "E-mail", "Endereço", "Dados Bancários", "Imagem"];
@@ -78,7 +110,83 @@ export function validateRot(r: RotInput): string | null {
   if (!r.tempo_retencao.trim()) return "Preencha o campo 8 (Tempo de Retenção) para salvar — informe por quanto tempo o dado pessoal é guardado.";
   if (!r.base_prazo.trim()) return "Preencha o campo 9 (Base do Prazo) para salvar — ele é obrigatório quando o campo 8 está preenchido.";
   if (isRisky(r) && (r.justificativa_mitigacao ?? "").trim().length < 20) return "Escreva a justificativa das medidas mitigadoras (mínimo 20 caracteres) para salvar — obrigatória em processos com menores ou dado pessoal sensível. Responsável: DPO.";
+  if (r.papel_agente === "OPERADOR" && !(r.contrato_controlador ?? "").trim()) return "Linha de operador exige o contrato com o controlador (campo 6) — a finalidade do operador é a do contrato (LGPD art. 39).";
   return null;
+}
+
+/** Processar na Etapa 1 sem produto interno declarado: alerta exibido e chancela do PI-02 bloqueada (LGPD art. 6º, I). */
+export function alertaProdutoAusente(r: Pick<RotInput, "ciclo_vida" | "genero_verbo" | "produto_interno">): string | null {
+  return temProcessar(cicloDaLinha(r)) && !(r.produto_interno ?? "").trim() ? ALERTA_PRODUTO_AUSENTE : null;
+}
+
+/** Operador com texto de finalidade que não referencia o contrato com o controlador (alerta não bloqueante, LGPD art. 39). */
+export function alertaFinalidadeOperador(r: Pick<RotInput, "papel_agente" | "finalidade_especifica" | "contrato_controlador">): string | null {
+  if (r.papel_agente !== "OPERADOR") return null;
+  const contrato = (r.contrato_controlador ?? "").trim();
+  const esperada = finalidadeDoContrato(contrato);
+  return contrato && r.finalidade_especifica.trim() !== esperada ? ALERTA_FINALIDADE_OPERADOR : null;
+}
+
+/** Finalidade da linha de operador: sempre vinculada ao contrato com o controlador (LGPD art. 39). */
+export function finalidadeDoContrato(contrato: string): string {
+  return `Tratamento em nome do controlador, conforme contrato: ${contrato.trim()}`;
+}
+
+/**
+ * Tabela determinística versionada (v1) de produto interno: Área › Setor + insumo (10A).
+ * Nunca pré-seleciona: toda sugestão exibe "Sugerido — confirme" e exige ação do usuário.
+ */
+const ORIGEM_PRODUTO = "tabela determinística v1 · Área › Setor + insumo";
+const SUGESTOES_PRODUTO_V1: Record<string, { insumo: string; produtos: string[] }[]> = {
+  "Recursos Humanos": [{ insumo: "currículo", produtos: ["Ficha de candidato", "Parecer de seleção", "Proposta de contratação"] }],
+  "Financeiro": [{ insumo: "nota fiscal", produtos: ["Lançamento contábil", "Relatório de despesas"] }],
+  "Jurídico": [{ insumo: "contrato", produtos: ["Parecer jurídico", "Minuta revisada"] }],
+  "Marketing": [{ insumo: "formulário", produtos: ["Base de leads", "Relatório de campanha"] }],
+  "Recepção": [{ insumo: "imagem/documento digitalizado", produtos: ["Registro de visita", "Log de acesso"] }],
+};
+
+/** Sugestões de produto interno quando há Processar e o campo está vazio (o usuário confirma ou digita o nome próprio). */
+export function sugerirProduto(r: Pick<RotInput, "area_setor" | "insumo" | "ciclo_vida" | "genero_verbo" | "produto_interno">): Sugestao[] {
+  if (!temProcessar(cicloDaLinha(r)) || (r.produto_interno ?? "").trim()) return [];
+  const area = (r.area_setor ?? "").split("›")[0]?.trim() ?? "";
+  const insumo = r.insumo?.trim().toLowerCase() ?? "";
+  const regra = SUGESTOES_PRODUTO_V1[area]?.find((x) => x.insumo === insumo);
+  return (regra?.produtos ?? []).map((p) => ({ texto: `Produto interno: ${p}`, origem: ORIGEM_PRODUTO, patch: { produto_interno: p } }));
+}
+
+/**
+ * Linha criada automaticamente no ROT do setor receptor quando o destino do produto é
+ * compartilhamento INTERNO: o produto vira insumo (10A) e a origem fica rastreada.
+ */
+export function montarLinhaReceptora(
+  origem: Pick<RotRow, "id" | "codigo" | "empresa_cnpj" | "categoria_titulares" | "dados_pessoais" | "dados_sensiveis" | "hipotese_tratamento" | "hipotese_sensivel" | "salvaguardas" | "infraestrutura" | "justificativa_mitigacao" | "area_setor" | "setor" | "produto_interno" | "papel_agente" | "contrato_controlador">,
+  areaSetorDestino: string,
+  chaveSetor: string,
+): RotInput {
+  return {
+    empresa_cnpj: origem.empresa_cnpj,
+    setor: chaveSetor,
+    genero_verbo: "Coletar",
+    ciclo_vida: { Coletar: ["receber"] },
+    categoria_titulares: origem.categoria_titulares,
+    dados_pessoais: origem.dados_pessoais,
+    dados_sensiveis: origem.dados_sensiveis,
+    finalidade_especifica: `Recebimento de "${origem.produto_interno}" de ${origem.area_setor ?? origem.setor} (compartilhamento interno)`,
+    hipotese_tratamento: origem.hipotese_tratamento,
+    hipotese_sensivel: origem.hipotese_sensivel,
+    tempo_retencao: "", base_prazo: "", compartilhamento: "Não Compartilhado",
+    salvaguardas: origem.salvaguardas, infraestrutura: origem.infraestrutura,
+    justificativa_mitigacao: origem.justificativa_mitigacao,
+    area_setor: areaSetorDestino,
+    insumo: origem.produto_interno,
+    meio_fornecimento: "API/sistema",
+    papel_agente: origem.papel_agente,
+    contrato_controlador: origem.contrato_controlador,
+    produto_interno: null,
+    destino_produto: null,
+    prazo_produto: null, fundamento_produto: null,
+    origem_compartilhamento: { estado: "insumo recebido", linha_origem_id: origem.id, codigo_origem: origem.codigo, area_setor_origem: origem.area_setor ?? origem.setor },
+  };
 }
 
 export type Sugestao = { texto: string; origem: string; patch: Partial<RotInput> };
