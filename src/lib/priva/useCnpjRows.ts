@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import { DEMO_ROWS } from "./demo";
-import { useDemo } from "./store";
+import { DEMO_ROWS, aplicarSessaoDemo } from "./demo";
+import { usePriva } from "./store";
 
 type T = "lotes_pgaudit" | "incidentes_seguranca" | "ripd_ia" | "ciclos_priva";
 type Row<K extends T> = Database["public"]["Tables"][K]["Row"];

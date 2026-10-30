@@ -2,18 +2,19 @@ import { useEffect, useId } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { usePriva } from './store';
-import { DEMO_ROWS, carregarEstadoIncidenteDemo } from './demo';
+import { DEMO_ROWS, aplicarSessaoDemo, carregarEstadoIncidenteDemo } from './demo';
 import { carregarEstadoIncidente } from './estadoIncidente';
 
 export function useEstadoBloco4(cnpj: string | null) {
-  const { demo, signatures } = usePriva();
+  const { demo, signatures, demoSessao } = usePriva();
   const qc = useQueryClient();
   const subscriber = useId();
   const q = useQuery({
-    queryKey: ['estado-bloco-4', cnpj, demo], enabled: !!cnpj,
+    queryKey: ['estado-bloco-4', cnpj, demo, demoSessao], enabled: !!cnpj,
     refetchInterval: demo ? false : 5000,
     queryFn: async () => {
-      if (demo) return { lotes: DEMO_ROWS.lotes_pgaudit, incidentes: DEMO_ROWS.incidentes_seguranca };
+      // A sessão cenográfica (envio/encerramento simulados) sobrepõe o seed sem gravar nada.
+      if (demo) return { lotes: DEMO_ROWS.lotes_pgaudit, incidentes: DEMO_ROWS.incidentes_seguranca.map(i => aplicarSessaoDemo(i, demoSessao)) };
       const [l, i] = await Promise.all([
         supabase.from('lotes_pgaudit').select('*').eq('empresa_cnpj', cnpj ?? '').order('mes_referencia', { ascending: false }),
         supabase.from('incidentes_seguranca').select('*').eq('empresa_cnpj', cnpj ?? '').order('iniciado_em', { ascending: false }),
