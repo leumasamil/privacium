@@ -1,5 +1,5 @@
 import { createFileRoute, useHydrated } from '@tanstack/react-router';
-import { PrivaProvider } from '@/lib/priva/store';
+import { PrivaProvider, usePriva } from '@/lib/priva/store';
 import { AppShell } from '@/components/priva/AppShell';
 import { BlockGate } from '@/components/priva/ui';
 import { Painel } from '@/components/priva/views/Painel';
@@ -16,7 +16,6 @@ import { Auditoria } from '@/components/priva/views/Auditoria';
 import { FormularioANPD } from '@/components/priva/FormularioANPD';
 import { EncarregadoDPO } from '@/components/priva/EncarregadoDPO';
 import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
-import { usePriva } from '@/lib/priva/store';
 import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
 
 const ABAS = ['painel', 'bloco-1', 'bloco-2', 'bloco-3', 'bloco-4', 'bloco-5', 'anpd', 'kanban', 'pendencias', 'manual', 'glossario', 'auditoria', 'encarregado'];
