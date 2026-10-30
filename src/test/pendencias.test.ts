@@ -31,7 +31,7 @@ describe("checklist da tela de bloqueio", () => {
     expect(ant.find((i) => i.id === "lote")!.acao).toBe("Selar o lote de setembro/2026");
   });
   it("incidente com prazo de 3 dias úteis estourado é crítico", () => {
-    const agora = Date.parse("2026-10-15T12:00:00Z");
+    const agora = Date.parse("2026-10-16T12:00:00Z"); // 12/10 é feriado nacional
     const c = montarChecklist({ n: 4, lotes: [], incidentes: [{ id: "a54ac7ff", passos: [true, false, false, false, false, false], iniciado_em: "2026-10-11T12:00:00Z", enviado_anpd_em: null, encerrado_em: null }], agora }, {});
     expect(c.find((i) => i.id === "anpd-a54ac7ff")!.estado).toBe("critico");
     expect(c.find((i) => i.id === "inc-a54ac7ff")!.acao).toBe("Concluir a etapa 2 de 6 do incidente #a54ac7");
