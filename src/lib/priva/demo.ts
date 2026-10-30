@@ -176,7 +176,12 @@ export const DEMO_ROWS: {
       injecao: { descricao: "", mitig: "" },
     },
   }],
-  ciclos_priva: [],
+  // Ciclo arquivado cenográfico com redução NULL: o relatório exibe "não calculado" (simulador em revisão).
+  ciclos_priva: [{
+    id: "demo-ciclo-2025", empresa_cnpj: DEMO_CNPJ, ano_fiscal: 2025, reducao_dosimetria: null,
+    assinaturas: { "PI-01": { demo: true }, "PI-02": { demo: true }, "PI-03": { demo: true }, "PI-04": { demo: true }, "PI-05": { demo: true } },
+    finalizado_por: null, finalizado_em: "2026-04-30T18:00:00+00:00",
+  }],
 };
 
 /** Estado da sessão de demonstração: vive só na memória do navegador, nunca no banco. */
