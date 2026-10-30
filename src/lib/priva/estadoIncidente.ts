@@ -1,4 +1,5 @@
 import type { Signature } from './store';
+import { limiteANPD } from './anpd';
 
 export const ETAPAS_INCIDENTE = ['Isolamento', 'Invocação', 'Sandbox', 'Descriptografia', 'Validação', 'Comunicação à ANPD'] as const;
 export type IncidenteFonte = {
