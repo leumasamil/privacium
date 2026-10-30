@@ -172,7 +172,7 @@ export type DemoEvento = {
   seq: number; ts: string; role: string; cnpj: string | null; user_email: string | null;
   op: "SELECT" | "INSERT" | "UPDATE" | "DELETE"; target: string; detail: string; prev_hash: string; hash: string;
 };
-const hex = (s: string) => s.replace(/[^0-9a-f]/gi, '').padEnd(64, '0').slice(0, 64);
+const hex = (s: string) => s.toLowerCase().replace(/[^0-9a-f]/g, '').padEnd(64, '0').slice(0, 64);
 const seed = (seq: number, ts: string, op: DemoEvento['op'], target: string, detail: string, prev: string): DemoEvento =>
   ({ seq, ts, role: 'DPO_OPERACIONAL', cnpj: DEMO_CNPJ, user_email: 'dpo@cenografica.com.br', op, target, detail, prev_hash: prev, hash: hex(`de${seq}${target}${detail}`) });
 
