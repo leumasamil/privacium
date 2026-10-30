@@ -45,6 +45,13 @@ export function temEtapa2(c: CicloVida): boolean {
   return generosMarcados(c).some((g) => ETAPA2.includes(g));
 }
 
+/** Ciclo agrupado por etapa para exibição na planilha (Etapa 1 = perímetro; Etapa 2 = destino). */
+export function formatarCicloEtapas(c: CicloVida): { e1: string; e2: string } {
+  const fmt = (gs: readonly Genero[]) =>
+    gs.filter((g) => (c[g] ?? []).length > 0).map((g) => `${g} (${(c[g] ?? []).join(", ")})`).join("; ");
+  return { e1: fmt(ETAPA1), e2: fmt(ETAPA2) };
+}
+
 /** Dispara quando há "Reter" na Etapa 1 e a Etapa 2 está vazia. */
 export function alertaRetencao(c: CicloVida): string | null {
   const g = generosMarcados(c);
