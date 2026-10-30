@@ -68,7 +68,7 @@ describe("ROT · travas de risco", () => {
     dados_sensiveis: ["N/A"], finalidade_especifica: "Folha", hipotese_tratamento: "Art. 7º, II – Obrigação legal/regulatória", tempo_retencao: "5 anos",
     base_prazo: "Art. 12 da CLT", compartilhamento: "Não Compartilhado", salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null, hipotese_sensivel: null,
     area_setor: null, insumo: null, meio_fornecimento: null,
-    papel_agente: "CONTROLADOR", contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null };
+    papel_agente: "CONTROLADOR", contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null, produtos_tratamento: [] };
   it("menores de idade ou dado pessoal sensível acionam a tarja vermelha", () => {
     expect(isRisky(base)).toBe(false);
     expect(isRisky({ ...base, categoria_titulares: ["Menores de Idade"] })).toBe(true);
