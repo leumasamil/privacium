@@ -85,9 +85,13 @@ export function Bloco3() {
       <PageHeader eyebrow="Bloco 3 · (I) Ciclo Privacium Semestral · Art. 46 LGPD" title="Implementar Salvaguardas Técnicas e Jurídicas" />
       {AJUDA[3] && <AjudaTarefa {...AJUDA[3]} />}
 
+      <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <CitacaoNormativa citacao="LGPD art. 46" />
+        <CitacaoNormativa citacao="ISO/IEC 27701" />
+      </p>
       <div id="ativos" className="grid scroll-mt-6 gap-6 xl:grid-cols-2">
         <BitLockerCard endpoints={endpoints} prot={prot} cnpj={cnpj} canEdit={canEdit} refresh={refresh} remove={remove} />
-        <CryptomatorCard cofres={cofres} cnpj={cnpj} canEdit={canEdit} refresh={refresh} remove={remove} />
+        <CryptomatorCard cofres={cofres} cnpj={cnpj} canEdit={canEdit} refresh={refresh} remove={remove} setoresRot={setoresRot} localizacoes={[...new Set(ativos.map((a) => a.localizacao).filter((l): l is string => !!l))]} />
       </div>
 
       <AIShield />
@@ -106,6 +110,7 @@ export function Bloco3() {
 }
 
 function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { endpoints: Ativo[]; prot: number; cnpj: string; canEdit: boolean; refresh: () => void; remove: (a: Ativo) => void }) {
+  const sugestaoHost = padraoHostname(endpoints.map((a) => a.descricao).filter((d): d is string => !!d));
   const { log, demo } = usePriva();
   const [hw, setHw] = useState("");
   const [host, setHost] = useState("");
