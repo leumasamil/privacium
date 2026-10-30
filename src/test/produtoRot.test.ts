@@ -8,7 +8,7 @@ import {
 } from "@/lib/priva/rot";
 
 const base = (p: Partial<RotInput> = {}): RotInput => ({
-  empresa_cnpj: "00000000000100", setor: "RH", genero_verbo: "Coletar", ciclo_vida: {}, categoria_titulares: ["Candidatos"], dados_pessoais: ["Nome"],
+  empresa_cnpj: "00000000000100", setor: "RH", genero_verbo: "Coletar", ciclo_vida: { Coletar: ["receber"] }, categoria_titulares: ["Candidatos"], dados_pessoais: ["Nome"],
   dados_sensiveis: ["N/A"], finalidade_especifica: "Seleção e recrutamento de candidatos", hipotese_tratamento: "Art. 7º, V – Execução de contrato ou procedimentos preliminares",
   hipotese_sensivel: null, tempo_retencao: "1 ano", base_prazo: "Política interna", compartilhamento: "Não Compartilhado", salvaguardas: [], infraestrutura: "Servidor Local",
   justificativa_mitigacao: null, area_setor: "Recursos Humanos › Seleção e Recrutamento", insumo: "currículo", meio_fornecimento: "site",
