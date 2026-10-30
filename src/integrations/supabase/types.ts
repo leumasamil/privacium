@@ -765,11 +765,13 @@ export type Database = {
           justificativa_mitigacao: string | null
           meio_fornecimento: string | null
           motivo_exclusao: string | null
+          origem: Database["public"]["Enums"]["origem_registro"]
           origem_compartilhamento: Json | null
           papel_agente: string
           prazo_produto: string | null
           produto_interno: string | null
           produtos_tratamento: Json
+          removida_do_dossie: boolean
           salvaguardas: string[]
           setor: string
           tempo_retencao: string
@@ -804,11 +806,13 @@ export type Database = {
           justificativa_mitigacao?: string | null
           meio_fornecimento?: string | null
           motivo_exclusao?: string | null
+          origem?: Database["public"]["Enums"]["origem_registro"]
           origem_compartilhamento?: Json | null
           papel_agente?: string
           prazo_produto?: string | null
           produto_interno?: string | null
           produtos_tratamento?: Json
+          removida_do_dossie?: boolean
           salvaguardas?: string[]
           setor: string
           tempo_retencao: string
@@ -843,11 +847,13 @@ export type Database = {
           justificativa_mitigacao?: string | null
           meio_fornecimento?: string | null
           motivo_exclusao?: string | null
+          origem?: Database["public"]["Enums"]["origem_registro"]
           origem_compartilhamento?: Json | null
           papel_agente?: string
           prazo_produto?: string | null
           produto_interno?: string | null
           produtos_tratamento?: Json
+          removida_do_dossie?: boolean
           salvaguardas?: string[]
           setor?: string
           tempo_retencao?: string
@@ -1423,6 +1429,10 @@ export type Database = {
         Args: { _bloqueios: number; _cnpj: string; _tokens: number }
         Returns: undefined
       }
+      remover_registro_de_teste: {
+        Args: { _justificativa: string; _rot_id: string }
+        Returns: Json
+      }
       revelar_cnpj_terceiro: { Args: { _id: string }; Returns: string }
       revelar_documento_membro: { Args: { _id: string }; Returns: string }
       verificar_citacao_normativa: {
@@ -1482,6 +1492,7 @@ export type Database = {
         | "LEI_ESPECIAL_SETORIAL"
         | "FOMENTO_ECONOMICO"
         | "REFERENCIA_TECNICA"
+      origem_registro: "REAL" | "TESTE" | "DEMONSTRACAO"
       status_normativo:
         | "VERIFICADA"
         | "PENDENTE"
@@ -1621,6 +1632,7 @@ export const Constants = {
         "FOMENTO_ECONOMICO",
         "REFERENCIA_TECNICA",
       ],
+      origem_registro: ["REAL", "TESTE", "DEMONSTRACAO"],
       status_normativo: [
         "VERIFICADA",
         "PENDENTE",
