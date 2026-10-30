@@ -62,4 +62,8 @@
 - [x] ROT: papel do agente (Bloco 1 + por linha) e camada de produto interno com destino ancorado — TAREFA A/B/C do anexo
 
 - [x] Etapa 2 como lista de PRT + cadastro de Terceiros (migração 0040).
-- [ ] Divergência normativa: texto de "art. 39, caput, §§ 1º e 2º" fornecido não consta da LGPD — aguardando decisão do usuário.
+- [x] Divergência art. 39 resolvida: checklist renomeado como instrumento do método; suboperador pelo art. 42, § 1º, I.
+- [x] Tarefa A: finalidade sugerida v2 no campo 6, aviso de equivalência e contador de padronização.
+- [ ] Tarefa B: PRT como entidade (`produtos_tratamento`/`produtos_destino`) e grafo "Cadeia de custódia".
+- [ ] Tarefa C: incidente com seleção de nó e relatório "Prova de cadeia de custódia" (art. 43) — depende da B.
+- [ ] Tarefa D: conferir demo /demo com lista de PRT e bloqueio — depende da B.
