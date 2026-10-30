@@ -159,7 +159,7 @@ function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { en
       {canEdit && (
         <div className="mt-3 flex flex-wrap gap-2">
           <Input placeholder="ID do hardware (ex: SN-5CG1234XYZ)" value={hw} onChange={(e) => setHw(e.target.value)} />
-          <Input placeholder="Hostname" value={host} onChange={(e) => setHost(e.target.value)} />
+          <Input placeholder={sugestaoHost ?? "Hostname"} value={host} onChange={(e) => setHost(e.target.value)} />
           <Input aria-label="Responsável pelo endpoint" placeholder="Responsável / fornecedor (opcional)" value={responsavel} onChange={e=>setResponsavel(e.target.value)} />
           <Input aria-label="Localização do endpoint" placeholder="Localização / domínio (opcional)" value={localizacao} onChange={e=>setLocalizacao(e.target.value)} />
           <Button onClick={() => void add()}><Plus className="h-4 w-4" /></Button>
@@ -220,14 +220,16 @@ function ChaveRecuperacao({ ativo }: { ativo: Ativo }) {
   );
 }
 
-function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove }: { cofres: Ativo[]; cnpj: string; canEdit: boolean; refresh: () => void; remove: (a: Ativo) => void }) {
+function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove, setoresRot, localizacoes }: { cofres: Ativo[]; cnpj: string; canEdit: boolean; refresh: () => void; remove: (a: Ativo) => void; setoresRot: string[]; localizacoes: string[] }) {
   const { log, demo } = usePriva();
   const [raiz, setRaiz] = useState("");
   const [provedor, setProvedor] = useState("Google Drive");
   const [estrutura, setEstrutura] = useState("");
+  const [rotuloEstrutura, setRotuloEstrutura] = useState<string | null>(null);
   const [preview, setPreview] = useState("");
   const [responsavel, setResponsavel] = useState('');
   const [localizacao, setLocalizacao] = useState('');
+  const [localizacaoOutra, setLocalizacaoOutra] = useState(false);
 
   useEffect(() => {
     let alive = true;
