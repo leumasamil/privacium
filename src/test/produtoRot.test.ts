@@ -1,3 +1,4 @@
+import { produtosDaLinha } from "@/lib/priva/rot";
 import { describe, expect, it } from "vitest";
 import { criteriosSchema } from "@/lib/priva/enquadramento";
 import { DEMO_ROT } from "@/lib/priva/demo";
@@ -87,8 +88,9 @@ describe("demonstração cenográfica", () => {
     for (const r of DEMO_ROT) if (temProcessar(r.ciclo_vida as never)) expect(r.produto_interno).toBeTruthy();
     const origem = DEMO_ROT.find((r) => r.codigo === "PRIVA-RH-001")!;
     const receptor = DEMO_ROT.find((r) => r.codigo === "PRIVA-FIN-001")!;
-    expect((origem.destino_produto as { linha_receptor_codigo?: string }).linha_receptor_codigo).toBe("PRIVA-FIN-001");
+    const prt = produtosDaLinha(origem).find((p) => p.destino?.linha_receptor_codigo === "PRIVA-FIN-001");
+    expect(prt?.nome).toBe("Relatório de folha consolidado");
     expect((receptor.origem_compartilhamento as { codigo_origem?: string }).codigo_origem).toBe("PRIVA-RH-001");
-    expect(receptor.insumo).toBe(origem.produto_interno);
+    expect(receptor.insumo).toBe(prt?.nome);
   });
 });
