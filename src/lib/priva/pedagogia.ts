@@ -21,6 +21,16 @@ export const NORMAS: Record<string, Norma> = {
     resumo: "Dado anonimizado: dado que, por meios técnicos razoáveis, não pode mais ser associado a um indivíduo.",
     porque: "Dado verdadeiramente anonimizado sai do escopo da LGPD — mas a anonimização precisa ser comprovável.",
   },
+  "LGPD art. 6º": {
+    citacao: "LGPD art. 6º",
+    resumo: "Princípios do tratamento: destaque para o IV (livre acesso dos titulares aos seus dados) e o V (transparência sobre o tratamento).",
+    porque: "Cada processo do seu ROT precisa ser explicável ao titular em linguagem clara.",
+  },
+  "LGPD art. 14": {
+    citacao: "LGPD art. 14",
+    resumo: "O tratamento de dados de crianças e adolescentes exige consentimento específico de ao menos um responsável legal.",
+    porque: "Se o seu ROT trata dado pessoal de menores, a hipótese e as salvaguardas são mais estritas.",
+  },
   "LGPD art. 7º": {
     citacao: "LGPD art. 7º",
     resumo: "Lista as dez hipóteses que autorizam o tratamento de dado pessoal (consentimento, obrigação legal, legítimo interesse, entre outras).",

@@ -101,7 +101,7 @@ export function Masked({ value, kind }: { value: string; kind: "cpf" | "cnpj" | 
   );
 }
 
-export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string; ready: boolean; readyHint: string; children: ReactNode; dual?: boolean }) {
+export function PIOutput({ pi, ready, readyHint, children, dual, acoesExtras }: { pi: string; ready: boolean; readyHint: string; children: ReactNode; dual?: boolean; acoesExtras?: ReactNode }) {
   const { signatures, sign, set, email, cnpj, log, demo, demoAssinar } = usePriva();
   const code = pi.slice(0, 5).replace(" ", "");
   const sig = signatures[code];
@@ -119,9 +119,12 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
             <p className="mt-1 text-xs text-muted-foreground">{ready ? "Pronto para chancela digital." : readyHint}</p>
           )}
         </div>
-        <Button variant="outline" onClick={() => setOpen(true)} disabled={!demo && !ready && !sig}>
-          <FileSignature className="h-4 w-4" /> {sig ? "Ver documento" : "Gerar e assinar"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {acoesExtras}
+          <Button variant="outline" onClick={() => setOpen(true)} disabled={!demo && !ready && !sig}>
+            <FileSignature className="h-4 w-4" /> {sig ? "Ver documento" : "Gerar e assinar"}
+          </Button>
+        </div>
       </div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
