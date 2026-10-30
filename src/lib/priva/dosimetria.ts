@@ -21,7 +21,30 @@ export function reducaoDosimetria(chancelados: Record<string, unknown>): number 
 }
 
 export function multaComAtenuantes(base: number, reducao: number) {
-  return Math.round(base * (1 - reducao / 100));
+  return Math.round(base * (1 - reducao / 100) * 100) / 100;
+}
+
+/** Desconta apenas pontos percentuais explicitamente declarados; probabilidade × impacto não é percentual. */
+export function memoriaDosimetria(chancelados: Record<string, unknown>, riscos: readonly { label: string; pontosResiduaisNaoMitigados?: number | undefined }[], base: number) {
+  const componentes = DOSIMETRIA.map((d) => ({
+    label: d.pis.length === 2 ? "PI-01+02" : d.pis.join("+"), percentual: fatorAtivo(d.pis, chancelados) ? d.pct : 0,
+  }));
+  const subtotal = componentes.reduce((s, c) => s + c.percentual, 0);
+  const residuais = riscos.flatMap((r) => typeof r.pontosResiduaisNaoMitigados === "number" && Number.isFinite(r.pontosResiduaisNaoMitigados) && r.pontosResiduaisNaoMitigados >= 0
+    ? [{ label: r.label, pontos: r.pontosResiduaisNaoMitigados }] : []);
+  const descontoResidual = residuais.reduce((s, r) => s + r.pontos, 0);
+  const reducaoEfetiva = Math.max(0, Math.min(TETO_REDUCAO, subtotal - descontoResidual));
+  const valorFinal = multaComAtenuantes(base, reducaoEfetiva);
+  const moeda = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const texto = [
+    `${componentes.map((c) => `${c.label}: +${c.percentual}%`).join(" | ")} | Subtotal: ${subtotal}%`,
+    `− Riscos residuais não mitigados (RIPO): −${descontoResidual}%`,
+    `Pontos percentuais declarados: ${residuais.length ? residuais.map((r) => `${r.label}: ${r.pontos}%`).join(" | ") : "nenhum; escores de probabilidade × impacto não são percentuais e não foram convertidos em desconto"}.`,
+    `= Redução efetiva: ${reducaoEfetiva}% (teto de ${TETO_REDUCAO}% respeitado${subtotal < descontoResidual ? "; piso de 0% aplicado" : ""})`,
+    `Valor base: ${moeda(base)}`,
+    `Valor final = ${moeda(base)} × (1 − ${reducaoEfetiva}%) = ${moeda(valorFinal)}`,
+  ].join("\n");
+  return { componentes, subtotal, residuais, descontoResidual, reducaoEfetiva, valorFinal, texto };
 }
 
 /** Orçamento total do prazo ANPD: 3 dias úteis = 72 horas úteis (Res. CD/ANPD nº 15/2024, art. 6º). */

@@ -8,8 +8,8 @@ import { PartyPopper, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import { TETO_REDUCAO, multaComAtenuantes } from "@/lib/priva/dosimetria";
-import { BIBLIOTECA, INERENTE, derivarRisco, reducaoPorRiscos, sugestaoDescricao, sugestaoMitigacao, type RiscoId } from "@/lib/privacium/bibliotecaMitigacao";
+import { TETO_REDUCAO, memoriaDosimetria } from "@/lib/priva/dosimetria";
+import { BIBLIOTECA, INERENTE, derivarRisco, sugestaoDescricao, sugestaoMitigacao, type RiscoId } from "@/lib/privacium/bibliotecaMitigacao";
 import { DIMENSOES_AIA, NIVEIS_RISCO_IA, PL_2338_RESSALVA, ROTULO_ESCOPO_IA, classificarRiscoIA, respostasAIA, type NivelRiscoIA } from "@/lib/privacium/bibliotecaTextos";
 import { CopiarModelo } from "@/components/priva/CopiarModelo";
 import { CitacaoNormativa } from "@/components/priva/CitacaoNormativa";
@@ -27,7 +27,7 @@ const RISKS: { id: RiscoId; label: string; hint: string }[] = [
   { id: "injecao", label: "Injeção de prompts", hint: "Instruções maliciosas que forçam o modelo a revelar ou alterar dados." },
 ];
 /** prob/imp só valem quando riscoManual; caso contrário derivam dos PIs concluídos. */
-type R = { prob?: number; imp?: number; descricao: string; mitig: string; descManual?: boolean; mitigManual?: boolean; riscoManual?: boolean };
+type R = { prob?: number; imp?: number; descricao: string; mitig: string; descManual?: boolean; mitigManual?: boolean; riscoManual?: boolean; pontosResiduaisNaoMitigados?: number };
 const DEF: R = { descricao: "", mitig: "" };
 const ESCUDO_PADRAO = "O Escudo Digital do Bloco 3 tokeniza localmente CPFs, e-mails e nomes ([CPF_TOKEN], [EMAIL_TOKEN], [NOME_TOKEN]) antes do envio a qualquer IA externa e reverte os tokens apenas no navegador do usuário autorizado. Nenhum dado pessoal em claro sai do perímetro do CNPJ.";
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -78,7 +78,7 @@ export function Bloco5() {
     const manualDesc = v.descManual ?? v.descricao.trim().length > 0;
     const riscoManual = !!v.riscoManual && typeof v.prob === "number" && typeof v.imp === "number";
     return {
-      ...r, derivado, riscoManual,
+      ...r, derivado, riscoManual, pontosResiduaisNaoMitigados: v.pontosResiduaisNaoMitigados,
       prob: riscoManual ? v.prob! : derivado.prob, imp: riscoManual ? v.imp! : derivado.imp,
       descricao: manualDesc ? v.descricao : "texto" in sugDesc ? sugDesc.texto : "",
       rotuloDesc: manualDesc ? "Revisado manualmente pelo DPO" : "texto" in sugDesc ? sugDesc.rotulo : sugDesc.aviso,
@@ -88,8 +88,8 @@ export function Bloco5() {
     };
   });
   const INE = INERENTE.prob * INERENTE.imp;
-  const ganho = efetivos.reduce((s, e) => s + (INE - e.prob * e.imp), 0);
-  const reducao = reducaoPorRiscos(efetivos);
+  const memoria = memoriaDosimetria(signatures, efetivos, base);
+  const reducao = memoria.reducaoEfetiva;
   const anoAtual = ciclos.rows[0] ? ciclos.rows[0].ano_fiscal + 1 : new Date().getFullYear();
   const ready = sistema.trim().length > 2 && escudo.trim().length > 20 && efetivos.every((e) => e.mitig.trim().length > 10);
   const responsaveis = demo
@@ -251,7 +251,7 @@ export function Bloco5() {
         <p className="mb-3 text-xs text-muted-foreground"><CitacaoNormativa citacao="Res. CD/ANPD nº 4/2023" /></p>
         <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
           <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">A redução é calculada a partir dos mesmos riscos do RIPD acima: risco inerente 5×5 = {INE} contra o risco residual de cada linha.</p>
+            <p className="text-xs text-muted-foreground">Somam-se apenas os percentuais dos PIs chancelados e subtraem-se os pontos percentuais residuais explicitamente declarados no RIPO. Os escores de probabilidade × impacto não são percentuais. A redução fica entre 0% e 75%.</p>
             {efetivos.map((e) => (
               <div key={e.id} data-testid={`sim-${e.id}`}>
                 <div className="flex items-center gap-2 text-sm">
@@ -262,7 +262,7 @@ export function Bloco5() {
               </div>
             ))}
             <div className="pt-2">
-              <p className="text-xs text-muted-foreground" data-testid="calculo-reducao">Redução = {TETO_REDUCAO}% × ({efetivos.map((e) => `${INE}−${e.prob * e.imp}`).join(" + ")}) ÷ ({efetivos.length} × {INE - 1}) = {TETO_REDUCAO}% × {ganho} ÷ {efetivos.length * (INE - 1)} = {reducao}% (teto {TETO_REDUCAO}%)</p>
+              <p className="whitespace-pre-line text-xs text-muted-foreground" data-testid="calculo-reducao">{memoria.texto}</p>
               <div className="mt-1 h-4 rounded-full bg-muted"><div className="h-4 rounded-full bg-success transition-all" style={{ width: `${(reducao / TETO_REDUCAO) * 100}%` }} /></div>
             </div>
           </div>
@@ -272,7 +272,7 @@ export function Bloco5() {
             </label>
             <div className="flex items-end gap-3">
               <div className="flex-1 text-center"><div className="mx-auto w-10 rounded-t bg-destructive" style={{ height: 120 }} /><p className="mt-1 text-[10px]">Risco inerente</p><p className="font-mono text-xs">{brl(base)}</p></div>
-              <div className="flex-1 text-center"><div className="mx-auto w-10 rounded-t bg-success" style={{ height: 120 * (1 - reducao / 100) }} /><p className="mt-1 text-[10px]">Risco residual</p><p className="font-mono text-xs">{brl(multaComAtenuantes(base, reducao))}</p></div>
+              <div className="flex-1 text-center"><div className="mx-auto w-10 rounded-t bg-success" style={{ height: 120 * (1 - reducao / 100) }} /><p className="mt-1 text-[10px]">Risco residual</p><p className="font-mono text-xs">{brl(memoria.valorFinal)}</p></div>
             </div>
             <p className="text-center font-mono text-3xl font-semibold text-success" data-testid="reducao">−{reducao}%</p>
             <p className="text-xs text-muted-foreground">Estimativa facultativa; o valor real da sanção depende da análise da ANPD.</p>
@@ -291,7 +291,8 @@ export function Bloco5() {
         <ul className="list-disc pl-5">{efetivos.map((e) => <li key={e.id}>{e.label}: risco residual {e.prob * e.imp} (inerente {INE}). {e.descricao} Mitigação: {e.mitig}</li>)}</ul>
         <p className="mt-2"><b>Barreira principal:</b> {escudo}</p>
         <h3 className="mt-4 font-semibold">Dosimetria</h3>
-        <p>Redução de {reducao}% da multa-base, derivada dos riscos residuais acima (Res. CD/ANPD nº 4/2023). Estimativa facultativa; o valor real da sanção depende da análise da ANPD.</p>
+        <p className="whitespace-pre-line" data-testid="dosimetria-pi05">{memoria.texto}</p>
+        <p>Estimativa facultativa; o valor real da sanção depende da análise da ANPD.</p>
       </PIOutput>
 
       {signatures["PI-05"] && (
