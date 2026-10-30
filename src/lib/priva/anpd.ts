@@ -1,4 +1,5 @@
 import { OUTRO, vincularNatureza, VERSAO_NATUREZAS } from "./naturezasIncidente";
+import { ehFeriado } from './feriados';
 import { textoMedidas, vincularMedida, VERSAO_MEDIDAS } from './medidasIncidente';
 import type { CategoriaANPD } from './categoriasANPD';
 import { textoRiscos, vincularRisco, VERSAO_RISCOS } from './riscosIncidente';
@@ -62,8 +63,8 @@ export const PRAZO_ANPD_REGRA = "3 dias úteis (Res. CD/ANPD nº 15/2024, art. 6
 export const PRAZO_ANPD_DETALHE = "contados do conhecimento do incidente; não inclui fins de semana e feriados";
 const DIA_MS = 24 * 3600000;
 const HORA_MS = 3600000;
-/** Dia útil = segunda a sexta (UTC). Feriados não constam de calendário local; a regra exibida os menciona. */
-const diaUtil = (t: number) => { const d = new Date(t).getUTCDay(); return d !== 0 && d !== 6; };
+/** Dia útil = segunda a sexta (UTC), excluídos os feriados nacionais de `feriados.ts`. */
+const diaUtil = (t: number) => { const d = new Date(t).getUTCDay(); return d !== 0 && d !== 6 && !ehFeriado(t); };
 
 /** Instantâneo limite: conhecimento + 3 dias úteis, preservando o horário do conhecimento. */
 export function limiteANPD(inicio: string, dias: 3 | 6 = 3): number {

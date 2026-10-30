@@ -11,9 +11,25 @@ export function calcularPorte(c: CriteriosPorte): Porte {
   criteriosSchema.parse(c);
   return c.grupoGrande || c.receitaAcimaTeto || c.sensivelLargaEscala || c.altoRisco || c.menoresAltoRisco || c.tipo === 'SA' || c.titulares > 10000 ? 'COMPLETO' : 'PEQUENO';
 }
-export function travaPorte(c: CriteriosPorte, gatilho: boolean) {
-  return calcularPorte(c) === 'PEQUENO' && gatilho ? 'Os dados declarados não sustentam o enquadramento como agente de pequeno porte. Gatilho de migração ativo: S.A. ou > 10 mil titulares/mês (gatilho registrado no método).' : null;
+/** Motivos do Gatilho Crítico de Migração: S.A., > 10 mil titulares/mês ou gatilho ativado pela empresa. */
+export function motivosGatilho(c: Pick<CriteriosPorte, 'tipo' | 'titulares'>, gatilhoEmpresa: boolean): string[] {
+  const m: string[] = [];
+  if (c.tipo === 'SA') m.push('sociedade anônima (S.A.)');
+  if (c.titulares > 10000) m.push(`mais de 10 mil titulares/mês (${c.titulares.toLocaleString('pt-BR')} declarados)`);
+  if (gatilhoEmpresa) m.push('Gatilho Crítico de Migração ativado para a empresa');
+  return m;
 }
+/** Trava: com gatilho ativo, o pequeno porte nunca é exibido nem assinado. */
+export function travaPorte(c: CriteriosPorte, gatilho: boolean) {
+  const m = motivosGatilho(c, gatilho);
+  return m.length ? `Os dados declarados não sustentam o enquadramento como agente de pequeno porte. Gatilho de migração ativo: ${m.join('; ')}.` : null;
+}
+/** Critérios cenográficos coerentes com cada cenário da demonstração. */
+export const CRITERIOS_DEMO: Record<Porte, CriteriosPorte> = {
+  COMPLETO: { grupoGrande: false, receitaAcimaTeto: false, tipo: 'SA', titulares: 25000, infraLimitada: false, descricaoInfra: '', sensivelLargaEscala: false, altoRisco: false, menoresAltoRisco: false },
+  PEQUENO: { grupoGrande: false, receitaAcimaTeto: false, tipo: 'ME', titulares: 800, infraLimitada: false, descricaoInfra: '', sensivelLargaEscala: false, altoRisco: false, menoresAltoRisco: false },
+};
+export const razaoDemo = (p: Porte) => p === 'PEQUENO' ? 'Empresa Cenográfica ME' : 'Empresa Cenográfica S.A.';
 export const prazoPorPorte = (p: Porte | null | undefined): 3 | 6 => p === 'PEQUENO' ? 6 : 3;
 export const citacaoSimplificada = (p: Porte | null | undefined): string[] => p === 'PEQUENO' ? ['Res. CD/ANPD nº 2/2022, art. 9º (registro simplificado — agentes de tratamento de pequeno porte)'] : [];
 export const rotuloPorte = (p: Porte) => p === 'PEQUENO' ? 'Agente de pequeno porte — Res. 2/2022' : 'Agente de médio/grande porte — regime completo';
