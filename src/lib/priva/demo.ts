@@ -21,7 +21,7 @@ export const DEMO_SLA_MS = restanteANPD(DEMO_INICIO_INCIDENTE, null, DEMO_AGORA)
 
 /** Static public scenario mirrors the diagnostic catalog, never queries tenant data. */
 const departamentosDemo = ['RH', 'TI', 'Marketing', 'Compras', 'Recepção', 'Jurídico', 'Financeiro'];
-const principiosDemo = ['Segurança da Informação (Art. 46)', 'Hipótese de Tratamento (Arts. 7º e 11)', 'Dados Pessoais Sensíveis (Art. 5º, II)', 'Compartilhamento com Terceiros (Arts. 26 e 39)', 'Especificação da Finalidade (Art. 6º, I)', 'Responsabilização e Prestação de Contas (Art. 6º, X)', 'Limitação e Minimização de Dados (Art. 6º, III)', 'Qualidade e Precisão de Dados (Art. 6º, V)'];
+const principiosDemo = ['Segurança da Informação (Art. 46)', 'Hipótese de Tratamento (Arts. 7º e 11)', 'Dado Pessoal Sensível (Art. 5º, II)', 'Compartilhamento com Terceiros (Arts. 26 e 39)', 'Especificação da Finalidade (Art. 6º, I)', 'Responsabilização e Prestação de Contas (Art. 6º, X)', 'Limitação e Minimização de Dados (Art. 6º, III)', 'Qualidade e Precisão de Dados (Art. 6º, V)'];
 const pesosDemo = [10, 10, 9, 9, 8, 8, 7, 7];
 export const DEMO_QUESTIONS: Question[] = Array.from({ length: 166 }, (_, index) => {
   const department = departamentosDemo[index % 7] ?? 'RH';
