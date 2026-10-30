@@ -182,8 +182,8 @@ export function Bloco5() {
             <div key={d.id} className="rounded-sm border bg-background p-3" data-testid={`aia-${d.id}`}>
               <p className="font-semibold text-primary">{d.titulo}</p>
               <p className="text-xs text-muted-foreground">{d.pergunta}</p>
-              <p className="mt-2 text-sm">{aia[d.id].resposta}</p>
-              {aia[d.id].sugerida && <p className="mt-1 text-[11px] text-muted-foreground">Sugerido a partir do RIPO</p>}
+              <p className="mt-2 text-sm">{aia[d.id]!.resposta}</p>
+              {aia[d.id]!.sugerida && <p className="mt-1 text-[11px] text-muted-foreground">Sugerido a partir do RIPO</p>}
             </div>
           ))}
         </div>
