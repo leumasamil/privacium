@@ -70,16 +70,33 @@ export function Bloco2() {
   const save = async () => {
     if (demo) return avisarAcaoDemo();
     if (!edit) return;
-    const err = validateRot(normalizeHipoteses(edit.form));
+    // Operador: a finalidade é sempre a do contrato com o controlador (LGPD art. 39), nunca própria.
+    const form = edit.form.papel_agente === "OPERADOR" ? { ...edit.form, finalidade_especifica: finalidadeDoContrato(edit.form.contrato_controlador ?? "") } : edit.form;
+    const err = validateRot(normalizeHipoteses(form));
     if (err) { toast.error(err); return; }
-    const ciclo = cicloDaLinha(edit.form);
-    const payload = { ...normalizeHipoteses(edit.form), ciclo_vida: ciclo, genero_verbo: generosMarcados(ciclo)[0] ?? "Coletar", justificativa_mitigacao: isRisky(edit.form) ? edit.form.justificativa_mitigacao : null };
+    const ciclo = cicloDaLinha(form);
+    const payload = { ...normalizeHipoteses(form), ciclo_vida: ciclo, genero_verbo: generosMarcados(ciclo)[0] ?? "Coletar", justificativa_mitigacao: isRisky(form) ? form.justificativa_mitigacao : null };
     const { data, error } = edit.id
-      ? await supabase.from("registro_operacoes").update(payload).eq("id", edit.id).select("codigo").single()
-      : await supabase.from("registro_operacoes").insert(payload).select("codigo").single();
+      ? await supabase.from("registro_operacoes").update(payload).eq("id", edit.id).select("id, codigo").single()
+      : await supabase.from("registro_operacoes").insert(payload).select("id, codigo").single();
     if (error) { toast.error(error.message); return; }
+    const rotId = edit.id ?? data.id;
     log(edit.id ? "UPDATE" : "INSERT", "registro_operacoes", `Processo ${data.codigo}`);
-    for (const a of alertasCoerencia(edit.form)) log("INSERT", "registro_operacoes", `Alerta de coerência dado × hipótese em ${data.codigo}: ${a}`);
+    for (const a of alertasCoerencia(form)) log("INSERT", "registro_operacoes", `Alerta de coerência dado × hipótese em ${data.codigo}: ${a}`);
+    if (alertaFinalidadeOperador(edit.form)) log("INSERT", "registro_operacoes", `Alerta em ${data.codigo}: ${ALERTA_FINALIDADE_OPERADOR}`);
+    // Destino INTERNO do produto: cria a linha receptora no ROT do setor de destino, com origem rastreada.
+    const destino = form.destino_produto as DestinoProduto | null;
+    if (destino?.tipo === "INTERNO" && destino.area_setor_destino && !destino.linha_receptor_id && form.produto_interno) {
+      const areaDestino = destino.area_setor_destino.split("›")[0]?.trim() ?? "";
+      const receptor = montarLinhaReceptora({ ...payload, id: rotId, codigo: data.codigo }, destino.area_setor_destino, chaveDaArea(areaDestino));
+      const ins = await supabase.from("registro_operacoes").insert(receptor).select("id, codigo").single();
+      if (ins.error) toast.error(`Linha receptora não criada: ${ins.error.message}`);
+      else {
+        await supabase.from("registro_operacoes").update({ destino_produto: { ...destino, linha_receptor_id: ins.data.id, linha_receptor_codigo: ins.data.codigo } }).eq("id", rotId);
+        log("INSERT", "registro_operacoes", `Compartilhamento interno: ${data.codigo} → ${ins.data.codigo} (${destino.area_setor_destino})`);
+        toast.success(`Linha ${ins.data.codigo} criada no setor receptor (${destino.area_setor_destino})`);
+      }
+    }
     toast.success(`${data.codigo} salvo`);
     setEdit(null);
     void qc.invalidateQueries({ queryKey: key });
@@ -105,7 +122,8 @@ export function Bloco2() {
 
   const riskyCount = rows.filter(isRisky).length;
   const semDestino = rows.filter((r) => !destinoDeclarado(r)).length;
-  const NUMS = ["", "1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "", "", "8. ", "9. ", "10. ", "10A. ", "10B. ", "11. ", "12. "];
+  const semProduto = rows.filter((r) => alertaProdutoAusente(r)).length;
+  const NUMS = ["", "1. ", "1A. ", "2. ", "3. ", "4. ", "5. ", "6. ", "", "", "8. ", "9. ", "10. ", "10A. ", "10C. ", "10B. ", "11. ", "12. "];
 
   return (
     <div className="space-y-6">
@@ -117,7 +135,7 @@ export function Bloco2() {
       <CicloResumo />
 
       <Panel id="rot" title={`Planilha mestre · ${rows.length} processos · ${riskyCount} em alerta`} action={canEdit && (
-        <Button size="sm" onClick={() => demo ? avisarAcaoDemo() : setEdit({ id: null, form: empty(cnpj) })}><Plus className="h-4 w-4" /> Novo processo</Button>
+        <Button size="sm" onClick={() => demo ? avisarAcaoDemo() : setEdit({ id: null, form: empty(cnpj, papelPadrao) })}><Plus className="h-4 w-4" /> Novo processo</Button>
       )}>
         <p className="mb-2 rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="nota-metodo-planilha">{NOTA_METODO_CICLO} {NOTA_RESPONSAVEL_ETAPAS}</p>
         <div className="overflow-x-auto">
