@@ -113,7 +113,8 @@ export function Bloco5() {
   const finalizar = async () => {
     if (demo) return avisarAcaoDemo();
     setBusy(true);
-    const { error } = await supabase.from("ciclos_priva").insert({ empresa_cnpj: cnpj, ano_fiscal: anoAtual, reducao_dosimetria: 0, assinaturas: signatures as unknown as Json });
+    // Simulador em revisão: grava NULL ("não calculado"), nunca 0 ("calculado e igual a zero").
+    const { error } = await supabase.from("ciclos_priva").insert({ empresa_cnpj: cnpj, ano_fiscal: anoAtual, reducao_dosimetria: null, assinaturas: signatures as unknown as Json });
     setBusy(false);
     if (error) { toast.error("Não foi possível finalizar o ciclo."); return; }
     set({ signatures: {}, incidentStart: null, incidentSteps: [false, false, false, false, false, false] },
