@@ -83,6 +83,65 @@ describe('regras da demonstração pública', () => {
     expect(safeAuthPath('/bloco-2#rot')).toBe('/bloco-2#rot');
   });
   it('assinaturas nulas ou arrays não liberam blocos', () => {
-    for (const value of [null, undefined, []]) expect(assinaturasVigentes(value as never, new Date('2026-10-30'))).toEqual({});
+    for (const value of [null, undefined, []]) expect(assinaturasVigente(value as never, new Date('2026-10-30'))).toEqual({});
+  });
+});
+
+describe('circuito do incidente no demo (etapa 06 como consequência)', () => {
+  const fonteBase = () => {
+    const incident = DEMO_ROWS.incidentes_seguranca[0]; if (!incident) throw new Error('Missing incident');
+    return { incident, fonte: { incidentes: [incident], lotes: DEMO_ROWS.lotes_pgaudit, assinaturas: DEMO_PUBLIC_SIGNATURES, agora: DEMO_AGORA } };
+  };
+  it('antes do envio: 5 de 6, encerramento bloqueado só pelo formulário', () => {
+    const { incident, fonte } = fonteBase();
+    const e = carregarEstadoIncidenteDemo(incident.id, fonte);
+    expect(e.etapas.concluidas).toBe(5);
+    expect(e.podeEncerrar).toBe(false);
+    expect(e.motivos_bloqueio).toEqual(['Formulário ANPD não enviado']);
+  });
+  it('envio simulado conclui a etapa 06 com data e responsável e habilita o encerramento', () => {
+    const { incident, fonte } = fonteBase();
+    const sessao: DemoSessao = { enviadoEm: DEMO_AGORA_ISO, encerradoEm: null };
+    const sobreposto = aplicarSessaoDemo(incident, sessao);
+    const e = carregarEstadoIncidenteDemo(sobreposto.id, { ...fonte, incidentes: [sobreposto] });
+    expect(e.etapas.concluidas).toBe(6);
+    const sexta = e.etapas.itens[5];
+    expect(sexta?.concluida).toBe(true);
+    expect(sexta?.responsavel).toBe('DPO Cenográfico');
+    expect(sexta?.data).toBe(DEMO_AGORA_ISO);
+    expect(e.podeEncerrar).toBe(true);
+    expect(e.anpd.prazo_vencido).toBe(false);
+  });
+  it('encerramento simulado marca encerrado_em e a sessão completa libera o fluxo do PI-04', () => {
+    const { incident, fonte } = fonteBase();
+    const sobreposto = aplicarSessaoDemo(incident, { enviadoEm: DEMO_AGORA_ISO, encerradoEm: DEMO_AGORA_ISO });
+    const e = carregarEstadoIncidenteDemo(sobreposto.id, { ...fonte, incidentes: [sobreposto] });
+    expect(e.incidente.encerrado_em).toBe(DEMO_AGORA_ISO);
+    expect(e.etapas.concluidas).toBe(6);
+    expect(e.anpd.enviado).toBe(true);
+  });
+  it('trilha cenográfica tem seed encadeado e contador real', () => {
+    expect(DEMO_TRILHA_SEED.length).toBeGreaterThanOrEqual(11);
+    for (let i = 1; i < DEMO_TRILHA_SEED.length; i++) expect(DEMO_TRILHA_SEED[i]?.prev_hash).toBe(DEMO_TRILHA_SEED[i - 1]?.hash);
+    for (const ev of DEMO_TRILHA_SEED) expect(ev.hash).toMatch(/^[0-9a-f]{64}$/);
+  });
+  it('fluxo completo em memória: envio, encerramento e dupla chancela liberam o Bloco 5 sem banco', async () => {
+    let ctx: ReturnType<typeof usePriva> | undefined;
+    function Probe() { ctx = usePriva(); return null; }
+    render(<PrivaProvider initialDemo><Probe /></PrivaProvider>);
+    if (!ctx) throw new Error('Context missing');
+    const eventosAntes = ctx.audit.length;
+    expect(isUnlocked(ctx.signatures, 5)).toBe(false);
+    await act(async () => { await ctx?.demoEnviarANPD(); });
+    expect(ctx.demoSessao.enviadoEm).toBe(DEMO_AGORA_ISO);
+    await act(async () => { await ctx?.demoEncerrarIncidente(); });
+    expect(ctx.demoSessao.encerradoEm).toBe(DEMO_AGORA_ISO);
+    await act(async () => { await ctx?.demoAssinar('PI-04', 'DPO'); });
+    expect(isUnlocked(ctx.signatures, 5)).toBe(false);
+    await act(async () => { await ctx?.demoAssinar('PI-04', 'DIR'); });
+    expect(ctx.signatures['PI-04']).toBeDefined();
+    expect(isUnlocked(ctx.signatures, 5)).toBe(true);
+    expect(ctx.audit.length).toBe(eventosAntes + 4);
+    expect(database.from).not.toHaveBeenCalled(); expect(database.rpc).not.toHaveBeenCalled();
   });
 });
