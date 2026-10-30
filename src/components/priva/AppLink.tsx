@@ -8,7 +8,7 @@ export function AppLink({ children, className, onClick, ...props }: LinkProps & 
   if (publicDemo && props.to && props.to !== '/auth' && props.to !== '/demo') {
     const { to: _to, search: _search, hash, ...rest } = props as Record<string, unknown>;
     const aba = String(props.to).includes('/anpd/') ? 'anpd' : String(props.to).replace(/^\//, '');
-    return <Link to="/demo" search={{ aba }} {...(hash ? { hash } : {})} {...rest} className={className} onClick={onClick}>{children}</Link>;
+    return <Link to="/demo" search={{ aba }} {...(typeof hash === 'string' && hash ? { hash } : {})} {...rest} className={className} onClick={onClick}>{children}</Link>;
   }
   return <Link {...props} className={className} onClick={onClick}>{children}</Link>;
 }
