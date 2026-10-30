@@ -35,6 +35,7 @@ export function slaRestante(inicio: string | null, agora: number) {
  * NULL significa "não calculado" (simulador em revisão) — nunca exibir "0%".
  */
 export function rotuloReducaoDosimetria(reducao: number | null | undefined): string {
-  if (reducao === null || reducao === undefined) return "não calculado";
-  return `${reducao}%`;
+  // Não há método verificado: qualquer valor numérico só pode ter vindo do método rejeitado (20/20/20/15, teto 75%).
+  void reducao;
+  return "não calculado";
 }

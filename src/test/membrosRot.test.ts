@@ -96,7 +96,7 @@ describe("coerência dado × hipótese (item 6)", () => {
 });
 
 describe("demonstração cenográfica", () => {
-  it("as quatro linhas do ROT demo têm Área › Setor, insumo e meio; todas com destino declarado", () => {
+  it("as linhas do ROT demo têm Área › Setor, insumo e meio; todas com destino declarado", () => {
     for (const r of DEMO_ROT) {
       expect(r.area_setor).toContain("›");
       expect(r.insumo).toBeTruthy();

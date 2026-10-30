@@ -1,7 +1,6 @@
 import { createFileRoute, useHydrated } from '@tanstack/react-router';
 import { PrivaProvider, usePriva } from '@/lib/priva/store';
 import { AppShell } from '@/components/priva/AppShell';
-import { BlockGate } from '@/components/priva/ui';
 import { Painel } from '@/components/priva/views/Painel';
 import { Bloco1 } from '@/components/priva/views/Bloco1';
 import { Bloco2 } from '@/components/priva/views/Bloco2';
@@ -16,9 +15,10 @@ import { Auditoria } from '@/components/priva/views/Auditoria';
 import { FormularioANPD } from '@/components/priva/FormularioANPD';
 import { EncarregadoDPO } from '@/components/priva/EncarregadoDPO';
 import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
+import { QualidadeNormativa } from '@/components/priva/views/QualidadeNormativa';
 import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
 
-const ABAS = ['painel', 'bloco-1', 'bloco-2', 'bloco-3', 'bloco-4', 'bloco-5', 'anpd', 'kanban', 'pendencias', 'manual', 'glossario', 'auditoria', 'encarregado'];
+const ABAS = ['painel', 'bloco-1', 'bloco-2', 'bloco-3', 'bloco-4', 'bloco-5', 'anpd', 'kanban', 'pendencias', 'manual', 'glossario', 'auditoria', 'encarregado', 'qualidade-normativa'];
 export const Route = createFileRoute('/demo')({
   validateSearch: (search: Record<string, unknown>): { aba?: string } => ({ aba: typeof search['aba'] === 'string' && ABAS.includes(search['aba']) ? search['aba'] : 'painel' }),
   head: () => ({ meta: [
@@ -42,16 +42,17 @@ function DemoPage() {
 function DemoConteudo({ aba }: { aba: string }) {
   switch (aba) {
     case 'bloco-1': return <Bloco1 />;
-    case 'bloco-2': return <BlockGate n={2}><Bloco2 /></BlockGate>;
-    case 'bloco-3': return <BlockGate n={3}><Bloco3 /></BlockGate>;
-    case 'bloco-4': return <BlockGate n={4}><Bloco4 /></BlockGate>;
-    case 'bloco-5': return <BlockGate n={5}><Bloco5 /></BlockGate>;
+    case 'bloco-2': return <Bloco2 />;
+    case 'bloco-3': return <Bloco3 />;
+    case 'bloco-4': return <Bloco4 />;
+    case 'bloco-5': return <Bloco5 />;
     case 'kanban': return <Kanban />;
     case 'pendencias': return <Pendencias />;
     case 'manual': return <Manual aba="guias" />;
     case 'glossario': return <Glossario />;
     case 'auditoria': return <Auditoria />;
     case 'encarregado': return <EncarregadoDPO />;
+    case 'qualidade-normativa': return <QualidadeNormativa />;
     case 'anpd': return <DemoANPD />;
     default: return <Painel />;
   }
