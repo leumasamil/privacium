@@ -30,3 +30,6 @@
 - [x] Criar página 404 explícita e verificar navegação.
 - [x] Extrair AvisoModoDemo com AlertTriangle no topo das telas e ajustar texto da página 404; verificar saída e rotas inexistentes.
 - [x] Revalidar exclusões de ambiente, credenciais privadas e RLS das 23 tabelas; documentar limpeza do histórico e recomendação de rotação (exclusão bloqueada conforme pendência acima).
+- [ ] Corrigir retorno do login e destino seguro, com Lovable apenas na visualização incorporada.
+- [ ] Criar demonstração pública isolada, seed ANPD completo e ações com aviso, preservando guard e RLS.
+- [ ] Executar e reportar os dez critérios de aceitação, distinguindo verificações reais de limitações externas.
