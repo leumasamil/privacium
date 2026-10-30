@@ -17,7 +17,7 @@ export const PAPEIS_CADEIA = ["OPERADOR", "CONTROLADOR_INDEPENDENTE", "SUBOPERAD
 export type PapelCadeia = (typeof PAPEIS_CADEIA)[number];
 export const ROTULO_CADEIA: Record<PapelCadeia, string> = { OPERADOR: "Operador", CONTROLADOR_INDEPENDENTE: "Controlador independente", SUBOPERADOR: "Suboperador" };
 
-/** Checklist do instrumento escrito (item do método; o art. 39 exige instruções do controlador). */
+/** Checklist de cláusulas contratuais do método — instrumento do método, não transcrição do art. 39. */
 export const CHECKLIST_ART39 = [
   ["instrucoes", "Instruções sobre o tratamento"], ["proposito", "Propósito do tratamento"], ["metodos", "Métodos"], ["duracao", "Duração"],
   ["deveres", "Deveres do operador"], ["vigencia", "Prazo de vigência"], ["controle", "Meios de controle pelo controlador"],
@@ -42,8 +42,16 @@ export const HIPOTESES_ART33: { valor: string; rotulo: string; literal: string }
   { valor: "IX", rotulo: "Art. 33, IX — hipóteses do art. 7º, II, V e VI", literal: "quando necessário para atender as hipóteses previstas nos incisos II, V e VI do art. 7º desta Lei." },
 ];
 
-export const NOTA_SUBOPERADOR = `Suboperador: vincule o operador principal. A LGPD não regula a subcontratação em dispositivo próprio (o art. 39 não tem parágrafos); o suboperador atua sob as instruções do controlador — art. 39: "${LITERAL_ART39}" — e responde nos termos do art. 42, § 1º, I.`;
-export const ALERTA_TERCEIRO_SEM_CONTRATO = "Terceiro sem contrato com cláusulas do art. 39 — compartilhamento externo não pode ser chancelado.";
+export const NOTA_SUBOPERADOR = "A LGPD não disciplina expressamente a subcontratação. O suboperador é operador da cadeia e responde nos termos do art. 42, § 1º, I, quando descumprir as instruções lícitas do controlador. O registro do vínculo atende ao art. 37.";
+/** Art. 42, § 1º, I — exibido com a nota do suboperador. */
+export const CITACAO_ART42_P1_I = `Art. 42, § 1º — "A fim de assegurar a efetiva indenização ao titular dos dados: I - ${LITERAL_ART42_P1_I}."`;
+/** Art. 6º, I — finalidade. */
+export const LITERAL_ART6_I = "finalidade: realização do tratamento para propósitos legítimos, específicos, explícitos e informados ao titular, sem possibilidade de tratamento posterior de forma incompatível com essas finalidades";
+/** Art. 43 — texto oficial integral (prova de excludente). */
+export const LITERAL_ART43 = "Os agentes de tratamento só não serão responsabilizados quando provarem: I - que não realizaram o tratamento de dados pessoais que lhes é atribuído; II - que, embora tenham realizado o tratamento de dados pessoais que lhes é atribuído, não houve violação à legislação de proteção de dados; ou III - que o dano é decorrente de culpa exclusiva do titular dos dados ou de terceiro.";
+export const TITULO_CHECKLIST = "Checklist de cláusulas contratuais do método (não é transcrição do art. 39)";
+export const NOTA_CHECKLIST = "O art. 39 da LGPD estabelece apenas o dever de o operador seguir as instruções do controlador. Este checklist é instrumento do método para verificar se o contrato cobre os pontos necessários à comprovação (LGPD arts. 6º, X; 37; 46) e não reproduz dispositivo legal.";
+export const ALERTA_TERCEIRO_SEM_CONTRATO = "Terceiro sem contrato vigente com o checklist de cláusulas contratuais do método completo — compartilhamento externo não pode ser chancelado.";
 export const FINALIDADE_GESTAO_FORNECEDORES = "Gestão de fornecedores com acesso a dados pessoais";
 
 export type TerceiroResumo = { id: string; razao_social: string; contrato_vigente: boolean; clausulas_art39: boolean; ativo?: boolean };

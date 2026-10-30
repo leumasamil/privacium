@@ -251,7 +251,7 @@ export type Sugestao = { texto: string; origem: string; patch: Partial<RotInput>
  * Nunca pré-seleciona: toda sugestão exibe "Sugerido — confirme" e exige ação do usuário.
  */
 export const VERSAO_SUGESTOES = "v1";
-const ORIGEM_FINALIDADE = `tabela determinística ${VERSAO_SUGESTOES} · Área › Setor + insumo`;
+const ORIGEM_FINALIDADE = "tabela determinística v2 · Área › Setor + insumo";
 const ORIGEM_7A = `tabela determinística ${VERSAO_SUGESTOES} · finalidade/titulares → art. 7º`;
 const ORIGEM_7B = `tabela determinística ${VERSAO_SUGESTOES} · dado pessoal sensível → art. 11`;
 
@@ -328,3 +328,30 @@ export function alertasCoerencia(r: Pick<RotInput, "dados_sensiveis" | "hipotese
     out.push(`${ALERTA_COERENCIA} (biometria × consentimento, sem indicação de consentimento específico)`);
   return out;
 }
+
+/** Campo 6 — sugestão determinística (v2) por Área › Setor + insumo; nunca pré-seleciona. */
+export function sugestaoFinalidade(r: Pick<RotInput, "area_setor" | "insumo">): { finalidade: string; origem: string } | null {
+  const area = (r.area_setor ?? "").split("›")[0]?.trim() ?? "";
+  const insumo = r.insumo?.trim().toLowerCase() ?? "";
+  const regra = SUGESTOES_FINALIDADE_V1[area]?.find((x) => x.insumo === insumo);
+  return regra ? { finalidade: regra.finalidade, origem: ORIGEM_FINALIDADE } : null;
+}
+const FINALIDADES_PADRAO = [...new Set(Object.values(SUGESTOES_FINALIDADE_V1).flat().map((x) => x.finalidade))];
+const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter((w) => w.length > 3);
+export const finalidadePadronizada = (texto: string) => FINALIDADES_PADRAO.includes(texto.trim());
+/** Finalidade livre com correspondência aproximada (≥ 50% das palavras da padronizada) — aviso não bloqueante. */
+export function finalidadeEquivalente(r: Pick<RotInput, "finalidade_especifica">): string | null {
+  const t = r.finalidade_especifica.trim();
+  if (!t || finalidadePadronizada(t)) return null;
+  const w = new Set(norm(t));
+  let melhor: { f: string; s: number } | null = null;
+  for (const f of FINALIDADES_PADRAO) {
+    const fw = norm(f); if (!fw.length) continue;
+    const s = fw.filter((x) => w.has(x)).length / fw.length;
+    if (s >= 0.5 && (!melhor || s > melhor.s)) melhor = { f, s };
+  }
+  return melhor?.f ?? null;
+}
+/** Contador do cabeçalho da coluna 6: "X de Y finalidades padronizadas". */
+export const contadorPadronizadas = (rows: Pick<RotRow, "finalidade_especifica">[]) =>
+  `${rows.filter((r) => finalidadePadronizada(r.finalidade_especifica)).length} de ${rows.length} finalidades padronizadas`;

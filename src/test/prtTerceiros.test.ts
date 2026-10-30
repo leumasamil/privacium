@@ -37,7 +37,7 @@ describe("Terceiros e alerta bloqueante do destino externo", () => {
     expect(terceiroBloqueado({ contrato_vigente: true, clausulas_art39: false })).toBe(true);
     const r = linha([{ nome: "X", destino: { tipo: "EXTERNO", terceiro_id: "a" } }, { nome: "Y", destino: { tipo: "EXTERNO", terceiro_id: "b" } }]);
     expect(prtExternosBloqueados(r, [ok, { id: "b", contrato_vigente: false, clausulas_art39: false }]).map((p) => p.nome)).toEqual(["Y"]);
-    expect(ALERTA_TERCEIRO_SEM_CONTRATO).toBe("Terceiro sem contrato com cláusulas do art. 39 — compartilhamento externo não pode ser chancelado.");
+    expect(ALERTA_TERCEIRO_SEM_CONTRATO).toBe("Terceiro sem contrato vigente com o checklist de cláusulas contratuais do método completo — compartilhamento externo não pode ser chancelado.");
   });
   it("checklist só é completo com os 10 itens", () => {
     expect(checklistCompleto({ instrucoes: true })).toBe(false);
