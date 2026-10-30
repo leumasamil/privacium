@@ -232,6 +232,27 @@
       "when": 1793377933162,
       "tag": "0032_feriados_prazo_anpd",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793379524302,
+      "tag": "0033_membros_empresa_e_rot_campos",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793379923222,
+      "tag": "0034_recarregar_cache_postgrest",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793379963074,
+      "tag": "0035_blindar_documento_membros",
+      "breakpoints": true
     }
   ]
 }

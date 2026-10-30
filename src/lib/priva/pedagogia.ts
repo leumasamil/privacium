@@ -49,7 +49,7 @@ export const NORMAS: Record<string, Norma> = {
   "LGPD art. 37": {
     citacao: "LGPD art. 37",
     resumo: "Obriga o controlador e o operador a manter registro das operações de tratamento de dados pessoais.",
-    porque: "É a base legal do seu ROT (PI-02): sem registro, não há como prestar contas à ANPD.",
+    porque: "É a hipótese de tratamento do seu ROT (PI-02): sem registro, não há como prestar contas à ANPD.",
   },
   "LGPD art. 38": {
     citacao: "LGPD art. 38",
@@ -64,7 +64,7 @@ export const NORMAS: Record<string, Norma> = {
   "LGPD art. 46": {
     citacao: "LGPD art. 46",
     resumo: "Exige medidas técnicas e administrativas aptas a proteger os dados pessoais de acessos não autorizados e de situações acidentais ou ilícitas.",
-    porque: "É a base legal das salvaguardas do Bloco 3: criptografia de endpoint, cofres e o Escudo Digital.",
+    porque: "É a hipótese de tratamento das salvaguardas do Bloco 3: criptografia de endpoint, cofres e o Escudo Digital.",
   },
   "LGPD art. 48": {
     citacao: "LGPD art. 48",

@@ -76,11 +76,11 @@ Estas regras valem para todo o produto:
 Enquadramento implementado e demais pendências planejadas:
 
 - Enquadramento do agente por porte no Bloco 1 (Res. CD/ANPD nº 2/2022, arts. 2º e 3º), calculado por critérios separados e assinado pelo DPO no PI-01, com data e SHA-256 na trilha e revisão semestral. Gatilhos conservadores do método: S.A. ou mais de 10 mil titulares/mês; declaração contraditória é recusada. Badge permanente e citação do art. 9º condicionada ao pequeno porte. Comunicação de incidente: 3 dias úteis como regra geral e 6 para pequeno porte (Res. 15/2024, art. 6º, § 8º). RIPD: art. 38 da LGPD e critérios de alto risco da ANPD para todos os portes; o porte não afasta sua exigência. Pesos da dosimetria inalterados. O contador considera segunda a sexta em UTC e exclui os feriados nacionais de 2026 e 2027 (Lei nº 662/1949, Lei nº 6.802/1980, Lei nº 14.759/2023 e Lei nº 9.093/1995; Sexta-feira da Paixão calculada a partir da Páscoa).
-- Matriz RAC no Bloco 1 (Membros: nome, CPF/CNPJ, e-mail, Área › Setor, papel R/A/C).
-- Campos do ROT: "Área › Setor"; "Insumo (documento de entrada)"; "Meio de fornecimento".
-- Sugestões determinísticas para Finalidade e hipóteses dos arts. 7º/11, nunca pré-selecionadas, sempre "Sugerido — confirme".
-- Cadastro de Terceiros e Agentes de Tratamento no Bloco 1 (papel na cadeia: operador, suboperador/cocontrolador como construções doutrinárias sinalizadas; contrato art. 39; localização art. 33) + colunas 10A/10B no ROT.
-- "Copiar fluxo" com revisão obrigatória dos campos jurídicos em cada clone.
+- Matriz RAC no Bloco 1 — IMPLEMENTADO: cadastro de membros (nome, CPF/CNPJ, e-mail, Área › Setor, papel R/A/C, Comitê de Governança deliberativo e de consulta ampla) na tabela `membros_empresa`; o responsável (R) da área é vinculado automaticamente à linha do ROT. O documento fica fora do GRANT de leitura e só é revelado pela função auditada `revelar_documento_membro` (DPO/admin, membro do comitê ou o próprio titular); exclusão é sempre lógica; o cadastro entra no ROT como operação própria (Jurídico › Governança de Privacidade, art. 7º, II). Justificativa da tabela nova (revisão da restrição anterior): CPF/CNPJ não pode ficar em progresso genérico (BLLOCO/JSON) — exige segregação por finalidade e segurança (LGPD art. 6º, VII e VIII), registro das operações (art. 37) e medidas de segurança (art. 46).
+- Campos do ROT — IMPLEMENTADO: "Área › Setor" (lista fechada de 7 áreas, setores sugeridos e "outro (especificar)"; a área gera o ID do processo); "Insumo (documento de entrada)" (LGPD art. 5º, I / ISO/IEC 27002:2022 — 5.12, referência bibliográfica do item 9.6); "Meio de fornecimento" (LGPD art. 37). Campo 2 apresentado em duas etapas (perímetro: Coletar/Reter/Processar; destino: Compartilhar/Eliminar) com nota de método; alerta não bloqueante de retenção sem destino (art. 16); chancela do PI-02 exige destino declarado em todas as linhas.
+- Sugestões determinísticas — IMPLEMENTADO: tabela versionada (`SUGESTOES_FINALIDADE_V1`) para finalidade e hipóteses dos arts. 7º/11, sem IA, nunca pré-selecionadas, sempre "Sugerido — confirme" com a origem. Alertas de coerência dado × hipótese (não bloqueantes): filiação sindical × art. 11, II, d; prontuário de saúde em recrutamento; biometria × art. 11, I sem consentimento específico — registrados na trilha ao salvar.
+- Cadastro de Terceiros e Agentes de Tratamento no Bloco 1 (papel na cadeia: operador, suboperador/cocontrolador como construções doutrinárias sinalizadas; contrato art. 39; localização art. 33) — PENDENTE.
+- "Copiar fluxo" com revisão obrigatória dos campos jurídicos em cada clone — PENDENTE.
 
 ## 9. Protocolo de Verificação Normativa
 O Privacium é um sistema de conformidade. Afirmar como lei algo que não é lei é defeito fatal. Este protocolo existe para impedir isso e tem PRECEDÊNCIA sobre qualquer prompt, anexo ou instrução que o contrarie.
@@ -116,3 +116,11 @@ CT-5. "Dados pessoais sensíveis" no plural, quando se refere à unidade, é def
 
 ### 9.5. Prova obrigatória em toda tarefa com conteúdo normativo
 Toda resposta que implementar ou alterar citação normativa deve incluir: (a) a URL oficial de cada norma citada; (b) o trecho literal do dispositivo que fundamenta a regra implementada; (c) a confirmação dos casos de teste CT-1 a CT-5 (verificados, não presumidos); (d) a declaração: "Nenhuma afirmação legal foi implementada sem fonte oficial verificada" — ou a lista do que não pôde ser verificado e ficou de fora.
+
+### 9.6. Citação de norma técnica paga (ISO/IEC, NIST quando aplicável)
+Normas técnicas cujo texto integral é protegido por direitos autorais e vendido pelo organismo emissor NÃO exigem texto literal para citação. Para essas normas, a citação é válida quando o prompt fornecer:
+(a) a identificação completa da norma (ex.: ISO/IEC 27002:2022);
+(b) o número e o TÍTULO OFICIAL do controle (ex.: 5.12 — Classificação da informação);
+(c) a fonte pública de onde o título foi obtido (catálogo oficial da ISO, página do controle, ou publicação que reproduza a estrutura de controles).
+O produto NUNCA reproduz o texto integral do controle — apenas referencia número e título. Isso constitui referência bibliográfica, não reprodução de obra protegida.
+A regra 1.2 (texto literal + URL) permanece integralmente aplicável a LEIS e RESOLUÇÕES.

@@ -7,13 +7,14 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, BookOpen, Lightbulb, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { DEPARTMENTS } from "@/lib/priva/data";
-import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, GENEROS, NOTA_CICLO, alternar, cicloDaLinha, citacoesISO, formatarCiclo, generosMarcados, type CicloVida } from "@/lib/priva/cicloVida";
+import { AREAS_SETORES, ROTULO_AREA_SETOR, areaSetorCompleto, chaveDaArea, exibirAreaSetor } from "@/lib/priva/areasSetores";
+import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, ETAPA1, ETAPA2, NOTA_CICLO, NOTA_ETAPA2_COMPARTILHAR, NOTA_ETAPA2_ELIMINAR, NOTA_METODO_CICLO, NOTA_RESPONSAVEL_ETAPAS, ROTULO_ETAPA1, ROTULO_ETAPA2, alertaRetencao, alternar, cicloDaLinha, citacoesISO, destinoDeclarado, formatarCiclo, generosMarcados, type CicloVida, type Genero } from "@/lib/priva/cicloVida";
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { citacaoSimplificada } from '@/lib/priva/enquadramento';
-import { DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, SALVAGUARDAS, SENSIVEIS, TITULARES, hasSensivel, isRisky, normalizeHipoteses, sugerir, validateRot, type RotInput, type RotRow } from "@/lib/priva/rot";
+import { DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, MEIOS, SALVAGUARDAS, SENSIVEIS, TITULARES, alertasCoerencia, hasSensivel, isRisky, normalizeHipoteses, sugerir, validateRot, type RotInput, type RotRow } from "@/lib/priva/rot";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ROT } from "@/lib/priva/demo";
+import { responsavelDaArea, useMembros } from "@/components/priva/MembrosEmpresa";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -25,13 +26,14 @@ import { BadgeFornecedorROT } from '@/components/priva/AlertaFornecedorVazado';
 
 
 
-const HEADS = ["ID Processo", "Ciclo de vida (gênero × espécie)", "Categoria de Titulares", "Dado pessoal", "Dado pessoal sensível", "Finalidade Específica",
-  "7A. Hipótese art. 7º (dado pessoal)", "7B. Hipótese art. 11 (dado pessoal sensível)", "Tempo de Retenção", "Base do Prazo", "Comunicação e transferência / Destinatários", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
+const HEADS = ["ID Processo", "Área › Setor", "Ciclo de vida (gênero × espécie)", "Categoria de Titulares", "Dado pessoal", "Dado pessoal sensível", "Finalidade Específica",
+  "7A. Hipótese art. 7º (dado pessoal)", "7B. Hipótese art. 11 (dado pessoal sensível)", "Tempo de Retenção", "Base do Prazo", "Comunicação e transferência / Destinatários",
+  "Insumo (documento de entrada)", "Meio de fornecimento", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
 
 const empty = (cnpj: string): RotInput => ({
   empresa_cnpj: cnpj, setor: "RH", genero_verbo: "Coletar", ciclo_vida: {}, categoria_titulares: [], dados_pessoais: [], dados_sensiveis: ["N/A"],
   finalidade_especifica: "", hipotese_tratamento: "", hipotese_sensivel: null, tempo_retencao: "", base_prazo: "", compartilhamento: "Não Compartilhado",
-  salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null,
+  salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null, area_setor: null, insumo: null, meio_fornecimento: null,
 });
 
 export function Bloco2() {
@@ -74,6 +76,7 @@ export function Bloco2() {
       : await supabase.from("registro_operacoes").insert(payload).select("codigo").single();
     if (error) { toast.error(error.message); return; }
     log(edit.id ? "UPDATE" : "INSERT", "registro_operacoes", `Processo ${data.codigo}`);
+    for (const a of alertasCoerencia(edit.form)) log("INSERT", "registro_operacoes", `Alerta de coerência dado × hipótese em ${data.codigo}: ${a}`);
     toast.success(`${data.codigo} salvo`);
     setEdit(null);
     void qc.invalidateQueries({ queryKey: key });
@@ -89,11 +92,13 @@ export function Bloco2() {
   };
 
   const riskyCount = rows.filter(isRisky).length;
+  const semDestino = rows.filter((r) => !destinoDeclarado(r)).length;
+  const NUMS = ["", "1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "", "", "8. ", "9. ", "10. ", "10A. ", "10B. ", "11. ", "12. "];
 
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 2 · (R) Ciclo Privacium Semestral · Art. 37 LGPD" title="Registrar as Operações de Tratamento">
-        Inventário em 12 campos (campo 7 dividido em 7A — art. 7º, dado pessoal — e 7B — art. 11, dado pessoal sensível). Linhas com menores de idade ou dado pessoal sensível recebem tarja vermelha e exigem justificativa das medidas mitigadoras.{" "}
+        Inventário em 12 campos (campo 7 dividido em 7A — art. 7º, dado pessoal — e 7B — art. 11, dado pessoal sensível), com insumo e meio de fornecimento (10A/10B). Linhas com menores de idade ou dado pessoal sensível recebem tarja vermelha e exigem justificativa das medidas mitigadoras.{" "}
         <Link to="/manual" className="inline-flex items-center gap-1 font-medium text-primary underline"><BookOpen className="h-3 w-3" /> Manual de Uso</Link>
       </PageHeader>
       {AJUDA[2] && <AjudaTarefa {...AJUDA[2]} />}
@@ -103,23 +108,28 @@ export function Bloco2() {
         <Button size="sm" onClick={() => demo ? avisarAcaoDemo() : setEdit({ id: null, form: empty(cnpj) })}><Plus className="h-4 w-4" /> Novo processo</Button>
       )}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[2000px] text-xs">
+          <table className="w-full min-w-[2400px] text-xs">
             <thead>
               <tr className="border-b text-left">
-                {HEADS.map((h, i) => <th key={h} className="px-2 py-2 font-mono font-medium uppercase tracking-wider text-muted-foreground">{i < 6 ? `${i + 1}. ` : i > 7 ? `${i}. ` : ""}{h}</th>)}
+                {HEADS.map((h, i) => <th key={h} className="px-2 py-2 font-mono font-medium uppercase tracking-wider text-muted-foreground">{NUMS[i]}{h}</th>)}
                 <th />
               </tr>
             </thead>
             <tbody>
               {rows.map((r) => {
                 const risk = isRisky(r);
+                const retencao = alertaRetencao(cicloDaLinha(r));
                 return (
                   <tr id={`rot-${r.id}`} key={r.id} className={cn("scroll-mt-6 border-b align-top", risk && "border-l-4 border-l-destructive bg-destructive/15")}>
                     <td className="px-2 py-2 font-mono font-semibold text-primary">
                       {r.codigo}
                       {risk && <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold uppercase text-destructive"><AlertTriangle className="h-3 w-3" /> Alerta crítico</p>}
                     </td>
-                    <td className="max-w-72 px-2 py-2"><CicloCelula r={r} /></td>
+                    <td className="px-2 py-2">{exibirAreaSetor(r)}</td>
+                    <td className="max-w-72 px-2 py-2">
+                      <CicloCelula r={r} />
+                      {retencao && <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-warning-foreground" data-testid={`retencao-${r.codigo}`}><AlertTriangle className="h-3 w-3" /> {retencao}</p>}
+                    </td>
                     <td className="px-2 py-2"><Tags items={r.categoria_titulares} danger="Menores de Idade" /></td>
                     <td className="px-2 py-2"><Tags items={r.dados_pessoais} /></td>
                     <td className="px-2 py-2"><Tags items={r.dados_sensiveis} safe="N/A" /></td>
@@ -129,6 +139,8 @@ export function Bloco2() {
                     <td className="px-2 py-2">{r.tempo_retencao}</td>
                     <td className="px-2 py-2">{r.base_prazo}</td>
                     <td className="px-2 py-2">{r.compartilhamento}</td>
+                    <td className="px-2 py-2">{r.insumo ?? "—"}</td>
+                    <td className="px-2 py-2">{r.meio_fornecimento ?? "—"}</td>
                     <td className="px-2 py-2"><Tags items={r.salvaguardas} /></td>
                     <td className="px-2 py-2">{r.infraestrutura}<BadgeFornecedorROT processoId={r.id} /></td>
                     <td className="whitespace-nowrap px-2 py-2">
@@ -144,7 +156,7 @@ export function Bloco2() {
                   </tr>
                 );
               })}
-              {!rows.length && <tr><td colSpan={14} className="py-8 text-center text-muted-foreground">Nenhum processo cadastrado.</td></tr>}
+              {!rows.length && <tr><td colSpan={17} className="py-8 text-center text-muted-foreground">Nenhum processo cadastrado.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -152,12 +164,12 @@ export function Bloco2() {
 
       {edit && <RotDialog edit={edit} setEdit={setEdit} onSave={save} />}
 
-      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0} readyHint="Cadastre ao menos um processo na planilha mestre.">
-        <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico.</p>
-        <p className="mt-2"><b>Ciclo de vida do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO}</p>
+      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0 && semDestino === 0} readyHint={rows.length === 0 ? "Cadastre ao menos um processo na planilha mestre." : `${semDestino} processo(s) sem destino declarado: a Etapa 2 (compartilhamento com destinatário identificado ou eliminação com prazo e fundamento — LGPD art. 16) é obrigatória para chancelar o PI-02.`}>
+        <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico{semDestino > 0 ? `, ${semDestino} sem destino declarado (Etapa 2)` : ""}.</p>
+        <p className="mt-2"><b>Ciclo de vida do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO} {NOTA_METODO_CICLO}</p>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           {rows.map((r) => (
-            <li key={r.id}><b>{r.codigo}</b> — Ciclo de vida: {formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção: {r.tempo_retencao} ({r.base_prazo}).{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
+            <li key={r.id}><b>{r.codigo}</b> — {exibirAreaSetor(r)}. Ciclo de vida: {formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção: {r.tempo_retencao} ({r.base_prazo}).{r.insumo && <> Insumo: {r.insumo}.</>}{r.meio_fornecimento && <> Meio de fornecimento: {r.meio_fornecimento}.</>}{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
           ))}
         </ul>
       </PIOutput>
@@ -194,42 +206,69 @@ function Chips({ options, value, onChange, exclusive }: { options: string[]; val
 
 function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form: RotInput }; setEdit: (e: { id: string | null; form: RotInput } | null) => void; onSave: () => void }) {
   const { demo } = usePriva();
+  const { data: membros = [] } = useMembros();
   const f = edit.form;
   const up = (p: Partial<RotInput>) => setEdit({ ...edit, form: { ...f, ...p } });
   const risk = isRisky(f);
   const sensitive = hasSensivel(f);
   const dicas = sugerir(f);
+  const coerencia = alertasCoerencia(f);
+  const retencao = alertaRetencao(cicloDaLinha(f));
   const erro = validateRot(f);
+  const areaAtual = (f.area_setor ?? "").split("›")[0]?.trim() || AREAS_SETORES[0]!.area;
+  const setorAtual = (f.area_setor ?? "").split("›")[1]?.trim() ?? "";
+  const setoresDaArea = AREAS_SETORES.find((a) => a.area === areaAtual)?.setores ?? [];
+  const responsavel = responsavelDaArea(membros, f.area_setor);
+  const escolherArea = (area: string, setor: string) => up({ area_setor: areaSetorCompleto(area, setor), setor: chaveDaArea(area) });
+  const generoBtns = (g: Genero) => {
+    const c = cicloDaLinha(f);
+    return (
+      <fieldset key={g} className="rounded-sm border p-2">
+        <legend className="px-1 text-xs font-semibold">{g}{g === "Compartilhar" ? <span className="font-normal text-muted-foreground"> — {NOTA_ETAPA2_COMPARTILHAR}</span> : g === "Eliminar" ? <span className="font-normal text-muted-foreground"> — {NOTA_ETAPA2_ELIMINAR}</span> : null}</legend>
+        <div className="flex flex-wrap gap-1">
+          {ESPECIES[g].map((e) => {
+            const on = (c[g] ?? []).includes(e);
+            return <button type="button" key={e} aria-pressed={on} onClick={() => { const n = alternar(c, g, e); up({ ciclo_vida: n, genero_verbo: generosMarcados(n)[0] ?? "Coletar" }); }} className={cn("rounded-sm border px-2 py-0.5 text-xs", on ? "border-primary bg-primary text-primary-foreground" : "bg-background")}>{e}</button>;
+          })}
+        </div>
+      </fieldset>
+    );
+  };
   return (
     <Dialog open onOpenChange={(o) => !o && setEdit(null)}>
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader><DialogTitle>{edit.id ? "Editar processo" : "Novo processo de tratamento"}</DialogTitle></DialogHeader>
         <div className={cn("grid gap-4 md:grid-cols-2", risk && "rounded-sm border-l-4 border-destructive pl-3")}>
           {!edit.id && (
-            <Field label="Área › Setor (gera o ID Processo)">
-              <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.setor} onChange={(e) => up({ setor: e.target.value })}>
-                {DEPARTMENTS.map((d) => <option key={d}>{d}</option>)}
-              </select>
+            <Field label={`1. ${ROTULO_AREA_SETOR} (a área gera o ID Processo)`} wide>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <select aria-label="Área" className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={areaAtual} onChange={(e) => escolherArea(e.target.value, "")}>
+                  {AREAS_SETORES.map((a) => <option key={a.area} value={a.area}>{a.area}</option>)}
+                </select>
+                <select aria-label="Setor" className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={setoresDaArea.includes(setorAtual) ? setorAtual : setorAtual ? "__outro__" : ""} onChange={(e) => escolherArea(areaAtual, e.target.value === "__outro__" ? "" : e.target.value)}>
+                  <option value="">Setor…</option>
+                  {setoresDaArea.map((s) => <option key={s} value={s}>{s}</option>)}
+                  <option value="__outro__">outro (especificar)</option>
+                </select>
+              </div>
+              {(setorAtual && !setoresDaArea.includes(setorAtual)) && <Input className="mt-1" value={setorAtual} onChange={(e) => escolherArea(areaAtual, e.target.value)} placeholder="Especifique o setor" />}
+              {responsavel && <p className="text-[11px] text-muted-foreground" data-testid="responsavel-area">Responsável (R) vinculado: <b>{responsavel}</b> — cadastro de membros do Bloco 1.</p>}
             </Field>
           )}
           <Field label="2. Ciclo de vida do dado pessoal (gênero × espécie)" wide>
             <p className="text-[11px] text-muted-foreground">{AJUDA_CICLO}</p>
-            <div className="grid gap-2 sm:grid-cols-2" data-testid="ciclo-vida">
-              {GENEROS.map((g) => {
-                const c = cicloDaLinha(f);
-                return (
-                  <fieldset key={g} className="rounded-sm border p-2">
-                    <legend className="px-1 text-xs font-semibold">{g}</legend>
-                    <div className="flex flex-wrap gap-1">
-                      {ESPECIES[g].map((e) => {
-                        const on = (c[g] ?? []).includes(e);
-                        return <button type="button" key={e} aria-pressed={on} onClick={() => { const n = alternar(c, g, e); up({ ciclo_vida: n, genero_verbo: generosMarcados(n)[0] ?? "Coletar" }); }} className={cn("rounded-sm border px-2 py-0.5 text-xs", on ? "border-primary bg-primary text-primary-foreground" : "bg-background")}>{e}</button>;
-                      })}
-                    </div>
-                  </fieldset>
-                );
-              })}
+            <p className="rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="nota-metodo-ciclo">{NOTA_METODO_CICLO} {NOTA_RESPONSAVEL_ETAPAS}</p>
+            <div className="space-y-2" data-testid="ciclo-vida">
+              <div>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">{ROTULO_ETAPA1}</p>
+                <div className="grid gap-2 sm:grid-cols-3">{ETAPA1.map(generoBtns)}</div>
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">{ROTULO_ETAPA2}</p>
+                <div className="grid gap-2 sm:grid-cols-2">{ETAPA2.map(generoBtns)}</div>
+              </div>
             </div>
+            {retencao && <p role="alert" className="flex items-center gap-1 text-xs font-semibold text-warning-foreground" data-testid="alerta-retencao"><AlertTriangle className="h-3 w-3" /> {retencao}</p>}
           </Field>
           <Field label="3. Categoria de Titulares" wide><Chips options={TITULARES} value={f.categoria_titulares} onChange={(v) => up({ categoria_titulares: v })} /></Field>
           <Field label="4. Dado pessoal" wide><Chips options={DADOS} value={f.dados_pessoais} onChange={(v) => up({ dados_pessoais: v })} /></Field>
@@ -251,6 +290,16 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
           <Field label="8. Tempo de Retenção"><Input value={f.tempo_retencao} placeholder="5 anos pós-rescisão" onChange={(e) => up({ tempo_retencao: e.target.value })} /></Field>
           <Field label="9. Base do Prazo"><Input value={f.base_prazo} placeholder="Art. 206 do Código Civil" onChange={(e) => up({ base_prazo: e.target.value })} /></Field>
           <Field label="10. Comunicação e transferência / Destinatários"><Input value={f.compartilhamento} onChange={(e) => up({ compartilhamento: e.target.value })} /></Field>
+          <Field label="10A. Insumo (documento de entrada) — LGPD art. 5º, I / ISO/IEC 27002 — 5.12">
+            <Chips options={INSUMOS} value={f.insumo ? [f.insumo] : []} onChange={(v) => up({ insumo: v[v.length - 1] ?? null })} />
+          </Field>
+          <Field label="10B. Meio de fornecimento — LGPD art. 37">
+            <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.meio_fornecimento ?? ""} onChange={(e) => up({ meio_fornecimento: e.target.value || null })}>
+              <option value="">Selecione…</option>
+              {MEIOS.map((m) => <option key={m}>{m}</option>)}
+              {f.meio_fornecimento && !MEIOS.includes(f.meio_fornecimento) && <option>{f.meio_fornecimento}</option>}
+            </select>
+          </Field>
           <Field label="12. Infraestrutura / Mídia">
             {edit.id && <BadgeFornecedorROT processoId={edit.id} />}
             <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.infraestrutura} onChange={(e) => up({ infraestrutura: e.target.value })}>
@@ -266,11 +315,16 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
             </div>
           )}
         </div>
+        {coerencia.length > 0 && (
+          <div className="rounded-sm border border-warning bg-warning/10 p-3" data-testid="alerta-coerencia">
+            {coerencia.map((a) => <p key={a} className="flex items-start gap-2 text-xs font-medium text-warning-foreground"><AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" /> {a} O alerta é informativo: não impede salvar, mas fica registrado na trilha.</p>)}
+          </div>
+        )}
         {dicas.length > 0 && (
           <div className="rounded-sm border bg-muted/50 p-3">
-            <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary"><Lightbulb className="h-3 w-3" /> Sugestões automáticas</p>
+            <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary"><Lightbulb className="h-3 w-3" /> Sugestões automáticas — nunca pré-selecionadas</p>
             <div className="flex flex-wrap gap-2">
-              {dicas.map((d) => <Button key={d.texto} type="button" size="sm" variant="outline" className="h-auto whitespace-normal py-1 text-left text-xs" onClick={() => up(d.patch)}>{d.texto}</Button>)}
+              {dicas.map((d) => <Button key={d.texto} type="button" size="sm" variant="outline" className="h-auto whitespace-normal py-1 text-left text-xs" title={`Origem: ${d.origem}`} onClick={() => up(d.patch)}><span><b>Sugerido — confirme:</b> {d.texto}<span className="block text-[10px] text-muted-foreground">Origem: {d.origem}</span></span></Button>)}
             </div>
           </div>
         )}

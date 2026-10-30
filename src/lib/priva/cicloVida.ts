@@ -29,6 +29,39 @@ export const AJUDA_CICLO = "Agrupamento didático dos 20 verbos do art. 5º, X d
 export const DESCRICAO_CICLO = "Coletar → Reter → Processar → Compartilhar → Eliminar";
 export const NOTA_CICLO = "Cada gênero corresponde a um estado do dado pessoal; as espécies são os verbos do art. 5º, X da LGPD.";
 
+/** Apresentação em duas etapas (organizacional, sem criar categoria legal). */
+export const ETAPA1: readonly Genero[] = ["Coletar", "Reter", "Processar"];
+export const ETAPA2: readonly Genero[] = ["Compartilhar", "Eliminar"];
+export const ROTULO_ETAPA1 = "Etapa 1 — Tratamento no perímetro do agente";
+export const ROTULO_ETAPA2 = "Etapa 2 — Destino do dado";
+export const NOTA_ETAPA2_COMPARTILHAR = "o dado sai e continua existindo em outra mão";
+export const NOTA_ETAPA2_ELIMINAR = "o dado deixa de existir (LGPD art. 16)";
+export const NOTA_METODO_CICLO = "Agrupamento do método. Os 20 verbos do art. 5º, X da LGPD permanecem íntegros; a divisão entre perímetro e destino é organizacional, não cria categoria legal nova.";
+export const NOTA_RESPONSAVEL_ETAPAS = "Responsável distinto: a Etapa 1 é assinada pelo gestor da área; a Etapa 2, pelo DPO.";
+/** Alerta não bloqueante: retenção sem destino declarado (LGPD art. 16). */
+export const ALERTA_RETENCAO = "Dado retido sem destino declarado — art. 16 não comprovado";
+
+export function temEtapa2(c: CicloVida): boolean {
+  return generosMarcados(c).some((g) => ETAPA2.includes(g));
+}
+
+/** Dispara quando há "Reter" na Etapa 1 e a Etapa 2 está vazia. */
+export function alertaRetencao(c: CicloVida): string | null {
+  const g = generosMarcados(c);
+  return g.includes("Reter") && !temEtapa2(c) ? ALERTA_RETENCAO : null;
+}
+
+/**
+ * Destino declarado (exigido para chancelar o PI-02): compartilhamento com destinatário
+ * identificado OU eliminação com prazo e fundamento (LGPD art. 16).
+ */
+export function destinoDeclarado(r: { ciclo_vida?: unknown; genero_verbo: string; compartilhamento: string; tempo_retencao: string; base_prazo: string }): boolean {
+  const g = generosMarcados(cicloDaLinha(r));
+  const compartilha = g.includes("Compartilhar") && !!r.compartilhamento.trim() && !/n[ãa]o compartilhado|n[ãa]o h[áa]/i.test(r.compartilhamento);
+  const elimina = g.includes("Eliminar") && !!r.tempo_retencao.trim() && !!r.base_prazo.trim();
+  return compartilha || elimina;
+}
+
 /** Itens da ISO/IEC 27002:2022 por gênero (determinístico). */
 export const ISO_27002: Record<Genero, string[]> = {
   Coletar: ["ISO/IEC 27002 — 5.12 (classificação da informação)"],

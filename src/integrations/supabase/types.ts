@@ -405,6 +405,59 @@ export type Database = {
         }
         Relationships: []
       }
+      membros_empresa: {
+        Row: {
+          area_setor: string | null
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          documento: string
+          email: string
+          empresa_id: string
+          id: string
+          membro_comite: boolean
+          nome: string
+          papel_rac: string | null
+          tipo_documento: string
+        }
+        Insert: {
+          area_setor?: string | null
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          documento: string
+          email: string
+          empresa_id: string
+          id?: string
+          membro_comite?: boolean
+          nome: string
+          papel_rac?: string | null
+          tipo_documento: string
+        }
+        Update: {
+          area_setor?: string | null
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          documento?: string
+          email?: string
+          empresa_id?: string
+          id?: string
+          membro_comite?: boolean
+          nome?: string
+          papel_rac?: string | null
+          tipo_documento?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membros_empresa_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       metricas_uso_ia: {
         Row: {
           atualizado_em: string
@@ -638,6 +691,7 @@ export type Database = {
       }
       registro_operacoes: {
         Row: {
+          area_setor: string | null
           atualizado_em: string
           base_prazo: string
           categoria_titulares: string[]
@@ -655,12 +709,15 @@ export type Database = {
           hipotese_tratamento: string
           id: string
           infraestrutura: string
+          insumo: string | null
           justificativa_mitigacao: string | null
+          meio_fornecimento: string | null
           salvaguardas: string[]
           setor: string
           tempo_retencao: string
         }
         Insert: {
+          area_setor?: string | null
           atualizado_em?: string
           base_prazo: string
           categoria_titulares?: string[]
@@ -678,12 +735,15 @@ export type Database = {
           hipotese_tratamento: string
           id?: string
           infraestrutura: string
+          insumo?: string | null
           justificativa_mitigacao?: string | null
+          meio_fornecimento?: string | null
           salvaguardas?: string[]
           setor: string
           tempo_retencao: string
         }
         Update: {
+          area_setor?: string | null
           atualizado_em?: string
           base_prazo?: string
           categoria_titulares?: string[]
@@ -701,7 +761,9 @@ export type Database = {
           hipotese_tratamento?: string
           id?: string
           infraestrutura?: string
+          insumo?: string | null
           justificativa_mitigacao?: string | null
+          meio_fornecimento?: string | null
           salvaguardas?: string[]
           setor?: string
           tempo_retencao?: string
@@ -1197,6 +1259,7 @@ export type Database = {
         Args: { _bloqueios: number; _cnpj: string; _tokens: number }
         Returns: undefined
       }
+      revelar_documento_membro: { Args: { _id: string }; Returns: string }
       verificar_trilha: {
         Args: never
         Returns: {

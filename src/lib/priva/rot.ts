@@ -10,6 +10,11 @@ export const SENSIVEIS = ["N/A", "Biometria", "Prontuário de Saúde", "Origem R
 export const SALVAGUARDAS = ["Criptografia", "BitLocker", "Acesso Restrito RBAC", "Proxy de IA", "MFA", "Anonimização"];
 export const INFRA = ["Servidor Local", "Nuvem Corporativa", "Arquivo Físico"] as const;
 
+/** Insumo (documento de entrada) — LGPD art. 5º, I / ISO/IEC 27002:2022 — 5.12 (Classificação da informação; referência bibliográfica, item 9.6 do blueprint). */
+export const INSUMOS = ["currículo", "nota fiscal", "banco de dados", "contrato", "formulário", "prontuário", "e-mail", "imagem/documento digitalizado"];
+/** Meio de fornecimento — LGPD art. 37 (registro das operações). */
+export const MEIOS = ["site", "e-mail", "presencial/recepção", "telefone", "API/sistema", "documento físico"];
+
 /** Campo 7A — art. 7º da LGPD (dado pessoal), 10 hipóteses. */
 export const HIPOTESES_7A: string[] = [
   "Art. 7º, I – Consentimento do titular",
@@ -76,28 +81,87 @@ export function validateRot(r: RotInput): string | null {
   return null;
 }
 
-export type Sugestao = { texto: string; patch: Partial<RotInput> };
+export type Sugestao = { texto: string; origem: string; patch: Partial<RotInput> };
 
-/** Sugestões automáticas a partir do que já foi preenchido (o usuário aplica com um clique). */
+/**
+ * Tabela determinística versionada (v1): finalidade conforme Área › Setor + insumo.
+ * Nunca pré-seleciona: toda sugestão exibe "Sugerido — confirme" e exige ação do usuário.
+ */
+export const VERSAO_SUGESTOES = "v1";
+const ORIGEM_FINALIDADE = `tabela determinística ${VERSAO_SUGESTOES} · Área › Setor + insumo`;
+const ORIGEM_7A = `tabela determinística ${VERSAO_SUGESTOES} · finalidade/titulares → art. 7º`;
+const ORIGEM_7B = `tabela determinística ${VERSAO_SUGESTOES} · dado pessoal sensível → art. 11`;
+
+const SUGESTOES_FINALIDADE_V1: Record<string, { insumo: string; finalidade: string }[]> = {
+  "Recursos Humanos": [
+    { insumo: "currículo", finalidade: "Seleção e recrutamento de candidatos" },
+    { insumo: "contrato", finalidade: "Gestão do contrato de trabalho e obrigações trabalhistas" },
+    { insumo: "formulário", finalidade: "Administração de benefícios e folha de pagamento" },
+  ],
+  "Recepção": [
+    { insumo: "formulário", finalidade: "Controle de acesso físico às instalações" },
+    { insumo: "imagem/documento digitalizado", finalidade: "Identificação de visitantes para segurança patrimonial" },
+  ],
+  "Marketing": [
+    { insumo: "formulário", finalidade: "Envio de comunicações a titulares que consentiram" },
+    { insumo: "site", finalidade: "Gestão de campanhas e relacionamento com clientes" },
+  ],
+  "Financeiro": [
+    { insumo: "nota fiscal", finalidade: "Emissão de documentos fiscais e cumprimento de obrigações tributárias" },
+    { insumo: "contrato", finalidade: "Gestão de contas a pagar e a receber" },
+  ],
+  "Jurídico": [
+    { insumo: "contrato", finalidade: "Gestão contratual e exercício regular de direitos em processo" },
+    { insumo: "formulário", finalidade: "Governança de privacidade e registro das operações de tratamento" },
+  ],
+  "Compras": [{ insumo: "contrato", finalidade: "Gestão de fornecedores e cotações" }],
+  "Tecnologia da Informação": [{ insumo: "banco de dados", finalidade: "Operação e segurança dos sistemas corporativos" }],
+};
+
+/** Sugestões automáticas a partir do que já foi preenchido (o usuário aplica com um clique; nada é pré-selecionado). */
 export function sugerir(r: RotInput): Sugestao[] {
   const s: Sugestao[] = [];
   const sens = r.dados_sensiveis;
+  const area = (r.area_setor ?? "").split("›")[0]?.trim() ?? "";
+  const insumo = r.insumo?.trim().toLowerCase() ?? "";
+  if (!r.finalidade_especifica.trim() && area && insumo) {
+    const regra = SUGESTOES_FINALIDADE_V1[area]?.find((x) => x.insumo === insumo);
+    if (regra) s.push({ texto: `Finalidade: ${regra.finalidade}`, origem: ORIGEM_FINALIDADE, patch: { finalidade_especifica: regra.finalidade } });
+  }
   if (!r.hipotese_tratamento) {
-    if (r.categoria_titulares.includes("Colaboradores")) s.push({ texto: "Colaboradores: art. 7º, II (obrigações trabalhistas)", patch: { hipotese_tratamento: HIPOTESES_7A[1]! } });
-    else if (r.categoria_titulares.includes("Clientes") || r.categoria_titulares.includes("Fornecedores")) s.push({ texto: "Clientes/fornecedores: art. 7º, V (contrato)", patch: { hipotese_tratamento: HIPOTESES_7A[4]! } });
-    else if ("Compartilhar" in cicloDaLinha(r) && r.categoria_titulares.length) s.push({ texto: "Compartilhamento sem contrato: avalie art. 7º, I (consentimento)", patch: { hipotese_tratamento: HIPOTESES_7A[0]! } });
+    if (r.categoria_titulares.includes("Colaboradores")) s.push({ texto: "Colaboradores: art. 7º, II (obrigações trabalhistas)", origem: ORIGEM_7A, patch: { hipotese_tratamento: HIPOTESES_7A[1]! } });
+    else if (r.categoria_titulares.includes("Clientes") || r.categoria_titulares.includes("Fornecedores")) s.push({ texto: "Clientes/fornecedores: art. 7º, V (contrato)", origem: ORIGEM_7A, patch: { hipotese_tratamento: HIPOTESES_7A[4]! } });
+    else if ("Compartilhar" in cicloDaLinha(r) && r.categoria_titulares.length) s.push({ texto: "Compartilhamento sem contrato: avalie art. 7º, I (consentimento)", origem: ORIGEM_7A, patch: { hipotese_tratamento: HIPOTESES_7A[0]! } });
   }
   if (hasSensivel(r) && !r.hipotese_sensivel) {
-    if (sens.includes("Prontuário de Saúde")) s.push({ texto: "Prontuário de Saúde: art. 11, II, f (tutela da saúde)", patch: { hipotese_sensivel: HIPOTESES_7B[6]! } });
-    else if (sens.includes("Biometria")) s.push({ texto: "Biometria: art. 11, II, g (prevenção à fraude)", patch: { hipotese_sensivel: HIPOTESES_7B[7]! } });
-    else if (sens.includes("Filiação Sindical")) s.push({ texto: "Filiação Sindical: art. 11, II, a (obrigação legal)", patch: { hipotese_sensivel: HIPOTESES_7B[1]! } });
-    else s.push({ texto: "Sem outra hipótese aplicável: art. 11, I (consentimento específico e destacado)", patch: { hipotese_sensivel: HIPOTESES_7B[0]! } });
+    if (sens.includes("Prontuário de Saúde")) s.push({ texto: "Prontuário de Saúde: art. 11, II, f (tutela da saúde)", origem: ORIGEM_7B, patch: { hipotese_sensivel: HIPOTESES_7B[6]! } });
+    else if (sens.some((x) => x.startsWith("Biometria"))) s.push({ texto: "Biometria: art. 11, II, g (prevenção à fraude)", origem: ORIGEM_7B, patch: { hipotese_sensivel: HIPOTESES_7B[7]! } });
+    else if (sens.includes("Filiação Sindical")) s.push({ texto: "Filiação Sindical: art. 11, II, a (obrigação legal)", origem: ORIGEM_7B, patch: { hipotese_sensivel: HIPOTESES_7B[1]! } });
+    else s.push({ texto: "Sem outra hipótese aplicável: art. 11, I (consentimento específico e destacado)", origem: ORIGEM_7B, patch: { hipotese_sensivel: HIPOTESES_7B[0]! } });
   }
   if (!r.tempo_retencao && r.hipotese_tratamento === HIPOTESES_7A[1]! && r.categoria_titulares.includes("Colaboradores"))
-    s.push({ texto: "Retenção trabalhista: 5 anos após a rescisão (CF, art. 7º, XXIX)", patch: { tempo_retencao: "5 anos após a rescisão", base_prazo: "CF, art. 7º, XXIX" } });
-  if (!r.tempo_retencao && r.hipotese_tratamento === HIPOTESES_7A[0]!) s.push({ texto: "Consentimento: reter até a revogação (art. 8º, §5º)", patch: { tempo_retencao: "Até a revogação", base_prazo: "LGPD, art. 8º, §5º" } });
+    s.push({ texto: "Retenção trabalhista: 5 anos após a rescisão (CF, art. 7º, XXIX)", origem: ORIGEM_7A, patch: { tempo_retencao: "5 anos após a rescisão", base_prazo: "CF, art. 7º, XXIX" } });
+  if (!r.tempo_retencao && r.hipotese_tratamento === HIPOTESES_7A[0]!) s.push({ texto: "Consentimento: reter até a revogação (art. 8º, §5º)", origem: ORIGEM_7A, patch: { tempo_retencao: "Até a revogação", base_prazo: "LGPD, art. 8º, §5º" } });
   if (r.categoria_titulares.includes("Menores de Idade") && !(r.justificativa_mitigacao ?? "").includes("art. 14"))
-    s.push({ texto: "Menores de idade: registre o consentimento do responsável (art. 14)", patch: { justificativa_mitigacao: `${r.justificativa_mitigacao ?? ""} Consentimento específico de ao menos um dos pais ou responsável legal (art. 14).`.trim() } });
-  if (hasSensivel(r) && !r.salvaguardas.includes("Criptografia")) s.push({ texto: "Dado pessoal sensível: adicionar Criptografia às salvaguardas", patch: { salvaguardas: [...r.salvaguardas, "Criptografia"] } });
+    s.push({ texto: "Menores de idade: registre o consentimento do responsável (art. 14)", origem: ORIGEM_7B, patch: { justificativa_mitigacao: `${r.justificativa_mitigacao ?? ""} Consentimento específico de ao menos um dos pais ou responsável legal (art. 14).`.trim() } });
+  if (hasSensivel(r) && !r.salvaguardas.includes("Criptografia")) s.push({ texto: "Dado pessoal sensível: adicionar Criptografia às salvaguardas", origem: ORIGEM_7B, patch: { salvaguardas: [...r.salvaguardas, "Criptografia"] } });
   return s;
+}
+
+/** Alerta não bloqueante de coerência dado × hipótese (item 6 do método); fica registrado na trilha ao salvar. */
+export const ALERTA_COERENCIA = "Hipótese possivelmente inadequada para o dado pessoal sensível declarado — confirme com fundamento.";
+
+/** Casos mínimos determinísticos: filiação sindical × art. 11, II, d; prontuário em recrutamento; biometria × consentimento sem indicação específica. */
+export function alertasCoerencia(r: Pick<RotInput, "dados_sensiveis" | "hipotese_sensivel" | "finalidade_especifica" | "justificativa_mitigacao">): string[] {
+  const out: string[] = [];
+  const sens = r.dados_sensiveis;
+  const h7b = r.hipotese_sensivel ?? "";
+  const contexto = `${r.finalidade_especifica} ${r.justificativa_mitigacao ?? ""}`.toLowerCase();
+  if (sens.includes("Filiação Sindical") && h7b.startsWith("Art. 11, II, d"))
+    out.push(`${ALERTA_COERENCIA} (filiação sindical × exercício regular de direitos — art. 11, II, d)`);
+  if (sens.includes("Prontuário de Saúde") && /recrut|seleç|contrata/.test(contexto))
+    out.push(`${ALERTA_COERENCIA} (prontuário de saúde em finalidade de recrutamento/contratação)`);
+  if (sens.some((x) => x.startsWith("Biometria")) && h7b.startsWith("Art. 11, I") && !/consentimento específico/.test(contexto))
+    out.push(`${ALERTA_COERENCIA} (biometria × consentimento, sem indicação de consentimento específico)`);
+  return out;
 }

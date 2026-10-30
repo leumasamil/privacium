@@ -14,6 +14,7 @@ import { Masked, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui"
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { EnquadramentoAgente } from '../EnquadramentoAgente';
+import { MembrosEmpresa } from '../MembrosEmpresa';
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { FUNDAMENTO_PORTE, rotuloPorte } from '@/lib/priva/enquadramento';
 
@@ -101,6 +102,7 @@ export function Bloco1() {
         Diagnóstico de Entrada pela LGPD. SIM soma o peso de criticidade da pergunta; NÃO soma zero.
       </PageHeader>
       <EnquadramentoAgente />
+      <MembrosEmpresa />
       {AJUDA[1] && <AjudaTarefa {...AJUDA[1]} />}
 
       <div className="grid gap-4 md:grid-cols-2">
