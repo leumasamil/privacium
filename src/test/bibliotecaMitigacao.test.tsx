@@ -107,7 +107,7 @@ describe('Biblioteca A1-A4 · extensões determinísticas', () => {
     const n = buscarNorma('LGPD art. 5º, I');
     expect(n?.resumo).toContain('pessoa natural identificada');
     expect(n?.porque).toContain('ROT');
-    expect(buscarNorma('CIS Control 03')?.resumo).toContain('exfiltração');
+    expect(buscarNorma('CIS Controls v8')?.resumo).toContain('Center for Internet Security');
     expect(buscarNorma('Lei Inexistente nº 0/0000')).toBeNull();
   });
 });
