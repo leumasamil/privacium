@@ -1,3 +1,4 @@
+- [x] Conferir citações do ROT (HTML cru não reproduzido em produção), compartilhar listas JSX com PI-02 e corrigir terminologia de apresentação do diagnóstico (21 + 21 rótulos); conferir três linhas demo, sete setores e testes sem alterar dados.
 - [x] Volumetria total na Trilha Forense Master + checar isolamento RLS
 - [x] Cadastrar contato do encarregado por CNPJ com isolamento e auditoria.
 - [x] Completar formulário ANPD, validação, envio simulado e SLA congelado.

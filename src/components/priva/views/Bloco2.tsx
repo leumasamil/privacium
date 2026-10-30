@@ -23,8 +23,8 @@ import { BadgeFornecedorROT } from '@/components/priva/AlertaFornecedorVazado';
 
 
 
-const HEADS = ["ID Processo", "Ciclo de vida (gênero × espécie)", "Categoria de Titulares", "Dados Pessoais", "Dados Pessoais Sensíveis", "Finalidade Específica",
-  "7A. Hipótese art. 7º (dado pessoal)", "7B. Hipótese art. 11 (dado pessoal sensível)", "Tempo de Retenção", "Base do Prazo", "Compartilhamento / Destinatários", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
+const HEADS = ["ID Processo", "Ciclo de vida (gênero × espécie)", "Categoria de Titulares", "Dado pessoal", "Dado pessoal sensível", "Finalidade Específica",
+  "7A. Hipótese art. 7º (dado pessoal)", "7B. Hipótese art. 11 (dado pessoal sensível)", "Tempo de Retenção", "Base do Prazo", "Comunicação e transferência / Destinatários", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
 
 const empty = (cnpj: string): RotInput => ({
   empresa_cnpj: cnpj, setor: "RH", genero_verbo: "Coletar", ciclo_vida: {}, categoria_titulares: [], dados_pessoais: [], dados_sensiveis: ["N/A"],
@@ -155,7 +155,7 @@ export function Bloco2() {
         <p className="mt-2"><b>Ciclo de vida do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO}</p>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           {rows.map((r) => (
-            <li key={r.id}><b>{r.codigo}</b> — Ciclo de vida: {formatarCiclo(cicloDaLinha(r))} ({[...CITACOES_LGPD, ...citacoesISO(cicloDaLinha(r))].join("; ")}). Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção: {r.tempo_retencao} ({r.base_prazo}).{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}</li>
+            <li key={r.id}><b>{r.codigo}</b> — Ciclo de vida: {formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção: {r.tempo_retencao} ({r.base_prazo}).{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
           ))}
         </ul>
       </PIOutput>
@@ -204,7 +204,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
         <DialogHeader><DialogTitle>{edit.id ? "Editar processo" : "Novo processo de tratamento"}</DialogTitle></DialogHeader>
         <div className={cn("grid gap-4 md:grid-cols-2", risk && "rounded-sm border-l-4 border-destructive pl-3")}>
           {!edit.id && (
-            <Field label="Setor (gera o ID Processo)">
+            <Field label="Área › Setor (gera o ID Processo)">
               <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.setor} onChange={(e) => up({ setor: e.target.value })}>
                 {DEPARTMENTS.map((d) => <option key={d}>{d}</option>)}
               </select>
@@ -230,8 +230,8 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
             </div>
           </Field>
           <Field label="3. Categoria de Titulares" wide><Chips options={TITULARES} value={f.categoria_titulares} onChange={(v) => up({ categoria_titulares: v })} /></Field>
-          <Field label="4. Dados Pessoais" wide><Chips options={DADOS} value={f.dados_pessoais} onChange={(v) => up({ dados_pessoais: v })} /></Field>
-          <Field label="5. Dados Pessoais Sensíveis" wide><Chips options={SENSIVEIS} value={f.dados_sensiveis} exclusive="N/A" onChange={(v) => up({ dados_sensiveis: v, hipotese_sensivel: v.some((x) => x !== "N/A") ? f.hipotese_sensivel : null })} /></Field>
+          <Field label="4. Dado pessoal" wide><Chips options={DADOS} value={f.dados_pessoais} onChange={(v) => up({ dados_pessoais: v })} /></Field>
+          <Field label="5. Dado pessoal sensível" wide><Chips options={SENSIVEIS} value={f.dados_sensiveis} exclusive="N/A" onChange={(v) => up({ dados_sensiveis: v, hipotese_sensivel: v.some((x) => x !== "N/A") ? f.hipotese_sensivel : null })} /></Field>
           <Field label="6. Finalidade Específica" wide><Textarea value={f.finalidade_especifica} onChange={(e) => up({ finalidade_especifica: e.target.value })} /></Field>
           <Field label="7A. Hipótese de Tratamento — art. 7º (dado pessoal, art. 5º, I)" wide>
             <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.hipotese_tratamento} onChange={(e) => up({ hipotese_tratamento: e.target.value })}>
@@ -248,7 +248,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
           </Field>
           <Field label="8. Tempo de Retenção"><Input value={f.tempo_retencao} placeholder="5 anos pós-rescisão" onChange={(e) => up({ tempo_retencao: e.target.value })} /></Field>
           <Field label="9. Base do Prazo"><Input value={f.base_prazo} placeholder="Art. 206 do Código Civil" onChange={(e) => up({ base_prazo: e.target.value })} /></Field>
-          <Field label="10. Compartilhamento / Destinatários"><Input value={f.compartilhamento} onChange={(e) => up({ compartilhamento: e.target.value })} /></Field>
+          <Field label="10. Comunicação e transferência / Destinatários"><Input value={f.compartilhamento} onChange={(e) => up({ compartilhamento: e.target.value })} /></Field>
           <Field label="12. Infraestrutura / Mídia">
             {edit.id && <BadgeFornecedorROT processoId={edit.id} />}
             <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.infraestrutura} onChange={(e) => up({ infraestrutura: e.target.value })}>
@@ -300,11 +300,15 @@ function CicloCelula({ r }: { r: RotRow }) {
   return (
     <div className="space-y-1" data-testid={`ciclo-${r.codigo}`}>
       <p className="font-medium">{formatarCiclo(c) || "—"}</p>
-      <ul className="text-[10px] leading-snug text-muted-foreground">
-        {CITACOES_LGPD.map((t) => <li key={t}>{t}</li>)}
-        <li>{CITACAO_ANPD}</li>
-        {citacoesISO(c).map((t) => <li key={t}>{t}</li>)}
-      </ul>
+      <CitacoesCiclo ciclo={c} />
     </div>
+  );
+}
+
+function CitacoesCiclo({ ciclo }: { ciclo: CicloVida }) {
+  return (
+    <ul className="list-disc space-y-1 pl-4 text-[10px] leading-snug text-muted-foreground">
+      {[...CITACOES_LGPD, CITACAO_ANPD, ...citacoesISO(ciclo)].map((texto) => <li key={texto}>{texto}</li>)}
+    </ul>
   );
 }
