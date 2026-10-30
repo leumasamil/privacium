@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { TETO_REDUCAO, multaComAtenuantes } from "@/lib/priva/dosimetria";
-import { INERENTE, derivarRisco, reducaoPorRiscos, sugestaoDescricao, sugestaoMitigacao, type RiscoId } from "@/lib/privacium/bibliotecaMitigacao";
+import { BIBLIOTECA, INERENTE, derivarRisco, reducaoPorRiscos, sugestaoDescricao, sugestaoMitigacao, type RiscoId } from "@/lib/privacium/bibliotecaMitigacao";
+import { CopiarModelo } from "@/components/priva/CopiarModelo";
 import { CitacaoNormativa } from "@/components/priva/CitacaoNormativa";
 import { usePriva } from "@/lib/priva/store";
 import { useCnpjRows } from "@/lib/priva/useCnpjRows";
@@ -152,6 +153,7 @@ export function Bloco5() {
                       onChange={(ev) => { if (!v.mitigManual) log("UPDATE", "ripd_ia", `RIPD: mitigação de "${e.label}" revisada manualmente pelo DPO`); put({ mitig: ev.target.value, mitigManual: true }, false); }}
                       onBlur={() => salvar({}, `RIPD: ${e.label}`)} />
                     <p className="mt-1 text-[11px] text-muted-foreground" data-testid={`rotulo-${e.id}`}>{e.rotuloMitig}</p>
+                    {!manual && e.mitig && <div className="mt-1"><CopiarModelo texto={e.mitig} pi="PI-03" fonte={BIBLIOTECA[e.id].fonte} rotulo="Copiar sugestão" /></div>}
                   </div>
                 </div>
                 <p className="mt-2 text-[11px] text-muted-foreground" data-testid={`derivado-${e.id}`}>
