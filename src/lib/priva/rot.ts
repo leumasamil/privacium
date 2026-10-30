@@ -1,8 +1,40 @@
 import type { Database } from "@/integrations/supabase/types";
-import { cicloDaLinha, validarCiclo } from "./cicloVida";
+import { cicloDaLinha, temProcessar, validarCiclo } from "./cicloVida";
 
 export type RotRow = Database["public"]["Tables"]["registro_operacoes"]["Row"];
 export type RotInput = Omit<RotRow, "id" | "codigo" | "criado_por" | "criado_em" | "atualizado_em" | "assinatura_etapa1" | "assinatura_etapa2">;
+
+/** Papel do agente na linha (LGPD art. 5º, VI e VII); o padrão vem do enquadramento do Bloco 1 e é editável por linha. */
+export const PAPEIS_AGENTE = ["CONTROLADOR", "OPERADOR", "CONTROLADOR_OPERADOR"] as const;
+export type PapelAgente = (typeof PAPEIS_AGENTE)[number];
+export const ROTULO_PAPEL: Record<PapelAgente, string> = {
+  CONTROLADOR: "Controlador",
+  OPERADOR: "Operador",
+  CONTROLADOR_OPERADOR: "Controlador e operador simultaneamente",
+};
+/** Textos literais — fonte: https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm */
+export const FONTE_LGPD = "https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm";
+export const LITERAL_ART5_VI = "controlador: pessoa natural ou jurídica, de direito público ou privado, a quem competem as decisões referentes ao tratamento de dados pessoais";
+export const LITERAL_ART5_VII = "operador: pessoa natural ou jurídica, de direito público ou privado, que realiza o tratamento de dados pessoais em nome do controlador";
+/** Nota exibida quando a linha é OPERADOR: o destino (Etapa 2) é definido pelo controlador. */
+export const NOTA_DESTINO_OPERADOR = "Definido pelo controlador — LGPD art. 5º, VII e art. 39";
+/** Nota de método do produto interno (LGPD art. 5º, X). */
+export const NOTA_PRODUTO = "Produto interno é o resultado material das operações de tratamento (LGPD art. 5º, X). É conceito de método, não categoria jurídica autônoma.";
+/** Alerta bloqueante de chancela: Processar sem produto declarado (LGPD art. 6º, I). */
+export const ALERTA_PRODUTO_AUSENTE = "Tratamento com processamento sem produto declarado — art. 6º, I não comprovado.";
+/** Alerta não bloqueante: operador não declara finalidade própria (LGPD art. 39). */
+export const ALERTA_FINALIDADE_OPERADOR = "Operador não declara finalidade própria — a finalidade desta linha é a do contrato com o controlador (LGPD art. 39).";
+
+/** Destino do produto (Etapa 2): interno (Área › Setor), externo (terceiro) ou eliminação (LGPD art. 16). */
+export type DestinoProduto = {
+  tipo: "INTERNO" | "EXTERNO" | "ELIMINACAO";
+  area_setor_destino?: string;
+  terceiro?: string;
+  linha_receptor_id?: string;
+  linha_receptor_codigo?: string;
+};
+/** Linha criada automaticamente no setor receptor (compartilhamento interno), com origem rastreada. */
+export type OrigemCompartilhamento = { estado: "insumo recebido"; linha_origem_id: string; codigo_origem: string; area_setor_origem: string };
 
 export const TITULARES = ["Colaboradores", "Clientes", "Fornecedores", "Visitantes", "Candidatos", "Menores de Idade"];
 export const DADOS = ["Nome", "CPF", "RG", "Telefone", "E-mail", "Endereço", "Dados Bancários", "Imagem"];
