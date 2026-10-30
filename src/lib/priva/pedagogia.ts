@@ -105,7 +105,8 @@ export const NORMAS: Record<string, Norma> = {
 
 /** Busca tolerante: aceita a citação exata ou um trecho contido nela. */
 export function buscarNorma(citacao: string): Norma | null {
-  if (NORMAS[citacao]) return NORMAS[citacao];
+  const direta = NORMAS[citacao];
+  if (direta) return direta;
   const chave = Object.keys(NORMAS).find((k) => citacao.includes(k) || k.includes(citacao.trim()));
-  return chave ? NORMAS[chave] : null;
+  return (chave ? NORMAS[chave] : undefined) ?? null;
 }

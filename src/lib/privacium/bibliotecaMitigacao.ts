@@ -113,11 +113,12 @@ export type SugestaoEstrutura = { estrutura: string; rotulo: string; cenarios: s
 
 /** Modelo de estrutura de pasta derivado dos setores presentes no ROT (PI-02). */
 export function estruturaSugerida(setores: string[]): SugestaoEstrutura {
-  const norm = setores.map((s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase());
-  const achados = Object.entries(ESTRUTURAS_COFRE).filter(([k]) =>
-    k !== "generico" && norm.some((s) => s.includes(k.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase())),
+  const limpa = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const norm = setores.map(limpa);
+  const achados: [string, { cenario: string; estrutura: string }][] = Object.entries(ESTRUTURAS_COFRE).filter(([k]) =>
+    k !== "generico" && norm.some((s) => s.includes(limpa(k))),
   );
-  const escolhidos = achados.length ? achados : [["generico", ESTRUTURAS_COFRE.generico] as const];
+  const escolhidos: [string, { cenario: string; estrutura: string }][] = achados.length ? achados : [["generico", ESTRUTURAS_COFRE["generico"]!]];
   const blocos = escolhidos.map(([k, v]) => `${k === "generico" ? "" : `/${k}\n`}${v.estrutura.split("\n").map((l) => (k === "generico" ? l : `  ${l}`)).join("\n")}`);
   return {
     estrutura: blocos.join("\n"),
@@ -134,7 +135,7 @@ export function padraoHostname(hostnames: string[]): string | null {
   const primeiro = hostnames.find((h) => h.trim());
   if (!primeiro) return null;
   const m = primeiro.trim().match(/^([A-Za-z]+)-([A-Za-z]+)-(\d+)$/);
-  if (m) return `${m[1]}-<SETOR>-${"N".repeat(m[3].length)} (padrão detectado a partir de ${primeiro.trim()})`;
+  if (m) return `${m[1]}-<SETOR>-${"N".repeat(m[3]?.length ?? 2)} (padrão detectado a partir de ${primeiro.trim()})`;
   return `Padrão detectado: ${primeiro.trim()} — mantenha o mesmo formato`;
 }
 
