@@ -7,7 +7,8 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, BookOpen, Lightbulb, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { DEPARTMENTS, VERBS } from "@/lib/priva/data";
+import { DEPARTMENTS } from "@/lib/priva/data";
+import { AJUDA_CICLO, CITACAO_ANPD, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, GENEROS, NOTA_CICLO, alternar, cicloDaLinha, citacoesISO, formatarCiclo, generosMarcados, type CicloVida } from "@/lib/priva/cicloVida";
 import { DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, SALVAGUARDAS, SENSIVEIS, TITULARES, hasSensivel, isRisky, normalizeHipoteses, sugerir, validateRot, type RotInput, type RotRow } from "@/lib/priva/rot";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ROT } from "@/lib/priva/demo";
@@ -22,11 +23,11 @@ import { BadgeFornecedorROT } from '@/components/priva/AlertaFornecedorVazado';
 
 
 
-const HEADS = ["ID Processo", "Gênero Verbo", "Categoria de Titulares", "Dados Pessoais", "Dados Pessoais Sensíveis", "Finalidade Específica",
+const HEADS = ["ID Processo", "Ciclo de vida (gênero × espécie)", "Categoria de Titulares", "Dados Pessoais", "Dados Pessoais Sensíveis", "Finalidade Específica",
   "7A. Hipótese art. 7º (dado pessoal)", "7B. Hipótese art. 11 (dado pessoal sensível)", "Tempo de Retenção", "Base do Prazo", "Compartilhamento / Destinatários", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
 
 const empty = (cnpj: string): RotInput => ({
-  empresa_cnpj: cnpj, setor: "RH", genero_verbo: "Coletar", categoria_titulares: [], dados_pessoais: [], dados_sensiveis: ["N/A"],
+  empresa_cnpj: cnpj, setor: "RH", genero_verbo: "Coletar", ciclo_vida: {}, categoria_titulares: [], dados_pessoais: [], dados_sensiveis: ["N/A"],
   finalidade_especifica: "", hipotese_tratamento: "", hipotese_sensivel: null, tempo_retencao: "", base_prazo: "", compartilhamento: "Não Compartilhado",
   salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null,
 });
@@ -64,7 +65,8 @@ export function Bloco2() {
     if (!edit) return;
     const err = validateRot(normalizeHipoteses(edit.form));
     if (err) { toast.error(err); return; }
-    const payload = { ...normalizeHipoteses(edit.form), justificativa_mitigacao: isRisky(edit.form) ? edit.form.justificativa_mitigacao : null };
+    const ciclo = cicloDaLinha(edit.form);
+    const payload = { ...normalizeHipoteses(edit.form), ciclo_vida: ciclo, genero_verbo: generosMarcados(ciclo)[0] ?? "Coletar", justificativa_mitigacao: isRisky(edit.form) ? edit.form.justificativa_mitigacao : null };
     const { data, error } = edit.id
       ? await supabase.from("registro_operacoes").update(payload).eq("id", edit.id).select("codigo").single()
       : await supabase.from("registro_operacoes").insert(payload).select("codigo").single();
@@ -93,6 +95,7 @@ export function Bloco2() {
         <Link to="/manual" className="inline-flex items-center gap-1 font-medium text-primary underline"><BookOpen className="h-3 w-3" /> Manual de Uso</Link>
       </PageHeader>
       {AJUDA[2] && <AjudaTarefa {...AJUDA[2]} />}
+      <CicloResumo />
 
       <Panel id="rot" title={`Planilha mestre · ${rows.length} processos · ${riskyCount} em alerta`} action={canEdit && (
         <Button size="sm" onClick={() => demo ? avisarAcaoDemo() : setEdit({ id: null, form: empty(cnpj) })}><Plus className="h-4 w-4" /> Novo processo</Button>
@@ -114,7 +117,7 @@ export function Bloco2() {
                       {r.codigo}
                       {risk && <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold uppercase text-destructive"><AlertTriangle className="h-3 w-3" /> Alerta crítico</p>}
                     </td>
-                    <td className="px-2 py-2">{r.genero_verbo}</td>
+                    <td className="max-w-72 px-2 py-2"><CicloCelula r={r} /></td>
                     <td className="px-2 py-2"><Tags items={r.categoria_titulares} danger="Menores de Idade" /></td>
                     <td className="px-2 py-2"><Tags items={r.dados_pessoais} /></td>
                     <td className="px-2 py-2"><Tags items={r.dados_sensiveis} safe="N/A" /></td>
@@ -149,9 +152,10 @@ export function Bloco2() {
 
       <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0} readyHint="Cadastre ao menos um processo na planilha mestre.">
         <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico.</p>
+        <p className="mt-2"><b>Ciclo de vida do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO}</p>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           {rows.map((r) => (
-            <li key={r.id}><b>{r.codigo}</b> — {r.genero_verbo} {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção: {r.tempo_retencao} ({r.base_prazo}).{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}</li>
+            <li key={r.id}><b>{r.codigo}</b> — Ciclo de vida: {formatarCiclo(cicloDaLinha(r))} ({[...CITACOES_LGPD, ...citacoesISO(cicloDaLinha(r))].join("; ")}). Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção: {r.tempo_retencao} ({r.base_prazo}).{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}</li>
           ))}
         </ul>
       </PIOutput>
@@ -206,10 +210,24 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
               </select>
             </Field>
           )}
-          <Field label="2. Gênero Verbo">
-            <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.genero_verbo} onChange={(e) => up({ genero_verbo: e.target.value })}>
-              {VERBS.map((v) => <option key={v}>{v}</option>)}
-            </select>
+          <Field label="2. Ciclo de vida do dado pessoal (gênero × espécie)" wide>
+            <p className="text-[11px] text-muted-foreground">{AJUDA_CICLO}</p>
+            <div className="grid gap-2 sm:grid-cols-2" data-testid="ciclo-vida">
+              {GENEROS.map((g) => {
+                const c = cicloDaLinha(f);
+                return (
+                  <fieldset key={g} className="rounded-sm border p-2">
+                    <legend className="px-1 text-xs font-semibold">{g}</legend>
+                    <div className="flex flex-wrap gap-1">
+                      {ESPECIES[g].map((e) => {
+                        const on = (c[g] ?? []).includes(e);
+                        return <button type="button" key={e} aria-pressed={on} onClick={() => { const n = alternar(c, g, e); up({ ciclo_vida: n, genero_verbo: generosMarcados(n)[0] ?? "Coletar" }); }} className={cn("rounded-sm border px-2 py-0.5 text-xs", on ? "border-primary bg-primary text-primary-foreground" : "bg-background")}>{e}</button>;
+                      })}
+                    </div>
+                  </fieldset>
+                );
+              })}
+            </div>
           </Field>
           <Field label="3. Categoria de Titulares" wide><Chips options={TITULARES} value={f.categoria_titulares} onChange={(v) => up({ categoria_titulares: v })} /></Field>
           <Field label="4. Dados Pessoais" wide><Chips options={DADOS} value={f.dados_pessoais} onChange={(v) => up({ dados_pessoais: v })} /></Field>
@@ -266,4 +284,27 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
 
 function Field({ label, wide, children }: { label: string; wide?: boolean; children: React.ReactNode }) {
   return <div className={cn("space-y-1", wide && "md:col-span-2")}><Label className="text-xs">{label}</Label>{children}</div>;
+}
+
+function CicloResumo() {
+  return (
+    <div className="rounded-sm border bg-muted/40 p-3 text-sm" data-testid="ciclo-resumo">
+      <p className="font-semibold text-primary">Ciclo de vida do dado pessoal: {DESCRICAO_CICLO}</p>
+      <p className="text-xs text-muted-foreground">{NOTA_CICLO}</p>
+    </div>
+  );
+}
+
+function CicloCelula({ r }: { r: RotRow }) {
+  const c: CicloVida = cicloDaLinha(r);
+  return (
+    <div className="space-y-1" data-testid={`ciclo-${r.codigo}`}>
+      <p className="font-medium">{formatarCiclo(c) || "—"}</p>
+      <ul className="text-[10px] leading-snug text-muted-foreground">
+        {CITACOES_LGPD.map((t) => <li key={t}>{t}</li>)}
+        <li>{CITACAO_ANPD}</li>
+        {citacoesISO(c).map((t) => <li key={t}>{t}</li>)}
+      </ul>
+    </div>
+  );
 }
