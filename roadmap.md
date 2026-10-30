@@ -51,6 +51,7 @@
 - [ ] Envio 2: provas e2e de cópia com clipboard (e, f, h, i) — unitárias feitas; e2e de clipboard pendente.
 
 ## Envio 3 — MCI + Lei de IA
+- [ ] Corrigir apenas dosimetria PI-05: pesos dos PIs chancelados, desconto residual declarado, memória de cálculo e valor final únicos; provar com testes.
 - [x] MCI art. 15 no console pgAudit (Bloco 4) com tooltip pedagógico.
 - [x] MCI art. 10 + prazo de retenção na Trilha de Auditoria.
 - [x] Seção "Marco Civil da Internet" (art. 7º, VIII) no Manual de Uso.
