@@ -285,9 +285,9 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
         createEmpresa: async () => "Indisponível no Modo Demonstração.", setRole: noop,
         set: noop, log: noop, sign: async (pi: string) => demoAssinar(pi, "DPO"),
         reset: noop, refreshAudit: async () => undefined, demo, publicDemo: initialDemo, setDemo,
-        demoSessao, demoEnviarANPD, demoEncerrarIncidente, demoAssinar,
+        demoSessao, demoEnviarANPD, demoEncerrarIncidente, demoAssinar, demoRegistrarEvento: registrarEventoDemo,
       }
-    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, publicDemo: false, setDemo, demoSessao: DEMO_SESSAO_INICIAL, demoEnviarANPD: async () => undefined, demoEncerrarIncidente: async () => undefined, demoAssinar: async () => undefined };
+    : { ...shared, signatures: assinaturasVigentes(shared.signatures, new Date()), ready, userId, email, roles, role, audit, cnpj, empresas, selectEmpresa, createEmpresa, setRole, set, log, sign, reset, refreshAudit, demo, publicDemo: false, setDemo, demoSessao: DEMO_SESSAO_INICIAL, demoEnviarANPD: async () => undefined, demoEncerrarIncidente: async () => undefined, demoAssinar: async () => undefined, demoRegistrarEvento: async () => undefined };
 
   return (
     <C.Provider value={value}>
