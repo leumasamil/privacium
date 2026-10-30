@@ -25,9 +25,10 @@ const BLOCO_NOME: Record<number, string> = { 0: "Kanban 5W2H", 1: "Bloco 1 · Di
 /** Severidade: pendência vencida ou que trava o ciclo é bloqueante. */
 const bloqueante = (p: Pendencia) => p.estado === "critico" || p.estado === "bloqueado";
 
-function destino(p: Pendencia): { to: string; hash?: string } {
+type RotaBloco = "/kanban" | "/bloco-1" | "/bloco-2" | "/bloco-3" | "/bloco-4" | "/bloco-5";
+function destino(p: Pendencia): { to: RotaBloco; hash?: string } {
   if (p.bloco === 0) return { to: "/kanban", hash: p.ancora };
-  return { to: `/bloco-${p.bloco}`, hash: p.ancora };
+  return { to: `/bloco-${p.bloco}` as RotaBloco, hash: p.ancora };
 }
 
 /** Dashboard transversal: tudo que falta no ciclo, da mesma fonte de estado dos blocos. */
