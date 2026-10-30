@@ -76,6 +76,7 @@ export function Bloco2() {
       : await supabase.from("registro_operacoes").insert(payload).select("codigo").single();
     if (error) { toast.error(error.message); return; }
     log(edit.id ? "UPDATE" : "INSERT", "registro_operacoes", `Processo ${data.codigo}`);
+    for (const a of alertasCoerencia(edit.form)) log("INSERT", "registro_operacoes", `Alerta de coerência dado × hipótese em ${data.codigo}: ${a}`);
     toast.success(`${data.codigo} salvo`);
     setEdit(null);
     void qc.invalidateQueries({ queryKey: key });
