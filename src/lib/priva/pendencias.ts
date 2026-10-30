@@ -42,16 +42,25 @@ export type DadosBloco =
 
 const est = (feitos: number, total: number): Estado => (total > 0 && feitos >= total ? "ok" : feitos > 0 ? "andamento" : "pendente");
 
-function assinaturas(n: number, sigs: Record<string, Signature>, base: boolean): Pendencia[] {
+export type Responsaveis = Partial<Record<Responsavel, string | undefined>>;
+const PAPEL: Record<Responsavel, string> = { DPO_OPERACIONAL: "DPO_OPERACIONAL", C_SUITE: "C_SUITE (Diretoria)", ADMIN_SISTEMA: "ADMIN_SISTEMA" };
+
+function assinaturas(n: number, sigs: Record<string, Signature>, base: boolean, resp?: Responsaveis): Pendencia[] {
   const code = `PI-0${n}`;
   const estadoBase: Estado = base ? "pendente" : "bloqueado";
-  const exigeBase = base ? "Gerar o documento e assinar com Gov.br na seção \"Saída obrigatória\"." : "Disponível depois que as etapas acima estiverem concluídas.";
+  const exigeGen = base ? "Gerar o documento e assinar com Gov.br na seção \"Saída obrigatória\"." : "Disponível depois que as etapas acima estiverem concluídas.";
+  // Com responsáveis informados, a pendência nasce atribuída ao papel (RBAC), faltando só o ato de assinar.
+  const ex = (r: Responsavel) => {
+    const quem = `${PAPEL[r]}${resp?.[r] ? ` · ${resp[r]}` : ""}`;
+    return base ? `Aguardando assinatura de ${quem}.` : `Responsável atribuído: ${quem}. ${exigeGen}`;
+  };
+  const exigeBase = ex("DPO_OPERACIONAL");
   if (!PI_DUPLO[n]) {
     return [{ id: "sig-dpo", titulo: `Assinatura do DPO no ${code}`, exige: exigeBase, responsavel: "DPO_OPERACIONAL", estado: sigs[code] ? "ok" : estadoBase, bloco: n, ancora: "assinatura", acao: `Assinar o ${code}` }];
   }
   return [
     { id: "sig-dpo", titulo: `Assinatura do DPO no ${code}`, exige: exigeBase, responsavel: "DPO_OPERACIONAL", estado: sigs[`${code}-DPO`] || sigs[code] ? "ok" : estadoBase, bloco: n, ancora: "assinatura", acao: `Assinar o ${code} como DPO` },
-    { id: "sig-dir", titulo: `Assinatura da Diretoria no ${code}`, exige: exigeBase, responsavel: "C_SUITE", estado: sigs[`${code}-DIR`] || sigs[code] ? "ok" : estadoBase, bloco: n, ancora: "assinatura", acao: `Assinar o ${code} como Diretoria` },
+    { id: "sig-dir", titulo: `Assinatura da Diretoria no ${code}`, exige: ex("C_SUITE"), responsavel: "C_SUITE", estado: sigs[`${code}-DIR`] || sigs[code] ? "ok" : estadoBase, bloco: n, ancora: "assinatura", acao: `Assinar o ${code} como Diretoria` },
   ];
 }
 
@@ -138,7 +147,7 @@ export const RISCOS_IA = [
 ];
 
 /** Bloco 5: RIPD (sistema, Escudo Digital, mitigação por risco) + duas assinaturas do PI-05. */
-export function pendenciasBloco5(d: { sistema: string; escudo: string; riscos: { label: string; mitig: string }[] }, sigs: Record<string, Signature>): Pendencia[] {
+export function pendenciasBloco5(d: { sistema: string; escudo: string; riscos: { label: string; mitig: string }[] }, sigs: Record<string, Signature>, resp?: Responsaveis): Pendencia[] {
   const it: Pendencia[] = [];
   it.push({ id: "sis", titulo: "Descrever o sistema avaliado", exige: d.sistema.trim().length > 2 ? "Sistema descrito." : "Campo do sistema avaliado vazio.", responsavel: "DPO_OPERACIONAL", estado: d.sistema.trim().length > 2 ? "ok" : "pendente", bloco: 5, ancora: "ripd", acao: "Descrever o sistema avaliado", sugestao: "Preencha o campo do sistema avaliado no topo do RIPD; ele é salvo ao sair do campo." });
   const esc = d.escudo.trim().length;
@@ -146,7 +155,7 @@ export function pendenciasBloco5(d: { sistema: string; escudo: string; riscos: {
   const sem = d.riscos.filter((r) => r.mitig.trim().length <= 10);
   it.push({ id: "mitig", titulo: "Mitigar cada risco de IA", exige: sem.length ? `Faltam ${sem.length} de ${d.riscos.length} riscos: ${sem.map((r) => r.label).join(", ")}.` : `${d.riscos.length} de ${d.riscos.length} riscos mitigados.`, responsavel: "DPO_OPERACIONAL", estado: sem.length === 0 ? "ok" : sem.length < d.riscos.length ? "andamento" : "pendente", bloco: 5, ancora: "ripd", acao: sem.length ? `Mitigar o risco "${sem[0]!.label}"` : "Ver riscos", sugestao: sem.length ? `Abra o risco "${sem[0]!.label}" e preencha "Medidas de mitigação…" com mais de 10 caracteres.` : undefined });
   const base = it.every((x) => x.estado === "ok");
-  return [...it, ...assinaturas(5, sigs, base)];
+  return [...it, ...assinaturas(5, sigs, base, resp)];
 }
 
 /** Kanban: cartão aberto sem responsável ou sem prazo é pendência. */

@@ -26,8 +26,9 @@ export const DEMO_QUESTIONS: Question[] = Array.from({ length: 166 }, (_, index)
 });
 
 const ts = "2026-10-01T12:00:00.000Z";
+/** PI-01 a PI-04 chancelados; PI-05 aguarda as assinaturas atribuídas por papel. */
 export const DEMO_SIGNATURES = Object.fromEntries(
-  ["PI-01", "PI-02", "PI-02-DPO", "PI-02-DIR", "PI-03", "PI-03-DPO", "PI-03-DIR", "PI-04", "PI-04-DPO", "PI-04-DIR", "PI-05", "PI-05-DPO", "PI-05-DIR"].map((k, i) => [
+  ["PI-01", "PI-02", "PI-02-DPO", "PI-02-DIR", "PI-03", "PI-03-DPO", "PI-03-DIR", "PI-04", "PI-04-DPO", "PI-04-DIR"].map((k, i) => [
     k,
     { by: `Assinatura digital Gov.br · ${k} · CHANCELADO (demonstração)`, ts, hash: `d3m0${String(i).padStart(2, "0")}`.padEnd(64, "a") },
   ]),
@@ -134,9 +135,10 @@ export const DEMO_ROWS: {
     empresa_cnpj: DEMO_CNPJ, sistema_avaliado: "Assistente LLM de triagem de currículos e atendimento", atualizado_por: null, atualizado_em: ts,
     escudo_digital: "O Escudo Digital do Bloco 3 tokeniza localmente CPFs, e-mails e nomes antes do envio a qualquer IA externa e reverte os tokens apenas no navegador do usuário autorizado.",
     riscos: {
-      vazamento: { prob: 2, imp: 4, descricao: "Colaboradores colando currículos no chat.", mitig: "Tokenização obrigatória via Escudo Digital e bloqueio de IAs não homologadas." },
-      vies: { prob: 2, imp: 5, descricao: "Ranqueamento de candidatos por gênero ou idade.", mitig: "Revisão humana obrigatória (Art. 20 LGPD) e auditoria trimestral de vieses." },
-      injecao: { prob: 3, imp: 3, descricao: "Currículos com instruções ocultas.", mitig: "Filtro de instruções e isolamento do contexto do sistema." },
+      // Probabilidade, impacto e mitigação derivam da biblioteca estática (PI-05); o seed guarda só a descrição.
+      vazamento: { descricao: "Colaboradores colando currículos no chat.", mitig: "" },
+      vies: { descricao: "Ranqueamento de candidatos por gênero ou idade.", mitig: "" },
+      injecao: { descricao: "Currículos com instruções ocultas.", mitig: "" },
     },
   }],
   ciclos_priva: [],
