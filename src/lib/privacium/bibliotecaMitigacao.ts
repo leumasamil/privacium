@@ -15,7 +15,7 @@ export const NOMES_PI: Record<string, string> = {
 
 export type RiscoId = "vazamento" | "vies" | "injecao";
 type Controle = { pi: string; eixo: "prob" | "imp"; delta: number; motivo: string };
-type Entrada = { pis: string[]; medida: string; fonte: string; controles: Controle[] };
+type Entrada = { pis: string[]; descricao: string; medida: string; fonte: string; controles: Controle[] };
 
 export const INERENTE = { prob: 5, imp: 5 } as const;
 
