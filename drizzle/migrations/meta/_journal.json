@@ -288,6 +288,13 @@
       "when": 1793383774454,
       "tag": "0040_prt_lista_e_terceiros",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793386140826,
+      "tag": "0041_corrigir_fontes_catalogo_riscos",
+      "breakpoints": true
     }
   ]
 }
