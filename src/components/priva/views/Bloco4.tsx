@@ -1,6 +1,7 @@
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 import { FormularioANPD } from "@/components/priva/FormularioANPD";
 import { restanteANPD } from "@/lib/priva/anpd";
+import { SLA_MS } from "@/lib/priva/dosimetria";
 import { linhasNaturezas } from "@/lib/priva/naturezasIncidente";
 import { linhasRiscos } from '@/lib/priva/riscosIncidente';
 import { linhasMedidas } from '@/lib/priva/medidasIncidente';

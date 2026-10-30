@@ -1,6 +1,7 @@
 import type { Signature } from "./store";
 import { hasSensivel, isRisky, type RotInput } from "./rot";
 import { carregarEstadoIncidente, type IncidenteFonte } from './estadoIncidente';
+import { restanteANPD } from './anpd';
 
 export type Estado = "ok" | "andamento" | "pendente" | "atencao" | "critico" | "bloqueado";
 export type Responsavel = "DPO_OPERACIONAL" | "C_SUITE" | "ADMIN_SISTEMA";
@@ -119,10 +120,9 @@ export function montarChecklist(d: DadosBloco, sigs: Record<string, Signature>):
       const proxima = faltam[0];
       it.push({ id: `inc-${i.id}`, incidenteId: i.id, titulo: `Concluir as 6 etapas do incidente ${ref}`, exige: `${feitos} de 6 concluídas.${faltam.length ? ` Falta: ${faltam.map(x => `${String(x.numero).padStart(2, '0')} ${x.nome}`).join(', ')}.` : ''}`, responsavel: 'DPO_OPERACIONAL', estado: feitos === 6 ? 'ok' : feitos ? 'andamento' : 'pendente', bloco: 4, ancora: proxima?.numero === 6 ? 'anpd' : `incidente-etapa-${proxima?.numero ?? 1}`, acao: proxima?.numero === 6 ? `Preencher e enviar o formulário ANPD do incidente ${ref}` : `Concluir a etapa ${proxima?.numero ?? 1} de 6 do incidente ${ref}` });
       if (!i.encerrado_em && e.anpd.enviado) it.push({ id: `encerrar-${i.id}`, titulo: `Encerrar incidente ${ref}`, exige: e.podeEncerrar ? 'Comunicação concluída; encerre o incidente.' : e.motivos_bloqueio.join('; '), responsavel: 'DPO_OPERACIONAL', estado: 'andamento', bloco: 4, ancora: e.correcoes[0]?.ancora ?? 'encerramento', acao: e.podeEncerrar ? 'Encerrar incidente' : 'Completar os registros das etapas' });
-      const decorrido = d.agora - new Date(i.iniciado_em).getTime();
       const vencido = e.anpd.prazo_vencido;
-      const proximo = !vencido && decorrido > 48 * 3600_000;
-      it.push({ id: `anpd-${i.id}`, incidenteId: i.id, titulo: `Formulário ANPD do incidente ${ref}`, exige: e.anpd.enviado ? 'Comunicação registrada.' : vencido ? 'SLA de 72 horas vencido — comunique a ANPD imediatamente.' : 'Preencher e enviar dentro do SLA de 72 horas.', responsavel: 'DPO_OPERACIONAL', estado: e.anpd.enviado ? 'ok' : vencido ? 'critico' : proximo ? 'atencao' : 'pendente', bloco: 4, ancora: 'anpd', acao: 'Abrir formulário ANPD' });
+      const proximo = !vencido && !e.anpd.enviado && restanteANPD(i.iniciado_em, null, d.agora) < 24 * 3600_000;
+      it.push({ id: `anpd-${i.id}`, incidenteId: i.id, titulo: `Formulário ANPD do incidente ${ref}`, exige: e.anpd.enviado ? 'Comunicação registrada.' : vencido ? 'Prazo de 3 dias úteis vencido (Res. CD/ANPD nº 15/2024, art. 6º) — comunique a ANPD imediatamente.' : 'Preencher e enviar dentro do prazo de 3 dias úteis (Res. CD/ANPD nº 15/2024, art. 6º).', responsavel: 'DPO_OPERACIONAL', estado: e.anpd.enviado ? 'ok' : vencido ? 'critico' : proximo ? 'atencao' : 'pendente', bloco: 4, ancora: 'anpd', acao: 'Abrir formulário ANPD' });
     }
     if (!abertos.length && !encerrado) it.push({ id: "inc", titulo: "Concluir um incidente com as 6 etapas e comunicação à ANPD", exige: "O PI-04 exige ao menos um incidente (real ou simulado) encerrado.", responsavel: "DPO_OPERACIONAL", estado: "pendente", bloco: 4, ancora: "incidentes", acao: "Declarar e conduzir um incidente" });
   }
