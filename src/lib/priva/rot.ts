@@ -18,23 +18,76 @@ export const LITERAL_ART5_VI = "controlador: pessoa natural ou jurídica, de dir
 export const LITERAL_ART5_VII = "operador: pessoa natural ou jurídica, de direito público ou privado, que realiza o tratamento de dados pessoais em nome do controlador";
 /** Nota exibida quando a linha é OPERADOR: o destino (Etapa 2) é definido pelo controlador. */
 export const NOTA_DESTINO_OPERADOR = "Definido pelo controlador — LGPD art. 5º, VII e art. 39";
-/** Nota de método do produto interno (LGPD art. 5º, X). */
-export const NOTA_PRODUTO = "Produto interno é o resultado material das operações de tratamento (LGPD art. 5º, X). É conceito de método, não categoria jurídica autônoma.";
-/** Alerta bloqueante de chancela: Processar sem produto declarado (LGPD art. 6º, I). */
-export const ALERTA_PRODUTO_AUSENTE = "Tratamento com processamento sem produto declarado — art. 6º, I não comprovado.";
+/** Nota de método do PRT — Produto do Tratamento (LGPD art. 5º, X); distingue dos artefatos PI-01 a PI-05. */
+export const NOTA_PRT = "PRT (Produto do Tratamento) é o resultado material das operações de tratamento (LGPD art. 5º, X) e não constitui categoria jurídica autônoma. Não confundir com os artefatos legais PI-01 a PI-05, que são documentos chancelados do método, com hash SHA-256. Agrupamento do método: os 20 verbos do art. 5º, X da LGPD permanecem íntegros.";
+export const NOTA_PRODUTO = NOTA_PRT;
+export const ROTULO_PRT = "PRT — Produto do Tratamento";
+/** Alerta bloqueante de chancela: Processar sem PRT declarado (LGPD art. 6º, I). */
+export const ALERTA_PRODUTO_AUSENTE = "Tratamento com processamento sem PRT (Produto do Tratamento) declarado — art. 6º, I não comprovado.";
 /** Alerta não bloqueante: operador não declara finalidade própria (LGPD art. 39). */
 export const ALERTA_FINALIDADE_OPERADOR = "Operador não declara finalidade própria — a finalidade desta linha é a do contrato com o controlador (LGPD art. 39).";
 
-/** Destino do produto (Etapa 2): interno (Área › Setor), externo (terceiro) ou eliminação (LGPD art. 16). */
+/** Destino de um PRT (Etapa 2): interno (Área › Setor), externo (terceiro do cadastro) ou eliminação (LGPD art. 16). */
 export type DestinoProduto = {
   tipo: "INTERNO" | "EXTERNO" | "ELIMINACAO";
   area_setor_destino?: string;
+  /** Legado: nome livre do terceiro (antes do cadastro). */
   terceiro?: string;
+  terceiro_id?: string;
+  terceiro_nome?: string;
   linha_receptor_id?: string;
   linha_receptor_codigo?: string;
+  prazo?: string;
+  fundamento?: string;
 };
+export type ProdutoTratamento = { nome: string; destino?: DestinoProduto | null };
 /** Linha criada automaticamente no setor receptor (compartilhamento interno), com origem rastreada. */
 export type OrigemCompartilhamento = { estado: "insumo recebido"; linha_origem_id: string; codigo_origem: string; area_setor_origem: string };
+
+type ComPRT = Partial<Pick<RotRow, "produtos_tratamento" | "produto_interno" | "destino_produto" | "prazo_produto" | "fundamento_produto">>;
+
+/** Lista de PRT da linha (linhas antigas com produto único viram PRT-1). */
+export function produtosDaLinha(r: ComPRT): ProdutoTratamento[] {
+  const lista = Array.isArray(r.produtos_tratamento) ? (r.produtos_tratamento as ProdutoTratamento[]) : [];
+  if (lista.length) return lista;
+  const nome = (r.produto_interno ?? "").trim();
+  if (!nome) return [];
+  const d = r.destino_produto as DestinoProduto | null | undefined;
+  return [{ nome, destino: d ? { ...d, prazo: d.prazo ?? r.prazo_produto ?? undefined, fundamento: d.fundamento ?? r.fundamento_produto ?? undefined } : null }];
+}
+export const rotuloPRT = (i: number) => `PRT-${i + 1}`;
+export const alertaPRTSemDestino = (nome: string) => `PRT '${nome}' sem destino declarado — art. 16 não comprovado.`;
+
+/** Destino individual completo: interno com Área › Setor; externo com terceiro do cadastro; eliminação com prazo e fundamento. */
+export function destinoPRTCompleto(d: DestinoProduto | null | undefined): boolean {
+  if (!d) return false;
+  if (d.tipo === "INTERNO") return !!(d.area_setor_destino ?? "").split("›")[0]?.trim();
+  if (d.tipo === "EXTERNO") return !!d.terceiro_id;
+  return !!(d.prazo ?? "").trim() && !!(d.fundamento ?? "").trim();
+}
+
+/** Alertas por PRT sem destino (bloqueiam a chancela do PI-02). Linhas de operador: destino definido pelo controlador. */
+export function alertasPRTSemDestino(r: ComPRT & Pick<RotRow, "papel_agente">): string[] {
+  if (r.papel_agente === "OPERADOR") return [];
+  return produtosDaLinha(r).filter((p) => !destinoPRTCompleto(p.destino)).map((p) => alertaPRTSemDestino(p.nome || "sem nome"));
+}
+
+/** PRT com destino externo para terceiro sem contrato vigente e checklist do art. 39 completo (alerta bloqueante). */
+export function prtExternosBloqueados(r: ComPRT, terceiros: { id: string; contrato_vigente: boolean; clausulas_art39: boolean }[]): ProdutoTratamento[] {
+  return produtosDaLinha(r).filter((p) => {
+    if (p.destino?.tipo !== "EXTERNO" || !p.destino.terceiro_id) return false;
+    const t = terceiros.find((x) => x.id === p.destino!.terceiro_id);
+    return !t || !t.contrato_vigente || !t.clausulas_art39;
+  });
+}
+
+/** Texto do destino de um PRT para a planilha e o PI-02. */
+export function descreverDestinoPRT(d: DestinoProduto | null | undefined): string {
+  if (!d) return "sem destino declarado";
+  if (d.tipo === "INTERNO") return `Interno: ${d.area_setor_destino ?? "Área › Setor a definir"}${d.linha_receptor_codigo ? ` (linha ${d.linha_receptor_codigo})` : ""}`;
+  if (d.tipo === "EXTERNO") return `Externo: ${d.terceiro_nome ?? d.terceiro ?? "terceiro não cadastrado"}`;
+  return `Eliminar em ${d.prazo || "prazo a definir"} (${d.fundamento || "fundamento a definir"})`;
+}
 
 export const TITULARES = ["Colaboradores", "Clientes", "Fornecedores", "Visitantes", "Candidatos", "Menores de Idade"];
 export const DADOS = ["Nome", "CPF", "RG", "Telefone", "E-mail", "Endereço", "Dados Bancários", "Imagem"];
