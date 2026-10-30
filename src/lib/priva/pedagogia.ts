@@ -131,15 +131,10 @@ export const NORMAS: Record<string, Norma> = {
     resumo: "Extensão da ISO 27001 para gestão de privacidade da informação (PIMS).",
     porque: "Referência do laudo técnico do PI-03 sobre salvaguardas do art. 46.",
   },
-  "CIS Control 03": {
-    citacao: "CIS Control 03",
-    resumo: "Proteção de dados: inventariar, classificar e proteger dado pessoal e dado pessoal sensível contra exfiltração (inclui DLP e mascaramento).",
-    porque: "É o controle que o Escudo Digital implementa ao tokenizar dado pessoal antes de enviar a uma IA externa.",
-  },
-  "CIS Control 16": {
-    citacao: "CIS Control 16",
-    resumo: "Segurança de aplicações: validar entradas, isolar execução e registrar atividade das aplicações.",
-    porque: "Base da mitigação contra injeção de prompts: sanitização de entrada e sandbox do modelo.",
+  "CIS Controls v8": {
+    citacao: "CIS Controls v8",
+    resumo: "Conjunto de controles de segurança do Center for Internet Security. Os números dos controles específicos estão em verificação na biblioteca normativa (norma de acesso pago, item 9.6 do blueprint).",
+    porque: "Referência técnica de apoio às salvaguardas do art. 46 da LGPD; enquanto o controle específico não é verificado, apenas a referência genérica é exibida.",
   },
 };
 
