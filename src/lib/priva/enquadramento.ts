@@ -4,6 +4,7 @@ export const criteriosSchema = z.object({
   grupoGrande: z.boolean(), receitaAcimaTeto: z.boolean(), tipo: z.enum(['ME', 'EPP', 'LTDA', 'SA', 'ASSOCIACAO', 'OUTRO']),
   titulares: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER), infraLimitada: z.boolean(), descricaoInfra: z.string().trim().max(2000),
   sensivelLargaEscala: z.boolean(), altoRisco: z.boolean(), menoresAltoRisco: z.boolean(),
+  papelAgente: z.enum(['CONTROLADOR', 'OPERADOR', 'CONTROLADOR_OPERADOR']).default('CONTROLADOR'),
 }).refine(c => !c.infraLimitada || c.descricaoInfra.length >= 10, 'Descreva a infraestrutura limitada (mínimo 10 caracteres).');
 export type CriteriosPorte = z.infer<typeof criteriosSchema>;
 export type Porte = 'PEQUENO' | 'COMPLETO';
@@ -26,8 +27,8 @@ export function travaPorte(c: CriteriosPorte, gatilho: boolean) {
 }
 /** Critérios cenográficos coerentes com cada cenário da demonstração. */
 export const CRITERIOS_DEMO: Record<Porte, CriteriosPorte> = {
-  COMPLETO: { grupoGrande: false, receitaAcimaTeto: false, tipo: 'SA', titulares: 25000, infraLimitada: false, descricaoInfra: '', sensivelLargaEscala: false, altoRisco: false, menoresAltoRisco: false },
-  PEQUENO: { grupoGrande: false, receitaAcimaTeto: false, tipo: 'ME', titulares: 800, infraLimitada: false, descricaoInfra: '', sensivelLargaEscala: false, altoRisco: false, menoresAltoRisco: false },
+  COMPLETO: { grupoGrande: false, receitaAcimaTeto: false, tipo: 'SA', titulares: 25000, infraLimitada: false, descricaoInfra: '', sensivelLargaEscala: false, altoRisco: false, menoresAltoRisco: false, papelAgente: 'CONTROLADOR' },
+  PEQUENO: { grupoGrande: false, receitaAcimaTeto: false, tipo: 'ME', titulares: 800, infraLimitada: false, descricaoInfra: '', sensivelLargaEscala: false, altoRisco: false, menoresAltoRisco: false, papelAgente: 'CONTROLADOR' },
 };
 export const razaoDemo = (p: Porte) => p === 'PEQUENO' ? 'Empresa Cenográfica ME' : 'Empresa Cenográfica S.A.';
 export const prazoPorPorte = (p: Porte | null | undefined): 3 | 6 => p === 'PEQUENO' ? 6 : 3;
