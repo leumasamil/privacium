@@ -5,14 +5,19 @@ import { sugerirRiscos, textoRiscos, vincularRisco } from './riscosIncidente';
 import { sugerirMedidas, textoMedidas, vincularMedida } from './medidasIncidente';
 import { categoriasDoROT, vincularCategorias } from './categoriasANPD';
 import { carregarEstadoIncidente, type FonteIncidente } from './estadoIncidente';
+import { restanteANPD } from './anpd';
 
 /** Modo Demonstração Comercial: dados cenográficos que vivem só no estado do navegador. Nada aqui é gravado no banco. */
 export const DEMO_CNPJ = "99999999000199";
 export const DEMO_RAZAO = "Empresa Cenográfica S.A.";
 export const DEMO_CPF = "00000000000";
 export const DEMO_SCORE = 1075;
-export const DEMO_SLA_MS = 58 * 3600 * 1000;
 export const DEMO_MULTA_BASE = 100_000;
+const DEMO_INICIO_INCIDENTE = "2026-10-01T12:00:00.000Z";
+/** Relógio cenográfico fixo: 14h após o conhecimento do incidente, dentro do prazo de 3 dias úteis. */
+export const DEMO_AGORA = Date.parse(DEMO_INICIO_INCIDENTE) + 14 * 3600000;
+export const DEMO_AGORA_ISO = new Date(DEMO_AGORA).toISOString();
+export const DEMO_SLA_MS = restanteANPD(DEMO_INICIO_INCIDENTE, null, DEMO_AGORA);
 
 /** Static public scenario mirrors the diagnostic catalog, never queries tenant data. */
 const departamentosDemo = ['RH', 'TI', 'Marketing', 'Compras', 'Recepção', 'Jurídico', 'Financeiro'];
