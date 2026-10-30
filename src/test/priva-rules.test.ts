@@ -66,7 +66,8 @@ import { isRisky, normalizeHipoteses, validateRot, type RotInput } from "@/lib/p
 describe("ROT · travas de risco", () => {
   const base: RotInput = { empresa_cnpj: "11222333000181", setor: "RH", genero_verbo: "Coletar", ciclo_vida: { Coletar: ["receber"] }, categoria_titulares: ["Colaboradores"], dados_pessoais: ["Nome"],
     dados_sensiveis: ["N/A"], finalidade_especifica: "Folha", hipotese_tratamento: "Art. 7º, II – Obrigação legal/regulatória", tempo_retencao: "5 anos",
-    base_prazo: "Art. 12 da CLT", compartilhamento: "Não Compartilhado", salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null, hipotese_sensivel: null };
+    base_prazo: "Art. 12 da CLT", compartilhamento: "Não Compartilhado", salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null, hipotese_sensivel: null,
+    area_setor: null, insumo: null, meio_fornecimento: null };
   it("menores de idade ou dado pessoal sensível acionam a tarja vermelha", () => {
     expect(isRisky(base)).toBe(false);
     expect(isRisky({ ...base, categoria_titulares: ["Menores de Idade"] })).toBe(true);
