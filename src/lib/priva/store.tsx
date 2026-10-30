@@ -1,5 +1,5 @@
 import { assinaturasVigentes } from "@/lib/priva/ciclo";
-import { DEMO_CNPJ, DEMO_RAZAO, DEMO_SIGNATURES, DEMO_PUBLIC_SIGNATURES } from "./demo";
+import { DEMO_CNPJ, DEMO_RAZAO, DEMO_SIGNATURES, DEMO_PUBLIC_SIGNATURES, DEMO_TRILHA_SEED, DEMO_SESSAO_INICIAL, DEMO_AGORA_ISO, type DemoSessao, type DemoEvento } from "./demo";
 import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -77,6 +77,11 @@ type Ctx = Shared & {
   demo: boolean;
   publicDemo: boolean;
   setDemo: (on: boolean) => void;
+  /** Sessão cenográfica em memória: envio/encerramento simulados e trilha local. Nunca toca o banco. */
+  demoSessao: DemoSessao;
+  demoEnviarANPD: () => Promise<void>;
+  demoEncerrarIncidente: () => Promise<void>;
+  demoAssinar: (code: string, who: "DPO" | "DIR") => Promise<void>;
 };
 
 // Contexto estável entre recargas de módulo (HMR): evita que o provedor e as páginas
