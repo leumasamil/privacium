@@ -165,6 +165,12 @@ function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { en
           <Input aria-label="Responsável pelo endpoint" placeholder="Responsável / fornecedor (opcional)" value={responsavel} onChange={e=>setResponsavel(e.target.value)} />
           <Input aria-label="Localização do endpoint" placeholder="Localização / domínio (opcional)" value={localizacao} onChange={e=>setLocalizacao(e.target.value)} />
           <Button onClick={() => void add()}><Plus className="h-4 w-4" /></Button>
+          <div className="flex w-full flex-wrap items-center gap-2">
+            <span className="text-[11px] text-muted-foreground">Padrão (nunca preenche ID, hostname ou hash):</span>
+            {!responsavel && <Button type="button" variant="ghost" size="sm" className="h-auto min-h-6 px-2 text-xs" onClick={() => setResponsavel('TI Interno')}>Usar padrão de responsável</Button>}
+            {padraoLocal && !localizacao && <Button type="button" variant="ghost" size="sm" className="h-auto min-h-6 px-2 text-xs" onClick={() => setLocalizacao(padraoLocal)}>Herdar domínio: {padraoLocal}</Button>}
+            <CopiarModelo textoId="convencao-hostname" rotulo="Copiar convenção (modelo)" />
+          </div>
         </div>
       )}
     </Panel>
@@ -286,6 +292,8 @@ function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove, setoresRot, l
                 setRotuloEstrutura(`${s.rotulo} · ${s.cenarios.join(", ")}`);
               }}>Usar estrutura sugerida</Button>
               {rotuloEstrutura && <span className="text-[11px] text-muted-foreground" data-testid="rotulo-estrutura">{rotuloEstrutura} (editável)</span>}
+              {rotuloEstrutura && <CopiarModelo textoId="estrutura-pasta-rot" rotulo="Copiar estrutura (modelo)" />}
+              {rotuloEstrutura && <CopiarModelo textoId="inventario-cofre" rotulo="Copiar inventário (modelo)" />}
             </div>
           </div>
           <Input aria-label="Responsável pelo cofre" placeholder="Responsável / fornecedor (opcional)" value={responsavel} onChange={e=>setResponsavel(e.target.value)} />
