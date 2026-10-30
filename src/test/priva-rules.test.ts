@@ -64,7 +64,7 @@ describe("Teto real 1414", () => {
 
 import { isRisky, normalizeHipoteses, validateRot, type RotInput } from "@/lib/priva/rot";
 describe("ROT · travas de risco", () => {
-  const base: RotInput = { empresa_cnpj: "11222333000181", setor: "RH", genero_verbo: "Coletar", categoria_titulares: ["Colaboradores"], dados_pessoais: ["Nome"],
+  const base: RotInput = { empresa_cnpj: "11222333000181", setor: "RH", genero_verbo: "Coletar", ciclo_vida: { Coletar: ["receber"] }, categoria_titulares: ["Colaboradores"], dados_pessoais: ["Nome"],
     dados_sensiveis: ["N/A"], finalidade_especifica: "Folha", hipotese_tratamento: "Art. 7º, II – Obrigação legal/regulatória", tempo_retencao: "5 anos",
     base_prazo: "Art. 12 da CLT", compartilhamento: "Não Compartilhado", salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null, hipotese_sensivel: null };
   it("menores de idade ou dado pessoal sensível acionam a tarja vermelha", () => {
