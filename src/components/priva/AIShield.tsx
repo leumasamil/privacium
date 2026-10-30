@@ -130,8 +130,25 @@ export function AIShield() {
             </select>
           </label>
           <label className="block text-sm">Prompt
-            <Textarea rows={8} value={prompt} placeholder={EXEMPLO_PROMPT} onChange={(e) => setPrompt(e.target.value)} className="mt-1" />
+            <Textarea rows={8} value={prompt} placeholder={EXEMPLO_PROMPT} onChange={(e) => { setPrompt(e.target.value); setExemplo(null); }} className="mt-1" />
           </label>
+          <div className="flex flex-wrap gap-2" aria-label="Exemplos prontos de higienização">
+            {EXEMPLOS_ESCUDO.map((ex) => (
+              <button key={ex.id} type="button" data-testid={`exemplo-${ex.id}`} onClick={() => verExemplo(ex)}
+                className={`rounded-sm border px-2 py-1 text-xs transition-colors ${exemplo?.id === ex.id ? "border-primary bg-primary/10 text-primary" : "hover:bg-accent"}`}>
+                Ver exemplo · {ex.rotulo}
+              </button>
+            ))}
+          </div>
+          {exemplo && (
+            <div className="rounded-sm border bg-muted/40 p-3 text-xs" data-testid="exemplo-antes-depois">
+              <p className="font-semibold uppercase tracking-wider text-muted-foreground">Antes (o que você digitou)</p>
+              <p className="mt-1 font-mono">{exemplo.prompt}</p>
+              <p className="mt-2 font-semibold uppercase tracking-wider text-success">Depois (o que sai para a Internet)</p>
+              <p className="mt-1 font-mono">{exemplo.higienizado}</p>
+              <p className="mt-2 text-muted-foreground">Dado mascarado: <span className="font-mono">{exemplo.mascara}</span> · <CitacaoNormativa citacao={exemplo.fonte.split(" / ")[0] ?? exemplo.fonte} /> · {exemplo.fonte}</p>
+            </div>
+          )}
           <Button size="lg" className="w-full" onClick={send} disabled={busy}>
             <Send className="h-4 w-4" /> {busy ? "Enviando…" : "Enviar com Segurança"}
           </Button>
