@@ -2,7 +2,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { cicloDaLinha, validarCiclo } from "./cicloVida";
 
 export type RotRow = Database["public"]["Tables"]["registro_operacoes"]["Row"];
-export type RotInput = Omit<RotRow, "id" | "codigo" | "criado_por" | "criado_em" | "atualizado_em">;
+export type RotInput = Omit<RotRow, "id" | "codigo" | "criado_por" | "criado_em" | "atualizado_em" | "assinatura_etapa1" | "assinatura_etapa2">;
 
 export const TITULARES = ["Colaboradores", "Clientes", "Fornecedores", "Visitantes", "Candidatos", "Menores de Idade"];
 export const DADOS = ["Nome", "CPF", "RG", "Telefone", "E-mail", "Endereço", "Dados Bancários", "Imagem"];
