@@ -15,14 +15,16 @@ describe('regras da demonstração pública', () => {
     expect(JSON.parse(screen.getByRole('status').textContent ?? '{}')).toEqual({ ready: true, demo: true, cnpj: '99999999000199', roles: ['DPO_OPERACIONAL'], role: 'DPO_OPERACIONAL' });
     expect(database.auth.getUser).not.toHaveBeenCalled();
   });
-  it('mutações e trilha não chamam banco nem alteram assinaturas', async () => {
+  it('mutações e trilha não chamam banco; assinatura demo vive só em memória', async () => {
     let ctx: ReturnType<typeof usePriva> | undefined;
     function Probe() { ctx = usePriva(); return null; }
     render(<PrivaProvider initialDemo><Probe /></PrivaProvider>);
     if (!ctx) throw new Error('Context missing');
-    const initial = ctx.signatures;
-    await act(async () => { if (!ctx) return; ctx.set({ signatures: {} }); ctx.log('INSERT', 'test', 'test'); await ctx.sign('PI-04'); await ctx.refreshAudit(); ctx.reset(); ctx.setRole('ADMIN_SISTEMA'); ctx.selectEmpresa('123'); await ctx.createEmpresa('123', 'Teste'); });
-    expect(ctx.signatures).toBe(initial);
+    await act(async () => { if (!ctx) return; ctx.set({ signatures: {} }); ctx.log('INSERT', 'test', 'test'); await ctx.refreshAudit(); ctx.reset(); ctx.setRole('ADMIN_SISTEMA'); ctx.selectEmpresa('123'); await ctx.createEmpresa('123', 'Teste'); });
+    expect(ctx.signatures['PI-04-DPO']).toBeUndefined();
+    await act(async () => { await ctx?.sign('PI-04'); });
+    expect(ctx.signatures['PI-04-DPO']?.by).toContain('DPO Cenográfico');
+    expect(ctx.signatures['PI-04']).toBeUndefined();
     expect(ctx.role).toBe('DPO_OPERACIONAL');
     expect(database.from).not.toHaveBeenCalled(); expect(database.rpc).not.toHaveBeenCalled(); expect(database.channel).not.toHaveBeenCalled();
   });
@@ -38,11 +40,14 @@ describe('regras da demonstração pública', () => {
       expect(items.length).toBeGreaterThan(0); expect(items.every(item => item && item.valor && item.fonte_normativa)).toBe(true);
     }
   });
-  it('seis etapas cenográficas possuem data, responsável e evidência', () => {
+  it('etapas 01 a 05 cenográficas têm data, responsável e evidência; a 06 nasce pendente', () => {
     const incident = DEMO_ROWS.incidentes_seguranca[0]; if (!incident) throw new Error('Missing incident');
     const state = carregarEstadoIncidenteDemo(incident.id, { incidentes: [incident], lotes: [], assinaturas: DEMO_PUBLIC_SIGNATURES, agora: Date.parse(incident.iniciado_em) });
     expect(incident.passos).toEqual([true, true, true, true, true, true]);
-    expect(state.etapas.concluidas).toBe(6);
+    // A etapa 06 é consequência do envio: sem enviado_anpd_em, o demo abre com 5 de 6.
+    expect(state.etapas.concluidas).toBe(5);
+    expect(state.etapas.itens[5]?.concluida).toBe(false);
+    expect(state.motivos_bloqueio).toContain('Formulário ANPD não enviado');
     const registros = incident.etapas_registro as Record<string, { data: string; responsavel: string; evidencia: string }>;
     expect(Object.keys(registros)).toEqual(['1', '2', '3', '4', '5', '6']);
     expect(Object.values(registros).map(registro => registro.evidencia)).toEqual([
@@ -54,7 +59,7 @@ describe('regras da demonstração pública', () => {
       'Comunicação à ANPD preparada no formulário assistido.',
     ]);
     expect(state.incidente.id).toBe('demo-inc');
-    expect(state.etapas.itens.map(etapa => etapa.responsavel)).toEqual(Array(6).fill('DPO Cenográfico'));
+    expect(state.etapas.itens.slice(0, 5).map(etapa => etapa.responsavel)).toEqual(Array(5).fill('DPO Cenográfico'));
     for (const registro of Object.values(registros)) {
       expect(registro.data).toBe('2026-10-01T12:00:00.000Z');
       expect(registro.responsavel).toBe('DPO Cenográfico');
