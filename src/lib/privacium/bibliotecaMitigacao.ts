@@ -2,7 +2,6 @@
  * Biblioteca estática e versionada do RIPD algorítmico (PI-05).
  * Determinística: mesma entrada → mesmo texto. Nenhuma chamada de IA.
  */
-import { TETO_REDUCAO } from "@/lib/priva/dosimetria";
 
 export const VERSAO_BIBLIOTECA = "2026.10-1";
 
@@ -194,14 +193,3 @@ export function derivarRisco(id: RiscoId, sigs: Record<string, unknown>): RiscoD
   return { prob: Math.max(1, prob), imp: Math.max(1, imp), reducoes };
 }
 
-/**
- * Redução da dosimetria derivada dos mesmos riscos exibidos no RIPD:
- * TETO × Σ(inerente − residual) ÷ Σ(inerente − piso). Piso = 1×1; risco no piso equivale ao teto de 75%.
- */
-export function reducaoPorRiscos(residuais: { prob: number; imp: number }[]): number {
-  if (!residuais.length) return 0;
-  const ine = INERENTE.prob * INERENTE.imp;
-  const ganho = residuais.reduce((s, r) => s + (ine - r.prob * r.imp), 0);
-  const max = residuais.length * (ine - 1);
-  return Math.max(0, Math.min(TETO_REDUCAO, Math.round((TETO_REDUCAO * ganho) / max)));
-}
