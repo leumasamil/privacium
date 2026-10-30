@@ -9,7 +9,7 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Brand: Privacium (privacium.com.br), never "PRIVA 2EC"; consistent identity.
+- Brand: Privacium (privacium.com.br), never "PRIVA 2EC".
 
 - BLLOCO: realtime `workspace_empresa` JSON per CNPJ; localStorage holds active CNPJ/role to preserve company-bound progress.
 - Audit entries are only written via the `registrar_trilha` security-definer RPC into `trilha_auditoria_sistema` (server-side SHA-256 chain incl. CNPJ, no update/delete grants); checked with `verificar_trilha`; opening screens with personal data logs a SELECT. Why: blueprint forensic traceability. `audit_log`/`workspace_state` are deprecated.
