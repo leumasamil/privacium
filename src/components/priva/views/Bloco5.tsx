@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { TETO_REDUCAO, multaComAtenuantes } from "@/lib/priva/dosimetria";
 import { BIBLIOTECA, INERENTE, derivarRisco, reducaoPorRiscos, sugestaoDescricao, sugestaoMitigacao, type RiscoId } from "@/lib/privacium/bibliotecaMitigacao";
+import { DIMENSOES_AIA, NIVEIS_RISCO_IA, PL_2338_RESSALVA, ROTULO_ESCOPO_IA, classificarRiscoIA, respostasAIA, type NivelRiscoIA } from "@/lib/privacium/bibliotecaTextos";
 import { CopiarModelo } from "@/components/priva/CopiarModelo";
 import { CitacaoNormativa } from "@/components/priva/CitacaoNormativa";
 import { usePriva } from "@/lib/priva/store";
@@ -32,11 +33,13 @@ const ESCUDO_PADRAO = "O Escudo Digital do Bloco 3 tokeniza localmente CPFs, e-m
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 export function Bloco5() {
-  const { cnpj, roles, signatures, set, log, demo, email } = usePriva();
+  const { cnpj, roles, signatures, set, log, demo, email, demoRegistrarEvento } = usePriva();
   const navigate = useNavigate();
   const canEdit = (roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA"));
   const ripdRows = useCnpjRows("ripd_ia", cnpj, "atualizado_em");
   const ciclos = useCnpjRows("ciclos_priva", cnpj, "ano_fiscal");
+  const rotRows = useCnpjRows("registro_operacoes", cnpj, "criado_em");
+  const [overrideIA, setOverrideIA] = useState<NivelRiscoIA | null>(null);
   const salvo = ripdRows.rows[0];
   const [sistema, setSistema] = useState("");
   const [ripd, setRipd] = useState<Record<string, R>>({});
