@@ -53,12 +53,17 @@ function DemoConteudo({ aba }: { aba: string }) {
     case 'glossario': return <Glossario />;
     case 'auditoria': return <Auditoria />;
     case 'encarregado': return <EncarregadoDPO />;
-    case 'anpd': {
-      const incidente = DEMO_ROWS.incidentes_seguranca[0];
-      if (!incidente) return null;
-      const estado = carregarEstadoIncidenteDemo(incidente.id, { incidentes: DEMO_ROWS.incidentes_seguranca, lotes: DEMO_ROWS.lotes_pgaudit, assinaturas: DEMO_PUBLIC_SIGNATURES, agora: Date.parse(incidente.iniciado_em) });
-      return <FormularioANPD incidente={incidente} estado={estado} canEdit refresh={() => undefined} encerramento={<EncerrarIncidente estado={estado} busy={false} onClick={avisarAcaoDemo} />} />;
-    }
+    case 'anpd': return <DemoANPD />;
     default: return <Painel />;
   }
+}
+
+/** Aba ANPD da demonstração: lê a MESMA fonte de estado do Bloco 4 (seed + sessão simulada em memória). */
+function DemoANPD() {
+  const { cnpj } = usePriva();
+  const consulta = useEstadoBloco4(cnpj);
+  const incidente = consulta.data?.incidentes[0];
+  const estado = consulta.data?.estados.find(e => e.incidente.id === incidente?.id);
+  if (!incidente || !estado) return <p role="status" className="p-4 text-muted-foreground">Lendo o estado do incidente…</p>;
+  return <FormularioANPD incidente={incidente} estado={estado} canEdit refresh={() => undefined} encerramento={<EncerrarIncidente estado={estado} busy={false} onClick={() => undefined} />} />;
 }
