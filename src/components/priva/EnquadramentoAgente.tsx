@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Panel, Tag } from './ui';
 import { usePriva } from '@/lib/priva/store';
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
-import { calcularPorte, criteriosSchema, FUNDAMENTO_PORTE, rotuloPorte, travaPorte, type CriteriosPorte } from '@/lib/priva/enquadramento';
+import { calcularPorte, CRITERIOS_DEMO, criteriosSchema, FUNDAMENTO_PORTE, rotuloPorte, travaPorte, type CriteriosPorte } from '@/lib/priva/enquadramento';
 import { toast } from 'sonner';
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 const inicial: CriteriosPorte = { grupoGrande: false, receitaAcimaTeto: false, tipo: 'ME', titulares: 0, infraLimitada: false, descricaoInfra: '', sensivelLargaEscala: false, altoRisco: false, menoresAltoRisco: false };
@@ -17,7 +17,7 @@ export function EnquadramentoAgente() {
   const e = useEnquadramento();
   const [c, setC] = useState<CriteriosPorte>(inicial);
   const [erro, setErro] = useState(''); const [busy, setBusy] = useState(false);
-  useEffect(() => { setC(e.declaracao ? e.declaracao.criterios as CriteriosPorte : inicial); setErro(''); }, [cnpj, e.declaracao?.id]);
+  useEffect(() => { setC(demo ? CRITERIOS_DEMO[demoPorte] : e.declaracao ? e.declaracao.criterios as CriteriosPorte : inicial); setErro(''); }, [cnpj, e.declaracao?.id, demo, demoPorte]);
   const valida = criteriosSchema.safeParse(c);
   const porte = valida.success ? calcularPorte(c) : null;
   const trava = valida.success ? travaPorte(c, enterprise) : null;
@@ -39,7 +39,7 @@ export function EnquadramentoAgente() {
         {perguntas.map(([k,t]) => <Label key={k} className="flex items-start gap-3 leading-relaxed"><Checkbox checked={c[k]} onCheckedChange={v => setC({ ...c, [k]: v === true })} />{t}</Label>)}
         {c.infraLimitada && <div className="space-y-1 sm:col-span-2"><Label htmlFor="porte-infra">Descrição da infraestrutura limitada</Label><Textarea id="porte-infra" maxLength={2000} value={c.descricaoInfra} onChange={v => setC({ ...c, descricaoInfra: v.target.value })} /></div>}
       </div>
-      <p className="text-sm" data-testid="resultado-porte"><b>Resultado calculado:</b> {porte ? rotuloPorte(porte) : 'Preencha os critérios.'}</p>
+      <p className="text-sm" data-testid="resultado-porte"><b>Resultado calculado:</b> {trava ? 'Pequeno porte bloqueado — regime completo obrigatório' : porte ? rotuloPorte(porte) : 'Preencha os critérios.'}</p>
       {(erro || trava) && <p role="alert" className="text-sm text-destructive">{erro || trava}</p>}
       {e.isError && <p role="alert">Não foi possível consultar a declaração vigente.</p>}
       {e.declaracao && <div className="space-y-1 text-xs"><Tag tone="success">Declaração assinada pelo DPO · PI-01</Tag><p>{new Date(e.declaracao.assinado_em).toLocaleString('pt-BR')}</p><p className="break-all font-mono">SHA-256 {e.declaracao.hash_sha256}</p></div>}

@@ -225,6 +225,13 @@
       "when": 1793376462592,
       "tag": "0031_alinhar_sla_enquadramento",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793377933162,
+      "tag": "0032_feriados_prazo_anpd",
+      "breakpoints": true
     }
   ]
 }
