@@ -101,6 +101,7 @@ export function Bloco1() {
         Diagnóstico de Entrada pela LGPD. SIM soma o peso de criticidade da pergunta; NÃO soma zero.
       </PageHeader>
       <EnquadramentoAgente />
+      <MembrosEmpresa />
       {AJUDA[1] && <AjudaTarefa {...AJUDA[1]} />}
 
       <div className="grid gap-4 md:grid-cols-2">
