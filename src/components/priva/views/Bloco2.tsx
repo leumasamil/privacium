@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AREAS_SETORES, ROTULO_AREA_SETOR, areaSetorCompleto, chaveDaArea, exibirAreaSetor } from "@/lib/priva/areasSetores";
 import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, ETAPA1, ETAPA2, NOTA_CICLO, NOTA_ETAPA2_COMPARTILHAR, NOTA_ETAPA2_ELIMINAR, NOTA_METODO_CICLO, NOTA_RESPONSAVEL_ETAPAS, ROTULO_ETAPA1, ROTULO_ETAPA2, alertaRetencao, alternar, cicloDaLinha, citacoesISO, destinoDeclarado, formatarCiclo, formatarCicloEtapas, generosMarcados, temEtapa2, type CicloVida, type Genero } from "@/lib/priva/cicloVida";
+import { GrafoCadeiaCustodia } from "@/components/priva/CadeiaCustodia";
+import { receptoraExistente } from "@/lib/priva/cadeiaCustodia";
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { citacaoSimplificada } from '@/lib/priva/enquadramento';
 import { ALERTA_FINALIDADE_OPERADOR, ALERTA_PRODUTO_AUSENTE, DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, LITERAL_ART5_VI, LITERAL_ART5_VII, MEIOS, NOTA_DESTINO_OPERADOR, NOTA_PRT, PAPEIS_AGENTE, ROTULO_PRT, alertasPRTSemDestino, descreverDestinoPRT, prtExternosBloqueados, produtosDaLinha, rotuloPRT, alertaPRTSemDestino, destinoPRTCompleto, type ProdutoTratamento, ROTULO_PAPEL, SALVAGUARDAS, SENSIVEIS, TITULARES, alertaFinalidadeOperador, alertaProdutoAusente, alertasCoerencia, finalidadeDoContrato, hasSensivel, isRisky, montarLinhaReceptora, normalizeHipoteses, sugerir, sugerirProduto, sugestaoFinalidade, finalidadeEquivalente, contadorPadronizadas, FONTE_LGPD, validateRot, type DestinoProduto, type OrigemCompartilhamento, type PapelAgente, type RotInput, type RotRow } from "@/lib/priva/rot";
@@ -94,6 +96,14 @@ export function Bloco2() {
     for (const [i, p] of prts.entries()) {
       const d = p.destino;
       if (d?.tipo === "INTERNO" && d.area_setor_destino && !d.linha_receptor_id) {
+        // B.4: mesmo PRT, mesma origem e mesmo setor → vincula à linha receptora existente (nunca duplica).
+        const existente = receptoraExistente(rows, rotId, d.area_setor_destino, p.nome);
+        if (existente) {
+          atualizados.push({ ...p, destino: { ...d, linha_receptor_id: existente.id, linha_receptor_codigo: existente.codigo } });
+          mudou = true;
+          log("UPDATE", "registro_operacoes", `Compartilhamento interno vinculado à linha existente: ${data.codigo} ${rotuloPRT(i)} → ${existente.codigo}`);
+          continue;
+        }
         const areaDestino = d.area_setor_destino.split("›")[0]?.trim() ?? "";
         const receptor = montarLinhaReceptora({ ...payload, id: rotId, codigo: data.codigo }, d.area_setor_destino, chaveDaArea(areaDestino), p.nome);
         const ins = await supabase.from("registro_operacoes").insert(receptor).select("id, codigo").single();
@@ -143,6 +153,8 @@ export function Bloco2() {
       </PageHeader>
       {AJUDA[2] && <AjudaTarefa {...AJUDA[2]} />}
       <CicloResumo />
+
+      <GrafoCadeiaCustodia rows={rows} />
 
       <Panel id="rot" title={`Planilha mestre · ${rows.length} processos · ${riskyCount} em alerta`} action={canEdit && (
         <Button size="sm" onClick={() => demo ? avisarAcaoDemo() : setEdit({ id: null, form: empty(cnpj, papelPadrao) })}><Plus className="h-4 w-4" /> Novo processo</Button>

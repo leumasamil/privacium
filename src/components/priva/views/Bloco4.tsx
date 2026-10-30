@@ -33,6 +33,8 @@ import { ConsultarBasesPublicas } from '@/components/priva/ConsultarBasesPublica
 import { PainelNoticiasIncidentes } from '@/components/priva/PainelNoticiasIncidentes';
 import { AlertaFornecedorVazado } from '@/components/priva/AlertaFornecedorVazado';
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
+import { ProvaCadeiaCustodia } from '@/components/priva/CadeiaCustodia';
+import { useCnpjRows } from '@/lib/priva/useCnpjRows';
 import { prazoPorPorte } from '@/lib/priva/enquadramento';
 import { DEMO_AGORA, DEMO_ROWS } from '@/lib/priva/demo';
 
@@ -63,6 +65,8 @@ export function Bloco4() {
   const estado = consulta.data?.estados.find(e => e.incidente.id === ativo?.id) ?? null;
   const encerradoId = consulta.data?.estados.find(e => e.incidente.encerrado_em && e.etapas.concluidas === 6 && e.anpd.enviado)?.incidente.id;
   const encerrado = incs.rows.find(i => i.id === encerradoId);
+  const rot = useCnpjRows("registro_operacoes", cnpj, "codigo");
+  const incidenteCadeia = ativo ?? incs.rows[0] ?? null;
 
   useEffect(() => { if (cnpj) log("SELECT", "lotes_pgaudit", "Abertura do console forense do Bloco 4"); }, [cnpj, log]);
 
@@ -81,6 +85,7 @@ export function Bloco4() {
       {AJUDA[4] && <AjudaTarefa {...AJUDA[4]} pendencias={montarChecklist(consulta.data, signatures)} />}
       <ConsolePgAudit cnpj={cnpj} lotes={lotes.rows} incidentes={incs.rows} canEdit={canEdit} refresh={lotes.refresh} />
       <CriseRansomware cnpj={cnpj} ativo={ativo} estado={estado} canEdit={canEdit} refresh={incs.refresh} />
+      {incidenteCadeia && rot.rows.length > 0 && <ProvaCadeiaCustodia rows={rot.rows} incidenteId={incidenteCadeia.id} processoId={incidenteCadeia.processo_id} />}
       <PIOutput pi="PI-04: Dossiê de Auditoria de Logs e Resposta de Célula" ready={pronto} readyHint="Gere ao menos um lote pgAudit com hash e conclua um incidente com os 6 passos e comunicação à ANPD." dual>
         <p><b>CNPJ:</b> {maskCNPJ(cnpj)}</p>
         <p className="mt-2"><b>Lotes com cadeia de custódia:</b></p>
