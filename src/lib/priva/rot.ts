@@ -136,7 +136,7 @@ export function finalidadeDoContrato(contrato: string): string {
  * Tabela determinística versionada (v1) de produto interno: Área › Setor + insumo (10A).
  * Nunca pré-seleciona: toda sugestão exibe "Sugerido — confirme" e exige ação do usuário.
  */
-const ORIGEM_PRODUTO = `tabela determinística ${VERSAO_SUGESTOES} · Área › Setor + insumo`;
+const ORIGEM_PRODUTO = "tabela determinística v1 · Área › Setor + insumo";
 const SUGESTOES_PRODUTO_V1: Record<string, { insumo: string; produtos: string[] }[]> = {
   "Recursos Humanos": [{ insumo: "currículo", produtos: ["Ficha de candidato", "Parecer de seleção", "Proposta de contratação"] }],
   "Financeiro": [{ insumo: "nota fiscal", produtos: ["Lançamento contábil", "Relatório de despesas"] }],
