@@ -161,7 +161,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {item("/painel", "Esteira BLLOCO", <LayoutDashboard className="h-4 w-4" />)}
           {(demo || canAccess(role, "/bloco")) && <p className="px-3 pb-1 pt-4 font-mono text-[10px] uppercase tracking-widest">Ciclo Privacium Semestral</p>}
           {BLOCKS.map((b) => {
-            const unlocked = isUnlocked(signatures, b.n);
+            const unlocked = isUnlocked(signatures, b.n) && (b.n === 1 || demo || enquadramento.vigente);
             const done = !!signatures[`PI-0${b.n}`];
             return (
               <div key={b.n}>
