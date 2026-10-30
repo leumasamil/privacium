@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { calcularPorte, citacaoSimplificada, criteriosSchema, prazoPorPorte, travaPorte, type CriteriosPorte } from '@/lib/priva/enquadramento';
 import { limiteANPD, restanteANPD } from '@/lib/priva/anpd';
 import { carregarEstadoIncidente } from '@/lib/priva/estadoIncidente';
-const c: CriteriosPorte = { grupoGrande:false, receitaAcimaTeto:false, tipo:'ME', titulares:100, infraLimitada:false, descricaoInfra:'', sensivelLargaEscala:false, altoRisco:false, menoresAltoRisco:false };
+const c: CriteriosPorte = { grupoGrande:false, receitaAcimaTeto:false, tipo:'ME', titulares:100, infraLimitada:false, descricaoInfra:'', sensivelLargaEscala:false, altoRisco:false, menoresAltoRisco:false, papelAgente:'CONTROLADOR' };
 describe('Enquadramento calculado', () => {
   it('ME sem exclusões é pequeno porte', () => expect(calcularPorte(c)).toBe('PEQUENO'));
   it.each(['grupoGrande','receitaAcimaTeto','sensivelLargaEscala','altoRisco','menoresAltoRisco'] as const)('%s afasta pequeno porte', k => expect(calcularPorte({...c,[k]:true})).toBe('COMPLETO'));
