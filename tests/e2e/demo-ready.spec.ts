@@ -27,7 +27,10 @@ test('b) ANPD abre completo e sem pendências de etapa', async ({ page }) => {
 test('c) incidente demo apresenta seis etapas concluídas sem envio', async ({ page }) => {
   await page.goto(`${base}/demo?aba=bloco-4`, { waitUntil: 'networkidle' });
   await expect(page.getByText('Etapas concluídas: 6 de 6')).toBeVisible();
+  await expect(page.getByText('6 de 6 concluídas', { exact: true })).toBeVisible();
   await expect(page.getByRole('list', { name: 'Etapas do incidente' }).getByText('Concluída', { exact: true })).toHaveCount(6);
+  await expect(page.getByRole('list', { name: 'Etapas do incidente' }).getByText(/Responsável: DPO Cenográfico/)).toHaveCount(6);
+  await expect(page.locator('main')).not.toContainText('sem responsável registrado');
   await expect(page.getByText('Formulário ANPD não enviado', { exact: false }).first()).toBeVisible();
 });
 
@@ -50,6 +53,7 @@ test('e) cinco blocos não contêm botões desabilitados e operações respondem
   for (const n of [1, 2, 3, 4, 5]) {
     await page.goto(`${base}/demo?aba=bloco-${n}`, { waitUntil: 'networkidle' });
     await expect(page.locator('main button:disabled')).toHaveCount(0);
+    await expect(page.locator('main')).not.toContainText('sem responsável registrado');
     if (n === 1) await page.getByRole('button', { name: /^SIM/ }).first().click();
     if (n === 2) await page.getByRole('button', { name: 'Novo processo' }).click();
     if (n === 3) await page.getByRole('button', { name: 'Enviar com Segurança' }).click();

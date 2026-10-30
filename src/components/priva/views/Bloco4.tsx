@@ -259,6 +259,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
 
       {estado && <div id="encerramento" aria-live="polite" className="mb-4 space-y-2">
         <p className="text-sm">Etapas concluídas: {estado.etapas.concluidas} de {estado.etapas.total}</p>
+        {demo && <p className="text-sm text-concluido">{estado.etapas.concluidas} de {estado.etapas.total} concluídas</p>}
         {(estado.motivos_bloqueio.length > 0 || bloqueios.length > 0) && <><p className="font-semibold text-atencao">Não é possível encerrar. Pendências:</p><ul className="space-y-1 text-sm text-atencao">{estado.correcoes.map(c => <li key={c.mensagem}>{c.mensagem} <a className="underline" href={`#${c.ancora}`}>{c.acao} →</a></li>)}{bloqueios.map(m => <li key={m}>{m}</li>)}</ul></>}
       </div>}
       <div className="mb-4 flex justify-end print:hidden" data-referencia-externa><ConsultarBasesPublicas /></div>
@@ -290,7 +291,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
                     : canEdit && <Button size="sm" variant="outline" disabled={!demo && busy} className="mt-2 h-auto min-h-7 w-full whitespace-normal" onClick={() => concluirEtapa(i)}>Marcar como concluída</Button>}
                 </>
               )}
-              {feito && i < 5 && estado && <p className="mt-1 text-muted-foreground">{estado.etapas.itens[i]?.responsavel && estado.etapas.itens[i]?.data ? `Responsável registrado · ${new Date(estado.etapas.itens[i]?.data ?? '').toLocaleString('pt-BR')}` : 'Data e responsável não registrados'}</p>}
+              {feito && (demo || i < 5) && estado && <p className="mt-1 text-muted-foreground">{estado.etapas.itens[i]?.responsavel && estado.etapas.itens[i]?.data ? `${demo ? `Responsável: ${estado.etapas.itens[i]?.responsavel}` : 'Responsável registrado'} · ${new Date(estado.etapas.itens[i]?.data ?? '').toLocaleString('pt-BR')}` : 'Data e responsável não registrados'}</p>}
               {feito && canEdit && i < 5 && (!estado?.etapas.itens[i]?.responsavel || !estado?.etapas.itens[i]?.data) && <Button size="sm" variant="outline" disabled={!demo && busy} className="mt-2 h-auto whitespace-normal" onClick={() => registrarEtapa(i, true)}>Confirmar conclusão</Button>}
               {feito && canEdit && ativo && !ativo.enviado_anpd_em && i < 5 && passos[i + 1] === false && <Button variant="link" disabled={!demo && busy} className="h-auto p-0 text-xs" onClick={() => registrarEtapa(i, false)}>Reabrir</Button>}
             </li>
