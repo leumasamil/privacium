@@ -118,18 +118,18 @@ export const AJUDA: Record<number, Ajuda5W2H> = {
     onde: "Bloco 5.",
     quando: "Ao final de cada semestre.",
     como: "Descreva o sistema avaliado, escreva o Escudo Digital e preencha a mitigação de cada risco — cada campo é salvo ao sair dele. Confira a dosimetria, colete as duas assinaturas do PI-05 e clique em [Finalizar Ciclo Privacium Semestral]. O detalhe de cada clique está nos 8 passos abaixo.",
-    quanto: "Atenuação máxima de 75% (PI-01+02 = 20%, PI-03 = 20%, PI-04 = 20%, PI-05 = 15%).",
+    quanto: "Simulador em revisão — percentuais em conferência com a Res. CD/ANPD nº 4/2023.",
     passos: [
-      p("Conferir o pré-requisito", "Verifique na esteira do menu lateral se os Blocos 1 a 4 estão chancelados.", "Os quatro blocos aparecem como concluídos.", "Sem eles, a dosimetria não conta os atenuantes correspondentes."),
+      p("Conferir o pré-requisito", "Verifique na esteira do menu lateral se os Blocos 1 a 4 estão chancelados.", "Os quatro blocos aparecem como concluídos.", "Sem eles, o PI-05 não pode ser assinado."),
       p("Identificar o que entra no RIPD", "No Bloco 2, localize os processos com dado pessoal sensível ou alto risco.", "Você tem a lista de tratamentos que exigem RIPD.", "Processo de risco fora do RIPD enfraquece o Escudo Jurídico."),
       p("Descrever o sistema avaliado", "Preencha o campo do sistema avaliado (ex.: assistente interno baseado em LLM).", "O texto fica salvo ao sair do campo.", "Mínimo de 3 caracteres para contar como preenchido."),
       p("Escrever o Escudo Digital", "Explique por que o tratamento é necessário e por que não há alternativa menos invasiva.", "O texto fica salvo.", "Exige mais de 20 caracteres para liberar a assinatura."),
       p("Mitigar cada risco", "Em cada risco listado, descreva o risco e as \"Medidas de mitigação…\", vinculando a ativos do Bloco 3.", "Cada risco mostra a mitigação preenchida.", "Mitigação com 10 caracteres ou menos não conta."),
-      p("Conferir a dosimetria", "Revise o percentual de atenuação calculado automaticamente.", "O percentual aparece com o teto de 75%.", "Percentual baixo indica PI anterior não chancelado."),
+      p("Conferir a dosimetria", "Leia o aviso do simulador e o texto oficial do art. 13 da Res. CD/ANPD nº 4/2023.", "O simulador aparece como em revisão, sem percentual.", "Não use percentuais de atenuação até a revisão."),
       p("Assinar o PI-05", "Em \"Saída obrigatória\", clique em [Gerar e assinar] e colete as assinaturas do DPO e da Diretoria.", "O PI-05 fica CHANCELADO.", "Se o botão estiver desativado, falta algum campo do RIPD."),
       p("Encerrar o ciclo", "Clique em [Finalizar Ciclo Privacium Semestral].", "As assinaturas são limpas, o ciclo fica registrado no histórico e o Bloco 1 reabre.", "Só finalize depois de baixar os PDFs dos PIs do semestre."),
     ],
-    errosComuns: ["Elaborar o RIPD antes de concluir os blocos anteriores.", "Citar mitigação sem evidência no Bloco 3.", "Assinar sem revisar o percentual de atenuação."],
+    errosComuns: ["Elaborar o RIPD antes de concluir os blocos anteriores.", "Citar mitigação sem evidência no Bloco 3.", "Assinar sem revisar o RIPD."],
   },
 };
 

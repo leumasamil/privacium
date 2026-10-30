@@ -303,10 +303,10 @@ export function sugerir(r: RotInput): Sugestao[] {
     else s.push({ texto: "Sem outra hipótese aplicável: art. 11, I (consentimento específico e destacado)", origem: ORIGEM_7B, patch: { hipotese_sensivel: HIPOTESES_7B[0]! } });
   }
   if (!r.tempo_retencao && r.hipotese_tratamento === HIPOTESES_7A[1]! && r.categoria_titulares.includes("Colaboradores"))
-    s.push({ texto: "Retenção trabalhista: 5 anos após a rescisão (CF, art. 7º, XXIX)", origem: ORIGEM_7A, patch: { tempo_retencao: "5 anos após a rescisão", base_prazo: "CF, art. 7º, XXIX" } });
+    s.push({ texto: "Prazo de guarda a definir conforme obrigação legal específica (LGPD art. 16, I) — verificar a norma aplicável ao caso.", origem: ORIGEM_7A, patch: { base_prazo: "LGPD art. 16, I — verificar a norma aplicável ao caso" } });
   if (!r.tempo_retencao && r.hipotese_tratamento === HIPOTESES_7A[0]!) s.push({ texto: "Consentimento: reter até a revogação (art. 8º, §5º)", origem: ORIGEM_7A, patch: { tempo_retencao: "Até a revogação", base_prazo: "LGPD, art. 8º, §5º" } });
   if (r.categoria_titulares.includes("Menores de Idade") && !(r.justificativa_mitigacao ?? "").includes("art. 14"))
-    s.push({ texto: "Menores de idade: registre o consentimento do responsável (art. 14)", origem: ORIGEM_7B, patch: { justificativa_mitigacao: `${r.justificativa_mitigacao ?? ""} Consentimento específico de ao menos um dos pais ou responsável legal (art. 14).`.trim() } });
+    s.push({ texto: "Menores de idade: tratamento no melhor interesse (art. 14, caput); se criança, registre o consentimento de um dos pais ou responsável (art. 14, § 1º)", origem: ORIGEM_7B, patch: { justificativa_mitigacao: `${r.justificativa_mitigacao ?? ""} Melhor interesse da criança e do adolescente (art. 14, caput); para criança, consentimento específico e em destaque de pelo menos um dos pais ou do responsável legal (art. 14, § 1º).`.trim() } });
   if (hasSensivel(r) && !r.salvaguardas.includes("Criptografia")) s.push({ texto: "Dado pessoal sensível: adicionar Criptografia às salvaguardas", origem: ORIGEM_7B, patch: { salvaguardas: [...r.salvaguardas, "Criptografia"] } });
   return s;
 }

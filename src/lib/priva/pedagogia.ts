@@ -23,12 +23,12 @@ export const NORMAS: Record<string, Norma> = {
   },
   "LGPD art. 6º": {
     citacao: "LGPD art. 6º",
-    resumo: "Princípios do tratamento: destaque para o IV (livre acesso dos titulares aos seus dados) e o V (transparência sobre o tratamento).",
+    resumo: "Princípios do tratamento: destaque para o IV (livre acesso dos titulares aos seus dados), o V (qualidade dos dados) e o VI (transparência sobre o tratamento).",
     porque: "Cada processo do seu ROT precisa ser explicável ao titular em linguagem clara.",
   },
   "LGPD art. 14": {
     citacao: "LGPD art. 14",
-    resumo: "O tratamento de dados de crianças e adolescentes exige consentimento específico de ao menos um responsável legal.",
+    resumo: "O tratamento de dados pessoais de crianças e de adolescentes deve ser realizado em seu melhor interesse (caput). Para crianças, exige consentimento específico e em destaque de pelo menos um dos pais ou do responsável legal (§ 1º).",
     porque: "Se o seu ROT trata dado pessoal de menores, a hipótese e as salvaguardas são mais estritas.",
   },
   "LGPD art. 7º": {
@@ -44,7 +44,7 @@ export const NORMAS: Record<string, Norma> = {
   "LGPD art. 20": {
     citacao: "LGPD art. 20",
     resumo: "Garante ao titular a revisão de decisões tomadas unicamente com base em tratamento automatizado que afetem seus interesses.",
-    porque: "Se a sua IA ranqueia currículos ou crédito, você precisa de revisão humana documentada.",
+    porque: "Se a sua IA ranqueia currículos ou crédito, o titular pode pedir a revisão dessa decisão — mantenha um canal para isso. A lei não exige que a revisão seja feita por pessoa natural.",
   },
   "LGPD art. 37": {
     citacao: "LGPD art. 37",
@@ -88,7 +88,7 @@ export const NORMAS: Record<string, Norma> = {
   },
   "Res. CD/ANPD nº 15/2024, art. 3º": {
     citacao: "Res. CD/ANPD nº 15/2024, art. 3º",
-    resumo: "Define o que é incidente de segurança para fins de comunicação: qualquer evento adverso confirmado que afete a confidencialidade, integridade ou disponibilidade de dados pessoais.",
+    resumo: "Art. 3º, XII — incidente de segurança: “qualquer evento adverso confirmado, relacionado à violação das propriedades de confidencialidade, integridade, disponibilidade e autenticidade da segurança de dados pessoais”.",
     porque: "É o critério que decide se a sua ocorrência exige comunicação formal à ANPD.",
   },
   "MCI art. 15": {
@@ -98,7 +98,7 @@ export const NORMAS: Record<string, Norma> = {
   },
   "MCI art. 10": {
     citacao: "MCI art. 10",
-    resumo: "Guarda e disponibilização de registros de acesso, em ambiente controlado e de segurança (Lei nº 12.965/2014).",
+    resumo: "Guarda e disponibilização de registros de conexão e de acesso a aplicações devem atender à preservação da intimidade, da vida privada, da honra e da imagem das partes (Lei nº 12.965/2014). A guarda “em ambiente controlado e de segurança” é do art. 15.",
     porque: "Fundamenta a trilha de auditoria com cadeia de integridade SHA-256 que esta plataforma mantém.",
   },
   "MCI art. 7º, VIII": {
@@ -133,7 +133,7 @@ export const NORMAS: Record<string, Norma> = {
   },
   "CIS Control 03": {
     citacao: "CIS Control 03",
-    resumo: "Proteção de dados: inventariar, classificar e proteger dados sensíveis contra exfiltração (inclui DLP e mascaramento).",
+    resumo: "Proteção de dados: inventariar, classificar e proteger dado pessoal e dado pessoal sensível contra exfiltração (inclui DLP e mascaramento).",
     porque: "É o controle que o Escudo Digital implementa ao tokenizar dado pessoal antes de enviar a uma IA externa.",
   },
   "CIS Control 16": {

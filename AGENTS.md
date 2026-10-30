@@ -32,4 +32,4 @@
 - AppShell mounts sticky AvisoModoDemo above content; navigation wraps and missing paths share a 404. Why: explain inert controls and preserve routing failures.
 - Tenant tables require restrictive company policies beyond role checks; only admins change company linkage and audit writes use RPCs. Why: prevent cross-company access.
 - Glossary terms and dashboard indicators come from one shared glossary module. Why: no bare acronyms; every metric shows definition, formula and action.
-- PI-05 uses static mitigation; dosimetria.ts owns calculation and display. Why: signed-PI weights minus RIPO residuals must match; never AI.
+- PI-05 uses static mitigation; dosimetria.ts owns the fine simulator, which stays disabled (notice + literal Res. 4/2023 art. 13) until percentages are verified. Why: no unverified legal percentage may reach users; never AI.

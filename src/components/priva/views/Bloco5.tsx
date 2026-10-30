@@ -8,14 +8,13 @@ import { PartyPopper, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import { TETO_REDUCAO, memoriaDosimetria } from "@/lib/priva/dosimetria";
+import { AVISO_SIMULADOR, FONTE_RES4, LITERAL_RES4_ART13 } from "@/lib/priva/dosimetria";
 import { BIBLIOTECA, INERENTE, derivarRisco, sugestaoDescricao, sugestaoMitigacao, type RiscoId } from "@/lib/privacium/bibliotecaMitigacao";
 import { DIMENSOES_AIA, NIVEIS_RISCO_IA, PL_2338_RESSALVA, ROTULO_ESCOPO_IA, classificarRiscoIA, respostasAIA, type NivelRiscoIA } from "@/lib/privacium/bibliotecaTextos";
 import { CopiarModelo } from "@/components/priva/CopiarModelo";
 import { CitacaoNormativa } from "@/components/priva/CitacaoNormativa";
 import { usePriva } from "@/lib/priva/store";
 import { useCnpjRows } from "@/lib/priva/useCnpjRows";
-import { DEMO_MULTA_BASE } from "@/lib/priva/demo";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +29,6 @@ const RISKS: { id: RiscoId; label: string; hint: string }[] = [
 type R = { prob?: number; imp?: number; descricao: string; mitig: string; descManual?: boolean; mitigManual?: boolean; riscoManual?: boolean; pontosResiduaisNaoMitigados?: number };
 const DEF: R = { descricao: "", mitig: "" };
 const ESCUDO_PADRAO = "O Escudo Digital do Bloco 3 tokeniza localmente CPFs, e-mails e nomes ([CPF_TOKEN], [EMAIL_TOKEN], [NOME_TOKEN]) antes do envio a qualquer IA externa e reverte os tokens apenas no navegador do usuário autorizado. Nenhum dado pessoal em claro sai do perímetro do CNPJ.";
-const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 export function Bloco5() {
   const { cnpj, roles, signatures, set, log, demo, email, demoRegistrarEvento } = usePriva();
@@ -44,7 +42,6 @@ export function Bloco5() {
   const [sistema, setSistema] = useState("");
   const [ripd, setRipd] = useState<Record<string, R>>({});
   const [escudo, setEscudo] = useState(ESCUDO_PADRAO);
-  const [base, setBase] = useState(demo ? DEMO_MULTA_BASE : 1_000_000);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -52,7 +49,6 @@ export function Bloco5() {
     setRipd((salvo?.riscos ?? {}) as Record<string, R>);
     setEscudo(salvo?.escudo_digital || ESCUDO_PADRAO);
   }, [salvo?.atualizado_em]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setBase(demo ? DEMO_MULTA_BASE : 1_000_000); }, [demo]);
   useEffect(() => { if (cnpj) log("SELECT", "ripd_ia", "Abertura do RIPD algorítmico do Bloco 5"); }, [cnpj, log]);
 
   if (!cnpj) return <Panel title="Auditoria"><p className="text-sm text-muted-foreground">Selecione um CNPJ no menu lateral.</p></Panel>;
@@ -88,8 +84,6 @@ export function Bloco5() {
     };
   });
   const INE = INERENTE.prob * INERENTE.imp;
-  const memoria = memoriaDosimetria(signatures, efetivos, base);
-  const reducao = memoria.reducaoEfetiva;
   const anoAtual = ciclos.rows[0] ? ciclos.rows[0].ano_fiscal + 1 : new Date().getFullYear();
   const ready = sistema.trim().length > 2 && escudo.trim().length > 20 && efetivos.every((e) => e.mitig.trim().length > 10);
   const responsaveis = demo
@@ -119,7 +113,7 @@ export function Bloco5() {
   const finalizar = async () => {
     if (demo) return avisarAcaoDemo();
     setBusy(true);
-    const { error } = await supabase.from("ciclos_priva").insert({ empresa_cnpj: cnpj, ano_fiscal: anoAtual, reducao_dosimetria: reducao, assinaturas: signatures as unknown as Json });
+    const { error } = await supabase.from("ciclos_priva").insert({ empresa_cnpj: cnpj, ano_fiscal: anoAtual, reducao_dosimetria: 0, assinaturas: signatures as unknown as Json });
     setBusy(false);
     if (error) { toast.error("Não foi possível finalizar o ciclo."); return; }
     set({ signatures: {}, incidentStart: null, incidentSteps: [false, false, false, false, false, false] },
@@ -177,7 +171,7 @@ export function Bloco5() {
       </Panel>
 
       <Panel id="aia" title="Avaliação de Impacto Algorítmico (AIA)">
-        <p className="mb-3 text-xs text-muted-foreground">Painel distinto do RIPD de LGPD, focado nos impactos algorítmicos, incluindo a revisão humana de decisões automatizadas (<CitacaoNormativa citacao="LGPD art. 20" />). {ROTULO_ESCOPO_IA}</p>
+        <p className="mb-3 text-xs text-muted-foreground">Painel distinto do RIPD de LGPD, focado nos impactos algorítmicos, incluindo o direito de solicitar a revisão de decisões automatizadas (<CitacaoNormativa citacao="LGPD art. 20" />). {ROTULO_ESCOPO_IA}</p>
         <div className="grid gap-3 md:grid-cols-2" data-testid="aia-eixos">
           {DIMENSOES_AIA.map((d) => (
             <div key={d.id} className="rounded-sm border bg-background p-3" data-testid={`aia-${d.id}`}>
@@ -249,36 +243,9 @@ export function Bloco5() {
       </Panel>
 
       <Panel title="Simulador do Escudo Jurídico de Dosimetria · Res. CD/ANPD nº 4/2023">
-        <p className="mb-3 text-xs text-muted-foreground"><CitacaoNormativa citacao="Res. CD/ANPD nº 4/2023" /></p>
-        <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">Somam-se apenas os percentuais dos PIs chancelados e subtraem-se os pontos percentuais residuais explicitamente declarados no RIPO. Os escores de probabilidade × impacto não são percentuais. A redução fica entre 0% e 75%.</p>
-            {efetivos.map((e) => (
-              <div key={e.id} data-testid={`sim-${e.id}`}>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="flex-1 text-xs">{e.label}</span>
-                  <span className="font-mono text-xs">{INE} → {e.prob}×{e.imp} = {e.prob * e.imp}</span>
-                </div>
-                <div className="mt-1 h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-success" style={{ width: `${((INE - e.prob * e.imp) / (INE - 1)) * 100}%` }} /></div>
-              </div>
-            ))}
-            <div className="pt-2">
-              <p className="whitespace-pre-line text-xs text-muted-foreground" data-testid="calculo-reducao">{memoria.texto}</p>
-              <div className="mt-1 h-4 rounded-full bg-muted"><div className="h-4 rounded-full bg-success transition-all" style={{ width: `${(reducao / TETO_REDUCAO) * 100}%` }} /></div>
-            </div>
-          </div>
-          <div className="space-y-3 rounded-md border p-5">
-            <label className="text-xs text-muted-foreground">Valor-base hipotético da multa
-              <Input type="number" min={0} value={base} onChange={(e) => setBase(Math.max(0, +e.target.value))} />
-            </label>
-            <div className="flex items-end gap-3">
-              <div className="flex-1 text-center"><div className="mx-auto w-10 rounded-t bg-destructive" style={{ height: 120 }} /><p className="mt-1 text-[10px]">Risco inerente</p><p className="font-mono text-xs">{brl(base)}</p></div>
-              <div className="flex-1 text-center"><div className="mx-auto w-10 rounded-t bg-success" style={{ height: 120 * (1 - reducao / 100) }} /><p className="mt-1 text-[10px]">Risco residual</p><p className="font-mono text-xs">{brl(memoria.valorFinal)}</p></div>
-            </div>
-            <p className="text-center font-mono text-3xl font-semibold text-success" data-testid="reducao">−{reducao}%</p>
-            <p className="text-xs text-muted-foreground">Estimativa facultativa; o valor real da sanção depende da análise da ANPD.</p>
-          </div>
-        </div>
+        <p className="rounded-md border border-warning bg-warning/10 p-3 text-sm font-semibold" data-testid="simulador-em-revisao">{AVISO_SIMULADOR}</p>
+        <p className="mt-3 text-xs text-muted-foreground">Texto oficial das atenuantes, para consulta (<a className="underline" href={FONTE_RES4} target="_blank" rel="noreferrer">Diário Oficial da União</a>):</p>
+        <blockquote className="mt-2 space-y-1 border-l-2 pl-3 text-xs text-muted-foreground" data-testid="res4-art13">{LITERAL_RES4_ART13.map((l) => <p key={l}>{l}</p>)}</blockquote>
       </Panel>
 
       <Panel title="Responsáveis pelas assinaturas do PI-05">
@@ -292,8 +259,7 @@ export function Bloco5() {
         <ul className="list-disc pl-5">{efetivos.map((e) => <li key={e.id}>{e.label}: risco residual {e.prob * e.imp} (inerente {INE}). {e.descricao} Mitigação: {e.mitig}</li>)}</ul>
         <p className="mt-2"><b>Barreira principal:</b> {escudo}</p>
         <h3 className="mt-4 font-semibold">Dosimetria</h3>
-        <p className="whitespace-pre-line" data-testid="dosimetria-pi05">{memoria.texto}</p>
-        <p>Estimativa facultativa; o valor real da sanção depende da análise da ANPD.</p>
+        <p data-testid="dosimetria-pi05">{AVISO_SIMULADOR}.</p>
       </PIOutput>
 
       {signatures["PI-05"] && (
@@ -301,7 +267,7 @@ export function Bloco5() {
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <PartyPopper className="h-10 w-10 text-success" />
             <p className="text-xl font-semibold text-primary">Conformidade estrutural alcançada · Ano Fiscal {anoAtual}</p>
-            <p className="max-w-lg text-sm text-muted-foreground">Os cinco Produtos Internos estão chancelados por DPO e Diretoria. Ao finalizar, o ciclo é arquivado com a redução de {reducao}% e o Ano Fiscal {anoAtual + 1} começa pelo Bloco 1.</p>
+            <p className="max-w-lg text-sm text-muted-foreground">Os cinco Produtos Internos estão chancelados por DPO e Diretoria. Ao finalizar, o ciclo é arquivado e o Ano Fiscal {anoAtual + 1} começa pelo Bloco 1.</p>
             <Button onClick={finalizar} disabled={!demo && (busy || !canEdit)}><RefreshCw className="h-4 w-4" /> Finalizar Ciclo Privacium Semestral</Button>
           </div>
         </Panel>
@@ -309,7 +275,7 @@ export function Bloco5() {
 
       {ciclos.rows.length > 0 && (
         <Panel title="Ciclos arquivados">
-          <ul className="divide-y text-sm">{ciclos.rows.map((c) => <li key={c.id} className="flex justify-between py-2"><span>Ano Fiscal {c.ano_fiscal}</span><span className="font-mono text-xs">−{c.reducao_dosimetria}% · {new Date(c.finalizado_em).toLocaleDateString("pt-BR")}</span></li>)}</ul>
+          <ul className="divide-y text-sm">{ciclos.rows.map((c) => <li key={c.id} className="flex justify-between py-2"><span>Ano Fiscal {c.ano_fiscal}</span><span className="font-mono text-xs">{new Date(c.finalizado_em).toLocaleDateString("pt-BR")}</span></li>)}</ul>
         </Panel>
       )}
     </div>

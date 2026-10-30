@@ -12,7 +12,6 @@ export const DEMO_CNPJ = "99999999000199";
 export const DEMO_RAZAO = "Empresa Cenográfica S.A.";
 export const DEMO_CPF = "00000000000";
 export const DEMO_SCORE = 1075;
-export const DEMO_MULTA_BASE = 100_000;
 const DEMO_INICIO_INCIDENTE = "2026-10-01T12:00:00.000Z";
 /** Relógio cenográfico fixo: 14h após o conhecimento do incidente, dentro do prazo de 3 dias úteis. */
 export const DEMO_AGORA = Date.parse(DEMO_INICIO_INCIDENTE) + 14 * 3600000;
