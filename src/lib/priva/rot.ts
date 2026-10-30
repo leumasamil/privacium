@@ -158,7 +158,11 @@ export function sugerirProduto(r: Pick<RotInput, "area_setor" | "insumo" | "cicl
  * Linha criada automaticamente no ROT do setor receptor quando o destino do produto é
  * compartilhamento INTERNO: o produto vira insumo (10A) e a origem fica rastreada.
  */
-export function montarLinhaReceptora(origem: RotRow, areaSetorDestino: string, chaveSetor: string): RotInput {
+export function montarLinhaReceptora(
+  origem: Pick<RotRow, "id" | "codigo" | "empresa_cnpj" | "categoria_titulares" | "dados_pessoais" | "dados_sensiveis" | "hipotese_tratamento" | "hipotese_sensivel" | "salvaguardas" | "infraestrutura" | "justificativa_mitigacao" | "area_setor" | "setor" | "produto_interno" | "papel_agente" | "contrato_controlador">,
+  areaSetorDestino: string,
+  chaveSetor: string,
+): RotInput {
   return {
     empresa_cnpj: origem.empresa_cnpj,
     setor: chaveSetor,
