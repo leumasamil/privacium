@@ -1,3 +1,4 @@
+- [ ] Implementar enquadramento calculado e assinado por CNPJ no Bloco 1, trava do gatilho crítico, renovação semestral e efeitos nos blocos 2/4/5; validar referências legais do anexo antes de alterar regras e executar as oito provas.
 - [x] Conferir citações do ROT (HTML cru não reproduzido em produção), compartilhar listas JSX com PI-02 e corrigir terminologia de apresentação do diagnóstico (21 + 21 rótulos); conferir três linhas demo, sete setores e testes sem alterar dados.
 - [x] Volumetria total na Trilha Forense Master + checar isolamento RLS
 - [x] Cadastrar contato do encarregado por CNPJ com isolamento e auditoria.
