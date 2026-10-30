@@ -12,7 +12,7 @@ const base = (p: Partial<RotInput> = {}): RotInput => ({
   dados_sensiveis: ["N/A"], finalidade_especifica: "Seleção e recrutamento de candidatos", hipotese_tratamento: "Art. 7º, V – Execução de contrato ou procedimentos preliminares",
   hipotese_sensivel: null, tempo_retencao: "1 ano", base_prazo: "Política interna", compartilhamento: "Não Compartilhado", salvaguardas: [], infraestrutura: "Servidor Local",
   justificativa_mitigacao: null, area_setor: "Recursos Humanos › Seleção e Recrutamento", insumo: "currículo", meio_fornecimento: "site",
-  papel_agente: "CONTROLADOR", contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null, ...p,
+  papel_agente: "CONTROLADOR", contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null, produtos_tratamento: [], ...p,
 });
 
 describe("papel do agente (item A)", () => {

@@ -30,15 +30,15 @@ export const ALERTA_FINALIDADE_OPERADOR = "Operador não declara finalidade pró
 /** Destino de um PRT (Etapa 2): interno (Área › Setor), externo (terceiro do cadastro) ou eliminação (LGPD art. 16). */
 export type DestinoProduto = {
   tipo: "INTERNO" | "EXTERNO" | "ELIMINACAO";
-  area_setor_destino?: string;
+  area_setor_destino?: string | undefined;
   /** Legado: nome livre do terceiro (antes do cadastro). */
-  terceiro?: string;
-  terceiro_id?: string;
-  terceiro_nome?: string;
-  linha_receptor_id?: string;
-  linha_receptor_codigo?: string;
-  prazo?: string;
-  fundamento?: string;
+  terceiro?: string | undefined;
+  terceiro_id?: string | undefined;
+  terceiro_nome?: string | undefined;
+  linha_receptor_id?: string | undefined;
+  linha_receptor_codigo?: string | undefined;
+  prazo?: string | undefined;
+  fundamento?: string | undefined;
 };
 export type ProdutoTratamento = { nome: string; destino?: DestinoProduto | null };
 /** Linha criada automaticamente no setor receptor (compartilhamento interno), com origem rastreada. */
