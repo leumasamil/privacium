@@ -13,6 +13,9 @@ import { usePriva } from "@/lib/priva/store";
 import { Masked, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { EnquadramentoAgente } from '../EnquadramentoAgente';
+import { useEnquadramento } from '@/lib/priva/useEnquadramento';
+import { FUNDAMENTO_PORTE, rotuloPorte } from '@/lib/priva/enquadramento';
 
 
 
@@ -47,6 +50,7 @@ function Gauge({ gm, tone }: { gm: number; tone: keyof typeof ZONE_BG }) {
 }
 
 export function Bloco1() {
+  const enquadramento = useEnquadramento();
   const { cnpj, empresas, userId, email, log, demo } = usePriva();
   const questions = useQuestions();
   const answers = useRespostas(cnpj);
@@ -96,6 +100,7 @@ export function Bloco1() {
       <PageHeader eyebrow="Bloco 1 · (P) Ciclo Privacium Semestral" title="Preparar a Privacidade">
         Diagnóstico de Entrada pela LGPD. SIM soma o peso de criticidade da pergunta; NÃO soma zero.
       </PageHeader>
+      <EnquadramentoAgente />
       {AJUDA[1] && <AjudaTarefa {...AJUDA[1]} />}
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -177,7 +182,10 @@ export function Bloco1() {
       </div>
 
       {herdadas.size > 0 && <p className="rounded-sm border border-dashed bg-card p-3 text-sm"><History className="mr-1 inline h-4 w-4" /><b>Delta de Riscos:</b> {herdadas.size} respostas vieram do ciclo anterior. Revise e altere só o que mudou no negócio; depois finalize e colete as duas assinaturas do novo PI-01.</p>}
-      <PIOutput pi="PI-01: Dossiê Legal de Alinhamento de Privacidade" ready={questions.length > 0 && answered === questions.length} readyHint={`Responda todas as perguntas (${answered}/${questions.length}).`}>
+      <PIOutput pi="PI-01: Dossiê Legal de Alinhamento de Privacidade" ready={enquadramento.vigente && questions.length > 0 && answered === questions.length} readyHint={`Assine o enquadramento e responda todas as perguntas (${answered}/${questions.length}).`}>
+        <h3 className="font-semibold">Declaração de enquadramento do agente</h3>
+        <p>{enquadramento.porte ? rotuloPorte(enquadramento.porte) : 'Enquadramento não assinado'} · {FUNDAMENTO_PORTE}</p>
+        {enquadramento.declaracao && <><p>Assinatura do DPO em {new Date(enquadramento.declaracao.assinado_em).toLocaleString('pt-BR')}</p><p className="break-all font-mono">SHA-256 {enquadramento.declaracao.hash_sha256}</p><ul className="list-disc pl-5">{Object.entries(enquadramento.declaracao.criterios as Record<string, unknown>).map(([k,v]) => <li key={k}>{k}: {String(v)}</li>)}</ul></>}
         <h3 className="font-semibold">1. Resultado do diagnóstico</h3>
         <p>Empresa: {razao} · CNPJ {maskCNPJ(cnpj)} · Auditor: {email}</p>
         <p>Grau de Maturidade: <b>{gm.toFixed(1)}%</b> ({score}/{bankMax}) — {zone.label}.</p>

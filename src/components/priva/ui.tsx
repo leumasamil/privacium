@@ -10,6 +10,8 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { TelaBloqueio } from "./TelaBloqueio";
 import { useEncarregado } from "@/lib/priva/useEncarregado";
+import { useEnquadramento } from '@/lib/priva/useEnquadramento';
+import { toast } from 'sonner';
 
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 export function PageHeader({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
@@ -168,7 +170,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual, acoesExtras }: 
                   })}
                 </div>
               ) : (
-                <Button onClick={async () => { await sign(code); }}>
+                <Button onClick={async () => { try { await sign(code); } catch (err) { toast.error(err instanceof Error ? err.message : 'Não foi possível assinar.'); } }}>
                   <ShieldCheck className="h-4 w-4" /> Assinar com Gov.br (simulado)
                 </Button>
               )
@@ -181,7 +183,9 @@ export function PIOutput({ pi, ready, readyHint, children, dual, acoesExtras }: 
 }
 
 export function BlockGate({ n, children }: { n: number; children: ReactNode }) {
-  const { signatures } = usePriva();
+  const { signatures, demo } = usePriva();
+  const enquadramento = useEnquadramento();
+  if (!demo && n > 1 && !enquadramento.vigente) return <Panel title="Enquadramento do agente pendente"><p className="text-sm">Assine a declaração de enquadramento do agente no Bloco 1 neste Ciclo Privacium Semestral.</p><Button asChild className="mt-3"><Link to="/bloco-1">Abrir Bloco 1</Link></Button></Panel>;
   if (isUnlocked(signatures, n)) return <>{children}</>;
   return <TelaBloqueio n={n} />;
 }
