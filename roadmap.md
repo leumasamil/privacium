@@ -34,6 +34,6 @@
 - [x] Criar demonstração pública isolada, seed ANPD completo e ações com aviso, preservando guard e RLS.
 - [x] Executar os dez critérios: b–j passaram localmente (b com resposta controlada e dica condicional sem enumerar contas); a aguarda publicação e autorização Google interativa.
 - [ ] Validar login Google completo no app publicado: bloqueado pela publicação ainda não solicitada e consentimento Google interativo.
-- [ ] Completar seis etapas cenográficas sem envio ou encerramento e preservar bloqueio do Bloco 5.
-- [ ] Conferir ações demo clicáveis mesmo com validação pendente e aviso sem requisições.
-- [ ] Executar os seis testes do anexo e reportar resultados reais.
+- [x] Completar seis etapas cenográficas sem envio ou encerramento e preservar bloqueio do Bloco 5.
+- [x] Conferir ações demo clicáveis mesmo com validação pendente e aviso sem requisições.
+- [x] Executar os seis testes do anexo: todos passaram na visualização local; fluxo demo sem requisições ao banco.
