@@ -64,7 +64,7 @@ export const NORMAS: Record<string, Norma> = {
   "Res. CD/ANPD nº 15/2024": {
     citacao: "Res. CD/ANPD nº 15/2024",
     resumo: "Regulamenta a comunicação de incidente de segurança à ANPD: prazo de 3 dias úteis, conteúdo mínimo da comunicação e obrigações de registro.",
-    porque: "Define o SLA de 72 horas e os campos obrigatórios que o formulário ANPD desta plataforma valida.",
+    porque: "Define o prazo de 3 dias úteis (art. 6º) e os campos obrigatórios que o formulário ANPD desta plataforma valida.",
   },
   "Res. CD/ANPD nº 4/2023": {
     citacao: "Res. CD/ANPD nº 4/2023",
