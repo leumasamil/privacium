@@ -110,7 +110,7 @@ export function MembrosEmpresa() {
         {membros.map((m) => (
           <li key={m.id} className="flex flex-wrap items-center gap-2 rounded-sm border bg-background p-3 text-sm" data-testid={`membro-${m.id}`}>
             <span className="font-medium">{m.nome}</span>
-            {m.papel_rac && <Tag tone="primary">{m.papel_rac} · {PAPEIS_RAC[m.papel_rac]}</Tag>}
+            {m.papel_rac && <Tag tone="primary">{m.papel_rac} · {PAPEIS_RAC[m.papel_rac as keyof typeof PAPEIS_RAC]}</Tag>}
             {m.membro_comite && <Tag tone="success">Comitê de Governança</Tag>}
             {m.area_setor && <span className="text-xs text-muted-foreground">{m.area_setor}</span>}
             <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">

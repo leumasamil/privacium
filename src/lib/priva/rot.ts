@@ -123,8 +123,9 @@ export function sugerir(r: RotInput): Sugestao[] {
   const s: Sugestao[] = [];
   const sens = r.dados_sensiveis;
   const area = (r.area_setor ?? "").split("›")[0]?.trim() ?? "";
-  if (!r.finalidade_especifica.trim() && area && r.insumo?.trim()) {
-    const regra = SUGESTOES_FINALIDADE_V1[area]?.find((x) => x.insumo === r.insumo.trim().toLowerCase());
+  const insumo = r.insumo?.trim().toLowerCase() ?? "";
+  if (!r.finalidade_especifica.trim() && area && insumo) {
+    const regra = SUGESTOES_FINALIDADE_V1[area]?.find((x) => x.insumo === insumo);
     if (regra) s.push({ texto: `Finalidade: ${regra.finalidade}`, origem: ORIGEM_FINALIDADE, patch: { finalidade_especifica: regra.finalidade } });
   }
   if (!r.hipotese_tratamento) {
