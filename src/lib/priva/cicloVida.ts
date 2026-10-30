@@ -1,0 +1,79 @@
+/**
+ * Ciclo de vida do dado pessoal (gênero × espécie).
+ * Espécies = verbos literais do art. 5º, X da LGPD; gêneros = agrupamento didático do método.
+ */
+export const VERBOS_ART5_X = [
+  "coleta", "produção", "recepção", "classificação", "utilização", "acesso", "reprodução", "transmissão", "distribuição", "processamento",
+  "arquivamento", "armazenamento", "eliminação", "avaliação ou controle da informação", "modificação", "comunicação", "transferência", "difusão", "extração",
+] as const;
+
+/** Forma verbal (infinitivo) dos verbos do art. 5º, X usados como espécie. */
+export const ESPECIES_PERMITIDAS = [
+  "coletar", "produzir", "receber", "classificar", "utilizar", "acessar", "reproduzir", "transmitir", "distribuir", "processar",
+  "arquivar", "armazenar", "eliminar", "avaliar ou controlar", "modificar", "comunicar", "transferir", "difundir", "extrair",
+] as const;
+
+export const GENEROS = ["Coletar", "Reter", "Processar", "Compartilhar", "Eliminar"] as const;
+export type Genero = (typeof GENEROS)[number];
+export type CicloVida = Partial<Record<Genero, string[]>>;
+
+export const ESPECIES: Record<Genero, string[]> = {
+  Coletar: ["receber", "extrair", "produzir", "classificar"],
+  Reter: ["arquivar", "armazenar"],
+  Processar: ["utilizar", "acessar", "avaliar ou controlar", "modificar", "reproduzir"],
+  Compartilhar: ["transmitir", "distribuir", "comunicar", "transferir", "difundir"],
+  Eliminar: ["eliminar"],
+};
+
+export const AJUDA_CICLO = "Agrupamento didático dos 20 verbos do art. 5º, X da LGPD. As espécies são os verbos literais da lei; os gêneros são agrupamento do método.";
+export const DESCRICAO_CICLO = "Coletar → Reter → Processar → Compartilhar → Eliminar";
+export const NOTA_CICLO = "Cada gênero corresponde a um estado do dado pessoal; as espécies são os verbos do art. 5º, X da LGPD.";
+
+/** Itens da ISO/IEC 27002:2022 por gênero (determinístico). */
+export const ISO_27002: Record<Genero, string[]> = {
+  Coletar: ["ISO/IEC 27002 — 5.12 (classificação da informação)"],
+  Reter: ["ISO/IEC 27002 — 8.10 (exclusão de informação)"],
+  Processar: ["ISO/IEC 27002 — 5.10 (uso aceitável)", "ISO/IEC 27002 — 8.11 (mascaramento)"],
+  Compartilhar: ["ISO/IEC 27002 — 5.14 (transferência de informação)"],
+  Eliminar: ["ISO/IEC 27002 — 8.10 (exclusão de informação)", "ISO/IEC 27002 — 7.10 (mídias de armazenamento)"],
+};
+
+export const CITACOES_LGPD = ["LGPD art. 5º, X (operação de tratamento)", "LGPD art. 37 (registro das operações)"];
+/** Resolução da ANPD aplicável ao registro (agentes de pequeno porte podem manter registro simplificado). */
+export const CITACAO_ANPD = "Res. CD/ANPD nº 2/2022, art. 9º (registro simplificado — agentes de tratamento de pequeno porte)";
+
+export function generosMarcados(c: CicloVida | null | undefined): Genero[] {
+  return GENEROS.filter((g) => (c?.[g] ?? []).length > 0);
+}
+
+/** Linhas antigas (só genero_verbo) viram gênero sem espécie marcada. */
+export function cicloDaLinha(r: { ciclo_vida?: unknown; genero_verbo: string }): CicloVida {
+  const c = (r.ciclo_vida && typeof r.ciclo_vida === "object" ? r.ciclo_vida : {}) as CicloVida;
+  if (generosMarcados(c).length) return c;
+  return (GENEROS as readonly string[]).includes(r.genero_verbo) ? { [r.genero_verbo as Genero]: [] } : {};
+}
+
+/** "Coletar › receber, classificar | Reter › arquivar" */
+export function formatarCiclo(c: CicloVida): string {
+  return GENEROS.filter((g) => g in c).map((g) => (c[g]!.length ? `${g} › ${c[g]!.join(", ")}` : g)).join(" | ");
+}
+
+export function citacoesISO(c: CicloVida): string[] {
+  return [...new Set(GENEROS.filter((g) => g in c).flatMap((g) => ISO_27002[g]))];
+}
+
+export function alternar(c: CicloVida, g: Genero, especie: string): CicloVida {
+  const atual = c[g] ?? [];
+  const nova = atual.includes(especie) ? atual.filter((e) => e !== especie) : [...atual, especie];
+  const out = { ...c };
+  if (nova.length) out[g] = ESPECIES[g].filter((e) => nova.includes(e)); else delete out[g];
+  return out;
+}
+
+/** Erro se alguma espécie não está no elenco do gênero; null se válido. */
+export function validarCiclo(c: CicloVida): string | null {
+  const gs = generosMarcados(c);
+  if (!gs.length) return "Marque ao menos uma espécie no campo 2 (Ciclo de vida do dado pessoal).";
+  for (const g of gs) for (const e of c[g]!) if (!ESPECIES[g].includes(e)) return `Espécie "${e}" fora do elenco do art. 5º, X para o gênero ${g}.`;
+  return null;
+}

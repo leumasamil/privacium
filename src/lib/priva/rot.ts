@@ -1,4 +1,5 @@
 import type { Database } from "@/integrations/supabase/types";
+import { cicloDaLinha, validarCiclo } from "./cicloVida";
 
 export type RotRow = Database["public"]["Tables"]["registro_operacoes"]["Row"];
 export type RotInput = Omit<RotRow, "id" | "codigo" | "criado_por" | "criado_em" | "atualizado_em">;
@@ -59,6 +60,8 @@ export function validateRot(r: RotInput): string | null {
   const texto = [r.finalidade_especifica, r.hipotese_tratamento, r.hipotese_sensivel ?? "", r.tempo_retencao, r.base_prazo, r.compartilhamento, r.justificativa_mitigacao ?? "",
     ...r.categoria_titulares, ...r.dados_pessoais, ...r.dados_sensiveis, ...r.salvaguardas].join(" ");
   if (PROIBIDOS.test(texto)) return 'Termo proibido: use "Hipótese de Tratamento" (terminologia da LGPD).';
+  const erroCiclo = validarCiclo(cicloDaLinha(r));
+  if (erroCiclo) return erroCiclo;
   if (!r.categoria_titulares.length) return "Preencha o campo 3 (Categoria de Titulares) para salvar — marque ao menos um grupo de pessoas.";
   if (!r.dados_pessoais.length) return "Preencha o campo 4 (Dados Pessoais) para salvar — marque ao menos um dado pessoal tratado.";
   if (!r.dados_sensiveis.length) return 'Preencha o campo 5 (Dado Pessoal Sensível) para salvar — marque o dado ou "N/A" se não houver.';
@@ -82,7 +85,7 @@ export function sugerir(r: RotInput): Sugestao[] {
   if (!r.hipotese_tratamento) {
     if (r.categoria_titulares.includes("Colaboradores")) s.push({ texto: "Colaboradores: art. 7º, II (obrigações trabalhistas)", patch: { hipotese_tratamento: HIPOTESES_7A[1]! } });
     else if (r.categoria_titulares.includes("Clientes") || r.categoria_titulares.includes("Fornecedores")) s.push({ texto: "Clientes/fornecedores: art. 7º, V (contrato)", patch: { hipotese_tratamento: HIPOTESES_7A[4]! } });
-    else if (r.genero_verbo === "Compartilhar" && r.categoria_titulares.length) s.push({ texto: "Compartilhamento sem contrato: avalie art. 7º, I (consentimento)", patch: { hipotese_tratamento: HIPOTESES_7A[0]! } });
+    else if ("Compartilhar" in cicloDaLinha(r) && r.categoria_titulares.length) s.push({ texto: "Compartilhamento sem contrato: avalie art. 7º, I (consentimento)", patch: { hipotese_tratamento: HIPOTESES_7A[0]! } });
   }
   if (hasSensivel(r) && !r.hipotese_sensivel) {
     if (sens.includes("Prontuário de Saúde")) s.push({ texto: "Prontuário de Saúde: art. 11, II, f (tutela da saúde)", patch: { hipotese_sensivel: HIPOTESES_7B[6]! } });

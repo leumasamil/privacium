@@ -593,6 +593,7 @@ export type Database = {
           atualizado_em: string
           base_prazo: string
           categoria_titulares: string[]
+          ciclo_vida: Json
           codigo: string
           compartilhamento: string
           criado_em: string
@@ -615,6 +616,7 @@ export type Database = {
           atualizado_em?: string
           base_prazo: string
           categoria_titulares?: string[]
+          ciclo_vida?: Json
           codigo?: string
           compartilhamento?: string
           criado_em?: string
@@ -637,6 +639,7 @@ export type Database = {
           atualizado_em?: string
           base_prazo?: string
           categoria_titulares?: string[]
+          ciclo_vida?: Json
           codigo?: string
           compartilhamento?: string
           criado_em?: string
@@ -1004,6 +1007,7 @@ export type Database = {
           valor: string
         }[]
       }
+      ciclo_vida_valido: { Args: { c: Json }; Returns: boolean }
       cnpj_liberado: { Args: { _cnpj: string }; Returns: boolean }
       cnpj_valido: { Args: { _c: string }; Returns: boolean }
       cpf_valido: { Args: { _c: string }; Returns: boolean }
