@@ -281,6 +281,13 @@
       "when": 1793381806166,
       "tag": "0039_papel_agente_e_produto_rot",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793383774454,
+      "tag": "0040_prt_lista_e_terceiros",
+      "breakpoints": true
     }
   ]
 }
