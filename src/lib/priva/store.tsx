@@ -104,6 +104,8 @@ export function PrivaProvider({ children, initialDemo = false }: { children: Rea
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [demo, setDemoState] = useState(initialDemo);
   const [demoShared, setDemoShared] = useState<Shared>(() => ({ ...initialShared, signatures: initialDemo ? DEMO_PUBLIC_SIGNATURES : DEMO_SIGNATURES }));
+  const [demoSessao, setDemoSessao] = useState<DemoSessao>(DEMO_SESSAO_INICIAL);
+  const [demoEventos, setDemoEventos] = useState<DemoEvento[]>(DEMO_TRILHA_SEED);
   const cnpjRef = useRef<string | null>(null);
   cnpjRef.current = cnpj;
   const roleRef = useRef(role);
