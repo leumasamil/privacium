@@ -81,6 +81,7 @@ export function TelaBloqueio({ n }: { n: number }) {
   const sigFaltando = itens.filter((i) => i.id.startsWith("sig") && i.estado !== "ok");
   const pode = (i: Pendencia) => roles.includes(i.responsavel) || (roles.includes("ADMIN_SISTEMA") && i.responsavel !== "C_SUITE");
   const dependeOutro = itens.filter((i) => i.estado !== "ok" && !pode(i));
+  if (!pi) return null;
   const solicitar = (i: Pendencia) => {
     if (demo) return avisarAcaoDemo();
     log("INSERT", "solicitacao_assinatura", `Solicitada ação de ${i.responsavel} no ${pi.codigo}: ${i.titulo}`);

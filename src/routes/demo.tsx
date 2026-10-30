@@ -21,7 +21,7 @@ import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 
 const ABAS = ['painel', 'bloco-1', 'bloco-2', 'bloco-3', 'bloco-4', 'bloco-5', 'anpd', 'kanban', 'manual', 'glossario', 'auditoria', 'encarregado'];
 export const Route = createFileRoute('/demo')({
-  validateSearch: (search: Record<string, unknown>) => ({ aba: typeof search['aba'] === 'string' && ABAS.includes(search['aba']) ? search['aba'] : 'painel' }),
+  validateSearch: (search: Record<string, unknown>): { aba?: string } => ({ aba: typeof search['aba'] === 'string' && ABAS.includes(search['aba']) ? search['aba'] : 'painel' }),
   head: () => ({ meta: [
     { title: 'Demonstração — Privacium' },
     { name: 'description', content: 'Demonstração cenográfica do Método BLLOCO, isolada dos dados de clientes.' },

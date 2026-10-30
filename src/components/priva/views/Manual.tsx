@@ -40,7 +40,7 @@ const FAQ: [string, string][] = [
   ["O que é registrado na trilha de auditoria?", "Toda leitura de tela com dado pessoal, toda alteração e cada clique para revelar um dado mascarado, com hash SHA-256 encadeado."],
 ];
 
-export function Manual({ aba }: { aba?: string }) {
+export function Manual({ aba }: { aba?: string | undefined }) {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Transversal · Método BLLOCO" title="Manual de Uso">

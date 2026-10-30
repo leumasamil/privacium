@@ -84,7 +84,7 @@ export function Bloco1() {
       <PageHeader eyebrow="Bloco 1 · (P) Ciclo Privacium Semestral" title="Preparar a Privacidade">
         Diagnóstico de Entrada pela LGPD. SIM soma o peso de criticidade da pergunta; NÃO soma zero.
       </PageHeader>
-      <AjudaTarefa {...AJUDA[1]} />
+      {AJUDA[1] && <AjudaTarefa {...AJUDA[1]} />}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-md border-l-4 border-primary bg-card p-4">

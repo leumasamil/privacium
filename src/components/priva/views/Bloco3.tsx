@@ -70,7 +70,7 @@ export function Bloco3() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 3 · (I) Ciclo Privacium Semestral · Art. 46 LGPD" title="Implementar Salvaguardas Técnicas e Jurídicas" />
-      <AjudaTarefa {...AJUDA[3]} />
+      {AJUDA[3] && <AjudaTarefa {...AJUDA[3]} />}
 
       <div id="ativos" className="grid scroll-mt-6 gap-6 xl:grid-cols-2">
         <BitLockerCard endpoints={endpoints} prot={prot} cnpj={cnpj} canEdit={canEdit} refresh={refresh} remove={remove} />

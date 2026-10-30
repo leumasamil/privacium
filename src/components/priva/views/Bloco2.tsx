@@ -92,7 +92,7 @@ export function Bloco2() {
         Inventário em 12 campos (campo 7 dividido em 7A — art. 7º, dado pessoal — e 7B — art. 11, dado pessoal sensível). Linhas com menores de idade ou dado pessoal sensível recebem tarja vermelha e exigem justificativa das medidas mitigadoras.{" "}
         <Link to="/manual" className="inline-flex items-center gap-1 font-medium text-primary underline"><BookOpen className="h-3 w-3" /> Manual de Uso</Link>
       </PageHeader>
-      <AjudaTarefa {...AJUDA[2]} />
+      {AJUDA[2] && <AjudaTarefa {...AJUDA[2]} />}
 
       <Panel id="rot" title={`Planilha mestre · ${rows.length} processos · ${riskyCount} em alerta`} action={canEdit && (
         <Button size="sm" onClick={() => demo ? avisarAcaoDemo() : setEdit({ id: null, form: empty(cnpj) })}><Plus className="h-4 w-4" /> Novo processo</Button>
