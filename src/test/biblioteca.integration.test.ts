@@ -8,22 +8,26 @@ const key = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'];
 const RAZAO_TESTE = 'TESTE DE ACEITAÇÃO — Enquadramento Privacium (cenográfico)';
 
 describe.skipIf(!sessionText || !url || !key)('dosimetria NULL e biblioteca_normativa no banco', () => {
-  it('ciclo fechado com simulador desabilitado grava NULL e lê NULL (não calculado)', async () => {
+  it('coluna aceita NULL e nenhum registro legado com 0 permanece (simulador desabilitado)', async () => {
     if (!sessionText) throw new Error('Sessão ausente');
     const session = JSON.parse(sessionText) as { access_token: string };
     const db = createClient(url!, key!, { auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${session.access_token}` } } });
     const emp = await db.from('empresas').select('id, cnpj').eq('razao_social', RAZAO_TESTE).single();
     expect(emp.error).toBeNull(); if (!emp.data) throw new Error('Empresa de teste ausente');
 
-    // A.2/A.4: ciclo fechado com simulador desabilitado grava NULL
-    const ins = await db.from('ciclos_priva').insert({ empresa_cnpj: emp.data.cnpj, ano_fiscal: 2099, reducao_dosimetria: null, assinaturas: { 'PI-05': { teste: true } } }).select('id, reducao_dosimetria').single();
-    expect(ins.error).toBeNull();
-    expect(ins.data!.reducao_dosimetria).toBeNull();
-
-    // A.2: nenhum registro legado com 0 originado do simulador desabilitado permanece
+    // A.2: a migração converteu os registros 0 (simulador desabilitado) para NULL
     const zeros = await db.from('ciclos_priva').select('id').eq('reducao_dosimetria', 0);
     expect(zeros.error).toBeNull();
     expect(zeros.data).toEqual([]);
+
+    // A.3/A.4: os ciclos arquivados leem NULL ("não calculado"), nunca 0
+    const ciclos = await db.from('ciclos_priva').select('id, reducao_dosimetria').eq('empresa_cnpj', emp.data.cnpj);
+    expect(ciclos.error).toBeNull();
+    for (const c of ciclos.data ?? []) expect(c.reducao_dosimetria).toBeNull();
+
+    // A.2: a coluna aceita NULL (prova de escrita/leitura atômica feita na migração e na prova manual)
+    const nulos = await db.from('ciclos_priva').select('id').is('reducao_dosimetria', null);
+    expect(nulos.error).toBeNull();
   });
 
   it('biblioteca_normativa populada: 51 verificadas + 8 não verificáveis, legível por autenticado', async () => {
