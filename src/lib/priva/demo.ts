@@ -4,6 +4,7 @@ import { PADRAO_RANSOMWARE, vincularNatureza } from './naturezasIncidente';
 import { sugerirRiscos, textoRiscos, vincularRisco } from './riscosIncidente';
 import { sugerirMedidas, textoMedidas, vincularMedida } from './medidasIncidente';
 import { categoriasDoROT, vincularCategorias } from './categoriasANPD';
+import { carregarEstadoIncidente, type FonteIncidente } from './estadoIncidente';
 
 /** Modo Demonstração Comercial: dados cenográficos que vivem só no estado do navegador. Nada aqui é gravado no banco. */
 export const DEMO_CNPJ = "99999999000199";
@@ -83,9 +84,9 @@ export const DEMO_DPO: Database['public']['Tables']['encarregado_dpo']['Row'] = 
   empresa_cnpj: DEMO_CNPJ, nome: 'Encarregado Cenográfico', email: 'dpo@cenografica.com.br',
   telefone: null, endereco: null, publicar_contato: false, atualizado_em: ts,
 };
-const etapasDemo = [1, 2, 3].map(numero => ({ numero, concluida: true }));
+const etapasDemo = [1, 2, 3, 4, 5, 6].map(numero => ({ numero, concluida: true }));
 const riscosDemo = sugerirRiscos(PADRAO_RANSOMWARE, false, false);
-const medidasDemo = sugerirMedidas(etapasDemo);
+const medidasDemo = sugerirMedidas(etapasDemo.slice(0, 3));
 const detalhesDemo = 'Incidente cenográfico: ransomware criptografou o servidor de arquivos da folha de pagamento, interrompendo o acesso a Nome, CPF e Dados bancários de 1250 colaboradores. Não representa uma ocorrência real.';
 
 type Ativo = Database["public"]["Tables"]["ativos_seguranca"]["Row"];
@@ -111,7 +112,7 @@ export const DEMO_ROWS: {
     hash_sha256: "5e1f".padEnd(64, "b"),
   }],
   incidentes_seguranca: [{
-    id: "demo-inc", empresa_cnpj: DEMO_CNPJ, iniciado_em: ts, passos: [true, true, true, false, false, false],
+    id: "demo-inc", empresa_cnpj: DEMO_CNPJ, iniciado_em: ts, passos: [true, true, true, true, true, true],
     comunicacao: { natureza: 'Ransomware no servidor de arquivos', natureza_principal: vincularNatureza(PADRAO_RANSOMWARE) ?? null,
       naturezas_secundarias: [], categorias: ['Nome', 'CPF', 'Dados bancários'],
       categorias_vinculadas: vincularCategorias(['Nome', 'CPF', 'Dados bancários'], categoriasDoROT(DEMO_ROT[0])),
@@ -132,3 +133,10 @@ export const DEMO_ROWS: {
   }],
   ciclos_priva: [],
 };
+
+/** Presentation-only demo progress: never treats a staged step as a real ANPD submission. */
+export function carregarEstadoIncidenteDemo(incidenteId: string, fonte: FonteIncidente) {
+  const estado = carregarEstadoIncidente(incidenteId, fonte);
+  const itens = estado.etapas.itens.map(item => ({ ...item, concluida: estado.incidente.passos[item.numero - 1] === true }));
+  return { ...estado, etapas: { ...estado.etapas, itens, concluidas: itens.filter(item => item.concluida).length } };
+}
