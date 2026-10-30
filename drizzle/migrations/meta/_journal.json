@@ -239,6 +239,13 @@
       "when": 1793379524302,
       "tag": "0033_membros_empresa_e_rot_campos",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793379923222,
+      "tag": "0034_recarregar_cache_postgrest",
+      "breakpoints": true
     }
   ]
 }
