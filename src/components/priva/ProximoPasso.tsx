@@ -1,4 +1,5 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { useLocation } from "@tanstack/react-router";
+import { AppLink as Link } from "@/components/priva/AppLink";
 import { ArrowRight, CheckCircle2, Hourglass, Lock, Navigation } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

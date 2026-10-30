@@ -34,7 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [menuAberto, setMenuAberto] = useState(false);
   const podeDemo = roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL");
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, searchStr } = useLocation();
   const [novo, setNovo] = useState({ cnpj: "", razao: "", err: "" });
   const lastRead = useRef("");
   const [suspensa, setSuspensa] = useState(false);
@@ -96,7 +96,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const item = (to: string, label: ReactNode, icon: ReactNode, extra?: ReactNode, locked = false) => {
     if (demo && ['/membros', '/enterprise'].includes(to)) return null;
     if (!(demo || canAccess(role, to))) return null;
-    const active = publicDemo ? (location.search.includes(`aba=${to.slice(1)}`)) : pathname.startsWith(to);
+    const active = publicDemo ? (searchStr.includes(`aba=${to.slice(1)}`)) : pathname.startsWith(to);
     return (
       <Link
         to={publicDemo ? '/demo' : to as "/"}

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Panel, Tag } from "./ui";
 import { usePriva } from "@/lib/priva/store";
 
+import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 const PROVIDERS = ["OpenAI - GPT-4o-mini", "Google Gemini - Pro"] as const;
 const URL_KEY = "priva2ec-shield-url";
 
@@ -59,9 +60,11 @@ export function AIShield() {
   const { log, cnpj, demo } = usePriva();
   const [provider, setProvider] = useState<string>(PROVIDERS[0]);
   const [prompt, setPrompt] = useState("");
-  const [url, setUrl] = useState(() => (typeof window !== "undefined" && localStorage.getItem(URL_KEY)) || "http://localhost:8000/api/v1/shield/execute");
+  const [url, setUrl] = useState("http://localhost:8000/api/v1/shield/execute");
   const [result, setResult] = useState<{ packet: string; raw: string; answer: string; vault: Vault; source: "api" | "mock" } | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => { if (!demo) setUrl(localStorage.getItem(URL_KEY) || "http://localhost:8000/api/v1/shield/execute"); }, [demo]);
 
   // Demonstração: prompt do João da Silva já tokenizado, sem chamar rede nem gravar uso
   useEffect(() => {
@@ -75,7 +78,7 @@ export function AIShield() {
   }, [demo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const send = async () => {
-    if (demo) return;
+    if (demo) return avisarAcaoDemo();
     setBusy(true);
     localStorage.setItem(URL_KEY, url);
     const { out, vault } = sanitize(prompt.trim() || EXEMPLO_PROMPT);

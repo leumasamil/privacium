@@ -8,7 +8,7 @@ import { linhasCategorias } from '@/lib/priva/categoriasANPD';
 import { useEncarregado } from "@/lib/priva/useEncarregado";
 import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
 import { AJUDA } from "@/lib/priva/ajuda";
-import { Link } from "@tanstack/react-router";
+import { AppLink as Link } from "@/components/priva/AppLink";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Circle, Clock, AlertTriangle, OctagonAlert, FileDown, Hash, Lock, Play, Timer } from "lucide-react";

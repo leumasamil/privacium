@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { AppLink as Link } from "@/components/priva/AppLink";
 import { ArrowRight, CheckCircle2, Lock, RefreshCw } from "lucide-react";
 import { BLOCKS, computeGM } from "@/lib/priva/data";
 import { CardAcoes, CardEventos, CardGM, CardPIs, CardScore } from "@/components/priva/Indicadores";

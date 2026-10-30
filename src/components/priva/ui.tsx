@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { TelaBloqueio } from "./TelaBloqueio";
 import { useEncarregado } from "@/lib/priva/useEncarregado";
 
+import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 export function PageHeader({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
   return (
     <header className="mb-8 border-b pb-6">
@@ -101,7 +102,7 @@ export function Masked({ value, kind }: { value: string; kind: "cpf" | "cnpj" | 
 }
 
 export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string; ready: boolean; readyHint: string; children: ReactNode; dual?: boolean }) {
-  const { signatures, sign, set, email, cnpj, log } = usePriva();
+  const { signatures, sign, set, email, cnpj, log, demo } = usePriva();
   const code = pi.slice(0, 5).replace(" ", "");
   const sig = signatures[code];
   const encarregado = useEncarregado();
@@ -118,7 +119,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
             <p className="mt-1 text-xs text-muted-foreground">{ready ? "Pronto para chancela digital." : readyHint}</p>
           )}
         </div>
-        <Button variant="outline" onClick={() => setOpen(true)} disabled={!ready && !sig}>
+        <Button variant="outline" onClick={() => setOpen(true)} disabled={!demo && !ready && !sig}>
           <FileSignature className="h-4 w-4" /> {sig ? "Ver documento" : "Gerar e assinar"}
         </Button>
       </div>
@@ -134,6 +135,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
               <div className="flex w-full flex-wrap items-center justify-between gap-2">
                 <span className="break-all font-mono text-xs text-muted-foreground">SHA-256 {sig.hash}</span>
                 <Button variant="outline" onClick={async () => {
+                  if (demo) return avisarAcaoDemo();
                   const { gerarPdfPI } = await import("@/lib/priva/pdf");
                   const { data: cpf } = await supabase.rpc("meu_cpf");
                   gerarPdfPI(pi, docRef.current?.innerText ?? "", { hash: sig.hash, ts: sig.ts, assinante: sig.by, cnpj: maskCNPJ(cnpj ?? ""), cpf: cpf ? maskCPF(String(cpf)) : "não cadastrado" }).save(`${code}-${cnpj ?? ""}.pdf`);
@@ -147,7 +149,8 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
                     const k = `${code}-${who}`;
                     const done = signatures[k];
                     return (
-                      <Button key={who} variant={done ? "outline" : "default"} disabled={!!done} onClick={async () => {
+                      <Button key={who} variant={done ? "outline" : "default"} disabled={!demo && !!done} onClick={async () => {
+                        if (demo) return avisarAcaoDemo();
                         const ts = new Date().toISOString();
                         const by = who === "DPO" ? `DPO ${email} · CPF · Gov.br (simulado)` : `Diretoria · CNPJ ${maskCNPJ(cnpj ?? "")} · Gov.br (simulado)`;
                         const hash = await sha256(`${k}|${ts}|${by}`);
@@ -162,7 +165,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual }: { pi: string;
                   })}
                 </div>
               ) : (
-                <Button onClick={async () => { await sign(code); }}>
+                <Button onClick={async () => { if (demo) return avisarAcaoDemo(); await sign(code); }}>
                   <ShieldCheck className="h-4 w-4" /> Assinar com Gov.br (simulado)
                 </Button>
               )

@@ -1,7 +1,7 @@
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 import { AjudaTarefa } from "@/components/priva/AjudaTarefa";
 import { AJUDA } from "@/lib/priva/ajuda";
-import { Link } from "@tanstack/react-router";
+import { AppLink as Link } from "@/components/priva/AppLink";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AlertTriangle, BookOpen, Lightbulb, Pencil, Plus, Trash2 } from "lucide-react";

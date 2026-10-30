@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router';
+import { AppLink as Link } from "@/components/priva/AppLink";
 import type { ReactNode } from 'react';
 import type { Pendencia } from '@/lib/priva/pendencias';
 export function LinkPendencia({ item, children, className, onClick }: { item: Pendencia; children: ReactNode; className?: string; onClick?: React.MouseEventHandler<HTMLAnchorElement> }) {
