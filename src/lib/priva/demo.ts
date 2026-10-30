@@ -70,7 +70,7 @@ export const DEMO_ROT: Rot[] = [
 export const DEMO_PUBLIC_SIGNATURES = Object.fromEntries(Object.entries(DEMO_SIGNATURES).filter(([key]) => !key.startsWith('PI-04') && !key.startsWith('PI-05')));
 export const DEMO_DPO: Database['public']['Tables']['encarregado_dpo']['Row'] = {
   empresa_cnpj: DEMO_CNPJ, nome: 'Encarregado Cenográfico', email: 'dpo@cenografica.com.br',
-  telefone: null, endereco: null, publicar_contato: false, atualizado_em: ts, atualizado_por: null,
+  telefone: null, endereco: null, publicar_contato: false, atualizado_em: ts,
 };
 const etapasDemo = [1, 2, 3].map(numero => ({ numero, concluida: true }));
 const riscosDemo = sugerirRiscos(PADRAO_RANSOMWARE, false, false);
