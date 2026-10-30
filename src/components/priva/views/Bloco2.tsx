@@ -157,6 +157,10 @@ export function Bloco2() {
                       {risk && <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold uppercase text-destructive"><AlertTriangle className="h-3 w-3" /> Alerta crítico</p>}
                     </td>
                     <td className="px-2 py-2">{exibirAreaSetor(r)}</td>
+                    <td className="px-2 py-2" data-testid={`papel-${r.codigo}`}>
+                      {ROTULO_PAPEL[(r.papel_agente as PapelAgente) ?? "CONTROLADOR"]}
+                      {r.papel_agente === "OPERADOR" && <p className="mt-1 text-[10px] text-muted-foreground">{NOTA_DESTINO_OPERADOR}</p>}
+                    </td>
                     <td className="max-w-72 px-2 py-2">
                       <CicloCelula r={r} />
                       {retencao && <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-warning-foreground" data-testid={`retencao-${r.codigo}`}><AlertTriangle className="h-3 w-3" /> {retencao}</p>}
@@ -167,10 +171,18 @@ export function Bloco2() {
                     <td className="max-w-64 px-2 py-2">{r.finalidade_especifica}</td>
                     <td className="px-2 py-2">{r.hipotese_tratamento.startsWith("Art. 7") ? r.hipotese_tratamento : "—"}</td>
                     <td className="px-2 py-2">{r.hipotese_sensivel ?? (r.hipotese_tratamento.startsWith("Art. 11") ? r.hipotese_tratamento : "N/A")}</td>
-                    <td className="px-2 py-2">{r.tempo_retencao}</td>
-                    <td className="px-2 py-2">{r.base_prazo}</td>
+                    <td className="px-2 py-2">{r.tempo_retencao}{r.prazo_produto && <p className="mt-1 text-[10px] text-muted-foreground" data-testid={`prazo-produto-${r.codigo}`}>Produto: {r.prazo_produto}</p>}</td>
+                    <td className="px-2 py-2">{r.base_prazo}{r.fundamento_produto && <p className="mt-1 text-[10px] text-muted-foreground">Produto: {r.fundamento_produto}</p>}</td>
                     <td className="px-2 py-2">{r.compartilhamento}</td>
-                    <td className="px-2 py-2">{r.insumo ?? "—"}</td>
+                    <td className="px-2 py-2">
+                      {r.insumo ?? "—"}
+                      {(r.origem_compartilhamento as OrigemCompartilhamento | null) && <p className="mt-1 rounded-sm border border-dashed px-1 py-0.5 text-[10px] text-muted-foreground" data-testid={`origem-${r.codigo}`}>Insumo recebido de {(r.origem_compartilhamento as OrigemCompartilhamento).codigo_origem} ({(r.origem_compartilhamento as OrigemCompartilhamento).area_setor_origem})</p>}
+                    </td>
+                    <td className="max-w-64 px-2 py-2" data-testid={`produto-${r.codigo}`}>
+                      {r.produto_interno ?? "—"}
+                      {alertaProdutoAusente(r) && <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> {ALERTA_PRODUTO_AUSENTE}</p>}
+                      <DestinoProdutoCelula r={r} />
+                    </td>
                     <td className="px-2 py-2">{r.meio_fornecimento ?? "—"}</td>
                     <td className="px-2 py-2"><Tags items={r.salvaguardas} /></td>
                     <td className="px-2 py-2">{r.infraestrutura}<BadgeFornecedorROT processoId={r.id} /></td>
@@ -188,7 +200,7 @@ export function Bloco2() {
                   </tr>
                 );
               })}
-              {!rows.length && <tr><td colSpan={17} className="py-8 text-center text-muted-foreground">Nenhum processo cadastrado.</td></tr>}
+              {!rows.length && <tr><td colSpan={19} className="py-8 text-center text-muted-foreground">Nenhum processo cadastrado.</td></tr>}
             </tbody>
           </table>
         </div>
