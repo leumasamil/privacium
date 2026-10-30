@@ -33,3 +33,4 @@
 - Tenant tables require restrictive company policies beyond role checks; only admins change company linkage and audit writes use RPCs. Why: prevent cross-company access.
 - Glossary terms and dashboard indicators come from one shared glossary module. Why: no bare acronyms; every metric shows definition, formula and action.
 - PI-05 uses static mitigation; dosimetria.ts owns calculation and display. Why: signed-PI weights minus RIPO residuals must match; never AI.
+- National holidays for ANPD deadline counting live in `src/lib/priva/feriados.ts` and are mirrored in the `limite_anpd_uteis` DB function; extend both together per year. Why: client counter and server lateness flag must agree.
