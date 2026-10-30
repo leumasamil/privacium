@@ -52,13 +52,13 @@ describe('PI-05 · tela', () => {
     ctx.signatures = DEMO_SIGNATURES; ctx.log.mockClear();
     await renderBloco5();
     for (const id of IDS) expect(screen.getByTestId(`rotulo-${id}`).textContent).toMatch(/^Sugerido a partir do PI-0/);
-    expect(screen.getByTestId('reducao').textContent).toBe('−60%');
+    expect(screen.getByTestId('simulador-em-revisao').textContent).toBe('Simulador em revisão — percentuais em conferência com a Res. CD/ANPD nº 4/2023'); expect(screen.queryByTestId('reducao')).toBeNull();
     fireEvent.change(screen.getByLabelText('Medidas de mitigação · Injeção de prompts'), { target: { value: 'Texto revisado pelo DPO com mais detalhes.' } });
     expect(screen.getByTestId('rotulo-injecao').textContent).toBe('Revisado manualmente pelo DPO');
     expect(ctx.log).toHaveBeenCalledWith('UPDATE', 'ripd_ia', expect.stringContaining('revisada manualmente pelo DPO'));
     fireEvent.change(screen.getByLabelText('Probabilidade · Vazamento por prompts'), { target: { value: '5' } });
     // Alterar o escore não inventa pontos percentuais de desconto.
-    expect(screen.getByTestId('reducao').textContent).toBe('−60%');
+    expect(screen.getByTestId('simulador-em-revisao').textContent).toBe('Simulador em revisão — percentuais em conferência com a Res. CD/ANPD nº 4/2023'); expect(screen.queryByTestId('reducao')).toBeNull();
     expect(screen.getByTestId('resp-sig-dpo').textContent).toContain('Aguardando assinatura de DPO_OPERACIONAL · DPO Cenográfico');
     expect(screen.getByTestId('resp-sig-dir').textContent).toContain('Aguardando assinatura de C_SUITE (Diretoria) · Diretoria Cenográfica');
     expect(database.from).not.toHaveBeenCalled(); expect(database.rpc).not.toHaveBeenCalled();
