@@ -9,7 +9,8 @@ const base = (p: Partial<RotInput> = {}): RotInput => ({
   empresa_cnpj: "00000000000100", setor: "RH", genero_verbo: "Coletar", ciclo_vida: {}, categoria_titulares: [], dados_pessoais: [],
   dados_sensiveis: ["N/A"], finalidade_especifica: "", hipotese_tratamento: "", hipotese_sensivel: null, tempo_retencao: "",
   base_prazo: "", compartilhamento: "Não Compartilhado", salvaguardas: [], infraestrutura: "Servidor Local",
-  justificativa_mitigacao: null, area_setor: null, insumo: null, meio_fornecimento: null, ...p,
+  justificativa_mitigacao: null, area_setor: null, insumo: null, meio_fornecimento: null,
+  papel_agente: "CONTROLADOR", contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null, ...p,
 });
 
 describe("Área › Setor", () => {
@@ -95,7 +96,7 @@ describe("coerência dado × hipótese (item 6)", () => {
 });
 
 describe("demonstração cenográfica", () => {
-  it("as três linhas do ROT demo têm Área › Setor, insumo e meio; todas com destino declarado", () => {
+  it("as quatro linhas do ROT demo têm Área › Setor, insumo e meio; todas com destino declarado", () => {
     for (const r of DEMO_ROT) {
       expect(r.area_setor).toContain("›");
       expect(r.insumo).toBeTruthy();
