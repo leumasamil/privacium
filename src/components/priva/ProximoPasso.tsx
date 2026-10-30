@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useDadosBloco } from "./TelaBloqueio";
 import { LinkPendencia } from './LinkPendencia';
 import { FornecedoresProximoPasso } from './AlertaFornecedorVazado';
+import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 
 const TOM: Record<Passo["tipo"], { caixa: string; icone: React.ReactNode; rotulo: string }> = {
   acao: { caixa: "border-l-andamento-border", icone: <Navigation className="h-4 w-4 text-andamento" aria-hidden />, rotulo: "Próximo passo" },
@@ -20,8 +21,9 @@ const TOM: Record<Passo["tipo"], { caixa: string; icone: React.ReactNode; rotulo
 
 /** Faixa única de condução, exibida no topo de todas as telas autenticadas. */
 export function ProximoPasso() {
-  const { pathname } = useLocation();
-  const { cnpj, signatures, roles, kanban, log } = usePriva();
+  const location = useLocation();
+  const { cnpj, signatures, roles, kanban, log, publicDemo, demo } = usePriva();
+  const pathname = publicDemo ? `/${String((location.search as { aba?: string }).aba ?? 'painel')}` : location.pathname;
   const m = pathname.match(/^\/bloco-(\d)/);
   const blocoTela = m ? Number(m[1]) : Math.min(blocoCorrente(signatures), 5);
   const blocoBase = isUnlocked(signatures, blocoTela) ? blocoTela : blocoTela - 1;
@@ -59,7 +61,7 @@ export function ProximoPasso() {
         )}
       </div>
       {passo.tipo === "aguardando" ? (
-        <Button variant="outline" onClick={() => { log("INSERT", "solicitacao_assinatura", `Solicitada ação de ${passo.pendencia?.responsavel}: ${passo.pendencia?.titulo}`); toast.success("Solicitação registrada na trilha de auditoria."); }}>{passo.botao}</Button>
+        <Button variant="outline" onClick={() => { if (demo) return avisarAcaoDemo(); log("INSERT", "solicitacao_assinatura", `Solicitada ação de ${passo.pendencia?.responsavel}: ${passo.pendencia?.titulo}`); toast.success("Solicitação registrada na trilha de auditoria."); }}>{passo.botao}</Button>
       ) : (
         <Button className="h-auto min-h-9 max-w-full whitespace-normal text-left" asChild>{passo.pendencia ? <LinkPendencia item={passo.pendencia} onClick={ir}>{passo.botao} <ArrowRight className="h-4 w-4" /></LinkPendencia> : <Link to={passo.link.to as "/painel"} {...(passo.link.hash ? { hash: passo.link.hash } : {})} onClick={ir}>{passo.botao} <ArrowRight className="h-4 w-4" /></Link>}</Button>
       )}

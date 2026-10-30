@@ -13,6 +13,17 @@ export const DEMO_SCORE = 1075;
 export const DEMO_SLA_MS = 58 * 3600 * 1000;
 export const DEMO_MULTA_BASE = 100_000;
 
+/** Static public scenario mirrors the diagnostic catalog, never queries tenant data. */
+const departamentosDemo = ['RH', 'TI', 'Marketing', 'Compras', 'Recepção', 'Jurídico', 'Financeiro'];
+const principiosDemo = ['Segurança da Informação (Art. 46)', 'Hipótese de Tratamento (Arts. 7º e 11)', 'Dados Pessoais Sensíveis (Art. 5º, II)', 'Compartilhamento com Terceiros (Arts. 26 e 39)', 'Especificação da Finalidade (Art. 6º, I)', 'Responsabilização e Prestação de Contas (Art. 6º, X)', 'Limitação e Minimização de Dados (Art. 6º, III)', 'Qualidade e Precisão de Dados (Art. 6º, V)'];
+const pesosDemo = [10, 10, 9, 9, 8, 8, 7, 7];
+export const DEMO_QUESTIONS: Question[] = Array.from({ length: 166 }, (_, index) => {
+  const department = departamentosDemo[index % 7] ?? 'RH';
+  const principle = principiosDemo[Math.floor(index / 7) % 8] ?? '';
+  return { id: `demo-question-${index + 1}`, department, principle, weight: pesosDemo[Math.floor(index / 7) % 8] ?? 7,
+    text: `No departamento ${department}, ${index < 56 ? 'existem salvaguardas técnicas, barreiras lógicas ou rotinas ativas' : index < 112 ? 'há evidência documental (política, registro ou contrato)' : 'há monitoramento periódico com responsável e plano de correção'} para garantir a conformidade com a Questão Crítica de ${principle}?` };
+});
+
 const ts = "2026-10-01T12:00:00.000Z";
 export const DEMO_SIGNATURES = Object.fromEntries(
   ["PI-01", "PI-02", "PI-02-DPO", "PI-02-DIR", "PI-03", "PI-03-DPO", "PI-03-DIR", "PI-04", "PI-04-DPO", "PI-04-DIR", "PI-05", "PI-05-DPO", "PI-05-DIR"].map((k, i) => [

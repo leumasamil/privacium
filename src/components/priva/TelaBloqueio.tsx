@@ -13,15 +13,25 @@ import { cn } from "@/lib/utils";
 import { ESTADO, EstadoBadge } from "./estado";
 import { LinkPendencia } from './LinkPendencia';
 import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
+import { DEMO_ATIVOS, DEMO_ROT, DEMO_ROWS, DEMO_QUESTIONS } from '@/lib/priva/demo';
+import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 
 const ROTULO: Record<string, string> = { DPO_OPERACIONAL: "DPO_OPERACIONAL", C_SUITE: "Diretoria (C_SUITE)", ADMIN_SISTEMA: "ADMIN_SISTEMA" };
 
 export function useDadosBloco(n: number, cnpj: string | null) {
+  const { demo } = usePriva();
   const bloco4 = useEstadoBloco4(n === 4 ? cnpj : null);
   const outros = useQuery({
-    queryKey: ["pendencias", n, cnpj],
+    queryKey: ["pendencias", n, cnpj, demo],
     enabled: !!cnpj && n !== 4,
     queryFn: async (): Promise<DadosBloco> => {
+      if (demo) {
+        if (n === 1) return { n: 1, perguntas: DEMO_QUESTIONS.length, respondidas: DEMO_QUESTIONS.length, naos: 40 };
+        if (n === 2) return { n: 2, rot: DEMO_ROT };
+        if (n === 3) return { n: 3, endpoints: DEMO_ATIVOS.filter(a => a.tipo === 'ENDPOINT'), cofres: DEMO_ATIVOS.filter(a => a.tipo === 'COFRE'), chaves: 20 };
+        const ripd = DEMO_ROWS.ripd_ia[0];
+        return { n: 5, sistema: ripd?.sistema_avaliado ?? '', escudo: ripd?.escudo_digital ?? '', riscos: [] };
+      }
       const c = cnpj ?? "";
       if (n === 1) {
         const [p, r] = await Promise.all([
@@ -59,9 +69,9 @@ export function useDadosBloco(n: number, cnpj: string | null) {
 
 
 export function TelaBloqueio({ n }: { n: number }) {
-  const { cnpj, signatures, roles, role, log } = usePriva();
+  const { cnpj, signatures, roles, role, log, demo } = usePriva();
   const ant = n - 1;
-  const pi = PI_INFO[ant]!;
+  const pi = PI_INFO[ant] ?? PI_INFO[1];
   const { data, isLoading } = useDadosBloco(ant, cnpj);
   const itens = data ? montarChecklist(data, signatures) : [];
   const feitos = itens.filter((i) => i.estado === "ok").length;
@@ -72,6 +82,7 @@ export function TelaBloqueio({ n }: { n: number }) {
   const pode = (i: Pendencia) => roles.includes(i.responsavel) || (roles.includes("ADMIN_SISTEMA") && i.responsavel !== "C_SUITE");
   const dependeOutro = itens.filter((i) => i.estado !== "ok" && !pode(i));
   const solicitar = (i: Pendencia) => {
+    if (demo) return avisarAcaoDemo();
     log("INSERT", "solicitacao_assinatura", `Solicitada ação de ${i.responsavel} no ${pi.codigo}: ${i.titulo}`);
     toast.success(`Solicitação registrada na trilha de auditoria. Avise ${ROTULO[i.responsavel]} para acessar o Bloco ${ant}.`);
   };
@@ -161,6 +172,7 @@ export function TelaBloqueio({ n }: { n: number }) {
             ? "Você tem permissão para concluir todas as pendências acima."
             : <>{dependeOutro.map((d) => d.titulo).join(", ")} depende{dependeOutro.length > 1 ? "m" : ""} de outro usuário ({[...new Set(dependeOutro.map((d) => ROTULO[d.responsavel]))].join(", ")}).{" "}
               <button className="font-medium text-primary underline underline-offset-2" onClick={() => {
+                if (demo) return avisarAcaoDemo();
                 log("INSERT", "solicitacao_assinatura", `Solicitada ação de ${[...new Set(dependeOutro.map((d) => d.responsavel))].join(", ")} no ${pi.codigo}`);
                 toast.success("Solicitação registrada na trilha de auditoria. Avise o responsável para acessar o Bloco " + ant + ".");
               }}>Solicitar {sigFaltando.some((s) => dependeOutro.includes(s)) ? "assinatura" : "ação"}</button></>}
