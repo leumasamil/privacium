@@ -246,6 +246,13 @@
       "when": 1793379923222,
       "tag": "0034_recarregar_cache_postgrest",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793379963074,
+      "tag": "0035_blindar_documento_membros",
+      "breakpoints": true
     }
   ]
 }
