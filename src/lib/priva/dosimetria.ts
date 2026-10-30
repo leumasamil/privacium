@@ -24,13 +24,14 @@ export function multaComAtenuantes(base: number, reducao: number) {
   return Math.round(base * (1 - reducao / 100) * 100) / 100;
 }
 
-/** Os escores residuais do RIPO são pontos percentuais descontados, sem normalização ou bônus. */
-export function memoriaDosimetria(chancelados: Record<string, unknown>, riscos: readonly { label: string; prob: number; imp: number }[], base: number) {
+/** Desconta apenas pontos percentuais explicitamente declarados; probabilidade × impacto não é percentual. */
+export function memoriaDosimetria(chancelados: Record<string, unknown>, riscos: readonly { label: string; pontosResiduaisNaoMitigados?: number }[], base: number) {
   const componentes = DOSIMETRIA.map((d) => ({
-    label: d.pis.join("+"), percentual: fatorAtivo(d.pis, chancelados) ? d.pct : 0,
+    label: d.pis.length === 2 ? "PI-01+02" : d.pis.join("+"), percentual: fatorAtivo(d.pis, chancelados) ? d.pct : 0,
   }));
   const subtotal = componentes.reduce((s, c) => s + c.percentual, 0);
-  const residuais = riscos.map((r) => ({ label: r.label, pontos: r.prob * r.imp }));
+  const residuais = riscos.flatMap((r) => typeof r.pontosResiduaisNaoMitigados === "number" && Number.isFinite(r.pontosResiduaisNaoMitigados) && r.pontosResiduaisNaoMitigados >= 0
+    ? [{ label: r.label, pontos: r.pontosResiduaisNaoMitigados }] : []);
   const descontoResidual = residuais.reduce((s, r) => s + r.pontos, 0);
   const reducaoEfetiva = Math.max(0, Math.min(TETO_REDUCAO, subtotal - descontoResidual));
   const valorFinal = multaComAtenuantes(base, reducaoEfetiva);
@@ -38,7 +39,7 @@ export function memoriaDosimetria(chancelados: Record<string, unknown>, riscos: 
   const texto = [
     `${componentes.map((c) => `${c.label}: +${c.percentual}%`).join(" | ")} | Subtotal: ${subtotal}%`,
     `− Riscos residuais não mitigados (RIPO): −${descontoResidual}%`,
-    `Pontos residuais (probabilidade × impacto): ${residuais.length ? residuais.map((r) => `${r.label}: ${r.pontos}%`).join(" | ") : "nenhum risco declarado"}.`,
+    `Pontos percentuais declarados: ${residuais.length ? residuais.map((r) => `${r.label}: ${r.pontos}%`).join(" | ") : "nenhum; escores de probabilidade × impacto não são percentuais e não foram convertidos em desconto"}.`,
     `= Redução efetiva: ${reducaoEfetiva}% (teto de ${TETO_REDUCAO}% respeitado${subtotal < descontoResidual ? "; piso de 0% aplicado" : ""})`,
     `Valor base: ${moeda(base)}`,
     `Valor final = ${moeda(base)} × (1 − ${reducaoEfetiva}%) = ${moeda(valorFinal)}`,

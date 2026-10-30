@@ -27,7 +27,7 @@ const RISKS: { id: RiscoId; label: string; hint: string }[] = [
   { id: "injecao", label: "Injeção de prompts", hint: "Instruções maliciosas que forçam o modelo a revelar ou alterar dados." },
 ];
 /** prob/imp só valem quando riscoManual; caso contrário derivam dos PIs concluídos. */
-type R = { prob?: number; imp?: number; descricao: string; mitig: string; descManual?: boolean; mitigManual?: boolean; riscoManual?: boolean };
+type R = { prob?: number; imp?: number; descricao: string; mitig: string; descManual?: boolean; mitigManual?: boolean; riscoManual?: boolean; pontosResiduaisNaoMitigados?: number };
 const DEF: R = { descricao: "", mitig: "" };
 const ESCUDO_PADRAO = "O Escudo Digital do Bloco 3 tokeniza localmente CPFs, e-mails e nomes ([CPF_TOKEN], [EMAIL_TOKEN], [NOME_TOKEN]) antes do envio a qualquer IA externa e reverte os tokens apenas no navegador do usuário autorizado. Nenhum dado pessoal em claro sai do perímetro do CNPJ.";
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -78,7 +78,7 @@ export function Bloco5() {
     const manualDesc = v.descManual ?? v.descricao.trim().length > 0;
     const riscoManual = !!v.riscoManual && typeof v.prob === "number" && typeof v.imp === "number";
     return {
-      ...r, derivado, riscoManual,
+      ...r, derivado, riscoManual, pontosResiduaisNaoMitigados: v.pontosResiduaisNaoMitigados,
       prob: riscoManual ? v.prob! : derivado.prob, imp: riscoManual ? v.imp! : derivado.imp,
       descricao: manualDesc ? v.descricao : "texto" in sugDesc ? sugDesc.texto : "",
       rotuloDesc: manualDesc ? "Revisado manualmente pelo DPO" : "texto" in sugDesc ? sugDesc.rotulo : sugDesc.aviso,
@@ -251,7 +251,7 @@ export function Bloco5() {
         <p className="mb-3 text-xs text-muted-foreground"><CitacaoNormativa citacao="Res. CD/ANPD nº 4/2023" /></p>
         <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
           <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">Somam-se apenas os percentuais dos PIs chancelados. Cada ponto residual do RIPO (probabilidade × impacto após mitigação) desconta um ponto percentual; a redução fica entre 0% e 75%.</p>
+            <p className="text-xs text-muted-foreground">Somam-se apenas os percentuais dos PIs chancelados e subtraem-se os pontos percentuais residuais explicitamente declarados no RIPO. Os escores de probabilidade × impacto não são percentuais. A redução fica entre 0% e 75%.</p>
             {efetivos.map((e) => (
               <div key={e.id} data-testid={`sim-${e.id}`}>
                 <div className="flex items-center gap-2 text-sm">
