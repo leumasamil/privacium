@@ -88,7 +88,7 @@ export const NORMAS: Record<string, Norma> = {
   },
   "Res. CD/ANPD nº 15/2024, art. 3º": {
     citacao: "Res. CD/ANPD nº 15/2024, art. 3º",
-    resumo: "Art. 3º, XII — incidente de segurança: "qualquer evento adverso confirmado, relacionado à violação das propriedades de confidencialidade, integridade, disponibilidade e autenticidade da segurança de dados pessoais".",
+    resumo: "Art. 3º, XII — incidente de segurança: “qualquer evento adverso confirmado, relacionado à violação das propriedades de confidencialidade, integridade, disponibilidade e autenticidade da segurança de dados pessoais”.",
     porque: "É o critério que decide se a sua ocorrência exige comunicação formal à ANPD.",
   },
   "MCI art. 15": {
