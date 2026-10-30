@@ -57,9 +57,10 @@ const nv = (
   identificador: string,
   url_oficial: string,
   observacao: string,
+  categoria: CategoriaNormativa = "REFERENCIA_TECNICA",
 ): EntradaNormativa => ({
   norma, identificador, texto_literal: null, url_oficial,
-  categoria: "REFERENCIA_TECNICA", status: "NAO_VERIFICAVEL",
+  categoria, status: "NAO_VERIFICAVEL",
   verificado_em: null, verificado_por: null, observacao,
 });
 
