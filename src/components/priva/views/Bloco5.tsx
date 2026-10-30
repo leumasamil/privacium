@@ -4,7 +4,7 @@ import { pendenciasBloco5 } from "@/lib/priva/pendencias";
 import { AJUDA } from "@/lib/priva/ajuda";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Circle, PartyPopper, RefreshCw } from "lucide-react";
+import { PartyPopper, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";

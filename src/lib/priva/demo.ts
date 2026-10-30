@@ -26,8 +26,9 @@ export const DEMO_QUESTIONS: Question[] = Array.from({ length: 166 }, (_, index)
 });
 
 const ts = "2026-10-01T12:00:00.000Z";
+/** PI-01 a PI-04 chancelados; PI-05 aguarda as assinaturas atribuídas por papel. */
 export const DEMO_SIGNATURES = Object.fromEntries(
-  ["PI-01", "PI-02", "PI-02-DPO", "PI-02-DIR", "PI-03", "PI-03-DPO", "PI-03-DIR", "PI-04", "PI-04-DPO", "PI-04-DIR", "PI-05", "PI-05-DPO", "PI-05-DIR"].map((k, i) => [
+  ["PI-01", "PI-02", "PI-02-DPO", "PI-02-DIR", "PI-03", "PI-03-DPO", "PI-03-DIR", "PI-04", "PI-04-DPO", "PI-04-DIR"].map((k, i) => [
     k,
     { by: `Assinatura digital Gov.br · ${k} · CHANCELADO (demonstração)`, ts, hash: `d3m0${String(i).padStart(2, "0")}`.padEnd(64, "a") },
   ]),
