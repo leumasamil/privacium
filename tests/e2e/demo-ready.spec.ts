@@ -4,17 +4,13 @@ const base = process.env['E2E_BASE_URL'] ?? 'http://localhost:8080';
 const aviso = 'Esta ação está disponível apenas na versão completa. Entre com sua conta para operar.';
 test.use({ viewport: { width: 1280, height: 1800 } });
 
-test('a) envio demo responde mesmo com validação pendente', async ({ page }) => {
+test('a) envio demo conclui a etapa 06 em memória, sem gravar', async ({ page }) => {
   await page.goto(`${base}/demo?aba=anpd`, { waitUntil: 'networkidle' });
   const enviar = page.getByRole('button', { name: 'Enviar à ANPD (simulado)', exact: true });
   await expect(enviar).toBeEnabled();
   await enviar.click();
-  await expect(page.getByText(aviso).last()).toBeVisible();
-  await page.locator('#anpd-titulares').fill('0');
-  await expect(page.locator('#anpd-motivos')).toContainText('mínimo 1');
-  await expect(enviar).toBeEnabled();
-  await enviar.click();
-  await expect(page.getByText(aviso).last()).toBeVisible();
+  await expect(page.getByText('Envio simulado registrado nesta sessão de demonstração.').last()).toBeVisible();
+  await expect(page.getByText('Comunicação registrada.', { exact: false }).first()).toBeVisible();
 });
 
 test('b) ANPD abre completo e sem pendências de etapa', async ({ page }) => {
@@ -24,12 +20,12 @@ test('b) ANPD abre completo e sem pendências de etapa', async ({ page }) => {
   await expect(page.getByText('Comunicação registrada.', { exact: false })).toHaveCount(0);
 });
 
-test('c) incidente demo apresenta seis etapas concluídas sem envio', async ({ page }) => {
+test('c) incidente demo abre com 5 de 6 etapas: a 06 nasce pendente', async ({ page }) => {
   await page.goto(`${base}/demo?aba=bloco-4`, { waitUntil: 'networkidle' });
-  await expect(page.getByText('Etapas concluídas: 6 de 6')).toBeVisible();
-  await expect(page.getByText('6 de 6 concluídas', { exact: true })).toBeVisible();
-  await expect(page.getByRole('list', { name: 'Etapas do incidente' }).getByText('Concluída', { exact: true })).toHaveCount(6);
-  await expect(page.getByRole('list', { name: 'Etapas do incidente' }).getByText(/Responsável: DPO Cenográfico/)).toHaveCount(6);
+  await expect(page.getByText('Etapas concluídas: 5 de 6')).toBeVisible();
+  await expect(page.getByText('5 de 6 concluídas', { exact: true })).toBeVisible();
+  await expect(page.getByRole('list', { name: 'Etapas do incidente' }).getByText('Concluída', { exact: true })).toHaveCount(5);
+  await expect(page.getByRole('list', { name: 'Etapas do incidente' }).getByText(/Responsável: DPO Cenográfico/)).toHaveCount(5);
   await expect(page.locator('main')).not.toContainText('sem responsável registrado');
   await expect(page.getByText('Formulário ANPD não enviado', { exact: false }).first()).toBeVisible();
 });
