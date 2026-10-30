@@ -260,6 +260,13 @@
       "when": 1793380468189,
       "tag": "0036_assinaturas_etapas_rot",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793380651608,
+      "tag": "0037_corrigir_auditoria_assinatura_rot",
+      "breakpoints": true
     }
   ]
 }
