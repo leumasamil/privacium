@@ -9,7 +9,7 @@ import { DEMO_TERCEIROS } from "@/lib/priva/demo";
 import { usePriva } from "@/lib/priva/store";
 import {
   ALERTA_TERCEIRO_SEM_CONTRATO, CHECKLIST_ART39, FONTE_LGPD_PLANALTO, HIPOTESES_ART33, LITERAL_ART33_CAPUT, LITERAL_ART39, LITERAL_ART5_VII, LITERAL_ART5_X,
-  NOTA_SUBOPERADOR, PAPEIS_CADEIA, ROTULO_CADEIA, checklistCompleto, terceiroBloqueado, validarTerceiro, type ChecklistArt39, type PapelCadeia,
+  NOTA_SUBOPERADOR, CITACAO_ART42_P1_I, TITULO_CHECKLIST, NOTA_CHECKLIST, PAPEIS_CADEIA, ROTULO_CADEIA, checklistCompleto, terceiroBloqueado, validarTerceiro, type ChecklistArt39, type PapelCadeia,
 } from "@/lib/priva/terceiros";
 import { Panel, Tag } from "./ui";
 import { Button } from "@/components/ui/button";
@@ -118,7 +118,7 @@ export function TerceirosEmpresa() {
               </span>
               {terceiroBloqueado(t)
                 ? <span className="flex items-center gap-1 text-xs font-semibold text-destructive"><AlertTriangle className="h-3 w-3" /> {ALERTA_TERCEIRO_SEM_CONTRATO}</span>
-                : <Tag tone="success">Contrato vigente · checklist art. 39 completo</Tag>}
+                : <Tag tone="success">Contrato vigente · checklist de cláusulas do método completo</Tag>}
               {canEdit && <button aria-label={`Desativar ${t.razao_social}`} className="ml-auto text-muted-foreground hover:text-destructive" onClick={() => void desativar(t)}><Trash2 className="h-4 w-4" /></button>}
             </li>
           );
@@ -146,13 +146,13 @@ export function TerceirosEmpresa() {
                     <option value="">Selecione…</option>
                     {operadores.map((o) => <option key={o.id} value={o.id}>{o.razao_social}</option>)}
                   </select>
-                  <p className="text-[11px] text-muted-foreground">{NOTA_SUBOPERADOR}</p>
+                  <p className="text-[11px] text-muted-foreground" data-testid="nota-suboperador">{NOTA_SUBOPERADOR} {CITACAO_ART42_P1_I} Fonte: {FONTE_LGPD_PLANALTO}</p>
                 </div>
               )}
               <Label className="flex items-center gap-3"><Checkbox checked={edit.contrato_vigente} onCheckedChange={(v) => setEdit({ ...edit, contrato_vigente: v === true })} /> Contrato vigente</Label>
               <div className="space-y-1"><Label>Data do contrato</Label><Input type="date" value={edit.data_contrato ?? ""} onChange={(e) => setEdit({ ...edit, data_contrato: e.target.value || null })} /></div>
               <fieldset className="rounded-sm border p-3 md:col-span-2" data-testid="checklist-art39">
-                <legend className="px-1 text-xs font-semibold">Checklist do instrumento escrito — art. 39 (instruções do controlador) · {checklistCompleto(edit.checklist_art39) ? "completo" : "incompleto"}</legend>
+                <legend className="px-1 text-xs font-semibold">{TITULO_CHECKLIST} · {checklistCompleto(edit.checklist_art39) ? "completo" : "incompleto"}</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {CHECKLIST_ART39.map(([k, rot]) => (
                     <Label key={k} className="flex items-center gap-2 text-xs font-normal">
@@ -160,7 +160,7 @@ export function TerceirosEmpresa() {
                     </Label>
                   ))}
                 </div>
-                <p className="mt-2 text-[11px] text-muted-foreground">Itens do método. O texto legal do art. 39 é: "{LITERAL_ART39}"</p>
+                <p className="mt-2 text-[11px] text-muted-foreground">{NOTA_CHECKLIST} Texto oficial do art. 39: "{LITERAL_ART39}"</p>
               </fieldset>
               <Label className="flex items-center gap-3 md:col-span-2"><Checkbox checked={edit.transferencia_internacional} onCheckedChange={(v) => setEdit({ ...edit, transferencia_internacional: v === true, hipotese_art33: v === true ? edit.hipotese_art33 : null })} /> Há transferência internacional de dados pessoais</Label>
               {edit.transferencia_internacional && (

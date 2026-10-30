@@ -220,7 +220,7 @@ export function Bloco2() {
         semDestino > 0 ? `${semDestino} processo(s) sem destino declarado: a Etapa 2 (compartilhamento com destinatário identificado ou eliminação com prazo e fundamento — LGPD art. 16) é obrigatória para chancelar o PI-02.` : "",
         semProduto > 0 ? `${semProduto} processo(s) com Processar sem PRT declarado — art. 6º, I não comprovado; a chancela do PI-02 fica bloqueada neste estado.` : "",
         semDestinoPRT > 0 ? `${semDestinoPRT} processo(s) com PRT sem destino declarado — art. 16 não comprovado; todo PRT precisa de destino individual na Etapa 2.` : "",
-        externosBloqueados > 0 ? `${externosBloqueados} processo(s) com PRT destinado a terceiro sem contrato com cláusulas do art. 39 — compartilhamento externo não pode ser chancelado.` : "",
+        externosBloqueados > 0 ? `${externosBloqueados} processo(s) com PRT destinado a terceiro sem contrato vigente com o checklist de cláusulas contratuais do método — compartilhamento externo não pode ser chancelado.` : "",
       ].filter(Boolean).join(" ")}>
         <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico{semDestino > 0 ? `, ${semDestino} sem destino declarado (Etapa 2)` : ""}{semProduto > 0 ? `, ${semProduto} sem PRT declarado (art. 6º, I)` : ""}{semDestinoPRT > 0 ? `, ${semDestinoPRT} com PRT sem destino` : ""}.</p>
         <p className="mt-2"><b>Ciclo de vida do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO} {NOTA_METODO_CICLO}</p>
@@ -270,7 +270,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
   const risk = isRisky(f);
   const sensitive = hasSensivel(f);
   const operador = f.papel_agente === "OPERADOR";
-  const dicas = [...sugerir(f), ...sugerirProduto(f)].filter((d) => !(operador && d.patch.finalidade_especifica));
+  const dicas = [...sugerir(f), ...sugerirProduto(f)].filter((d) => !d.patch.finalidade_especifica);
   const coerencia = alertasCoerencia(f);
   const retencao = alertaRetencao(cicloDaLinha(f));
   const erro = validateRot(f);
@@ -377,7 +377,14 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
               {alertaFinalidadeOperador(f) && <p role="alert" data-testid="alerta-finalidade-operador" className="flex items-center gap-1 text-xs font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> {ALERTA_FINALIDADE_OPERADOR}</p>}
             </Field>
           ) : (
-            <Field label="6. Finalidade Específica" wide><Textarea value={f.finalidade_especifica} onChange={(e) => up({ finalidade_especifica: e.target.value })} /></Field>
+            <Field label="6. Finalidade Específica" wide>
+              <Textarea value={f.finalidade_especifica} onChange={(e) => up({ finalidade_especifica: e.target.value })} />
+              {(() => { const sug = sugestaoFinalidade(f); return sug && f.finalidade_especifica.trim() !== sug.finalidade && !f.finalidade_especifica.trim() ? (
+                <Button type="button" size="sm" variant="outline" data-testid="sugestao-finalidade" className="h-auto whitespace-normal py-1 text-left text-xs" onClick={() => up({ finalidade_especifica: sug.finalidade })}><span><b>Sugerido — confirme:</b> {sug.finalidade}<span className="block text-[10px] text-muted-foreground">Origem: {sug.origem}</span></span></Button>) : null; })()}
+              {(() => { const eq = finalidadeEquivalente(f); return eq ? (
+                <p data-testid="finalidade-equivalente" className="flex flex-wrap items-center gap-2 text-xs text-warning-foreground"><AlertTriangle className="h-3 w-3" /> Existe finalidade padronizada equivalente: '{eq}'. Usar a padronizada? <Button type="button" size="sm" variant="outline" className="h-6 text-xs" onClick={() => up({ finalidade_especifica: eq })}>Usar a padronizada</Button></p>) : null; })()}
+              <p className="text-[10px] text-muted-foreground">LGPD art. 6º, I: "{LITERAL_ART6_I}". Fonte: {FONTE_LGPD}</p>
+            </Field>
           )}
           <Field label="7A. Hipótese de Tratamento — art. 7º (dado pessoal, art. 5º, I)" wide>
             <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.hipotese_tratamento} onChange={(e) => up({ hipotese_tratamento: e.target.value })}>
