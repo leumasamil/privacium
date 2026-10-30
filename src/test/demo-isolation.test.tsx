@@ -1,7 +1,7 @@
 import { render, screen, act } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { PrivaProvider, usePriva, isUnlocked } from '@/lib/priva/store';
-import { DEMO_CNPJ, DEMO_ROT, DEMO_ROWS, DEMO_PUBLIC_SIGNATURES, carregarEstadoIncidenteDemo } from '@/lib/priva/demo';
+import { DEMO_CNPJ, DEMO_ROT, DEMO_ROWS, DEMO_PUBLIC_SIGNATURES, DEMO_TRILHA_SEED, DEMO_AGORA, DEMO_AGORA_ISO, aplicarSessaoDemo, carregarEstadoIncidenteDemo, type DemoSessao } from '@/lib/priva/demo';
 import { carregarEstadoIncidente } from '@/lib/priva/estadoIncidente';
 import { isLoginSessionEvent, safeAuthPath } from '@/lib/priva/authNavigation';
 import { assinaturasVigentes } from '@/lib/priva/ciclo';
@@ -83,7 +83,7 @@ describe('regras da demonstração pública', () => {
     expect(safeAuthPath('/bloco-2#rot')).toBe('/bloco-2#rot');
   });
   it('assinaturas nulas ou arrays não liberam blocos', () => {
-    for (const value of [null, undefined, []]) expect(assinaturasVigente(value as never, new Date('2026-10-30'))).toEqual({});
+    for (const value of [null, undefined, []]) expect(assinaturasVigentes(value as never, new Date('2026-10-30'))).toEqual({});
   });
 });
 
