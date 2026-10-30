@@ -45,6 +45,11 @@ export function temEtapa2(c: CicloVida): boolean {
   return generosMarcados(c).some((g) => ETAPA2.includes(g));
 }
 
+/** Há "Processar" na Etapa 1 — exige produto interno declarado (LGPD art. 6º, I). */
+export function temProcessar(c: CicloVida): boolean {
+  return generosMarcados(c).includes("Processar");
+}
+
 /** Ciclo agrupado por etapa para exibição na planilha (Etapa 1 = perímetro; Etapa 2 = destino). */
 export function formatarCicloEtapas(c: CicloVida): { e1: string; e2: string } {
   const fmt = (gs: readonly Genero[]) =>
