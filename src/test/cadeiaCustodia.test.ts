@@ -33,8 +33,8 @@ describe("cadeia de custódia", () => {
     expect(t.status.tipo === "ROMPE" && t.status.motivo).toBe("origem excluída antes da migração 0044 — data e motivo não recuperáveis");
   });
   it("destino Interno sem linha receptora mostra Etapa 1 receptor ausente; Externo mostra não se aplica", () => {
-    expect(rotuloEtapa1Receptor(achar("Ficha cadastral").arestas[0])).toBe("ausente");
-    expect(rotuloEtapa1Receptor(achar("Demonstrativo de pagamento").arestas[0])).toBe("não se aplica");
+    expect(rotuloEtapa1Receptor(achar("Ficha cadastral").arestas[0]!)).toBe("ausente");
+    expect(rotuloEtapa1Receptor(achar("Demonstrativo de pagamento").arestas[0]!)).toBe("não se aplica");
   });
   it("compartilhar o mesmo PRT de novo com o mesmo setor vincula à linha existente", () => {
     expect(receptoraExistente(DEMO_ROT, "demo-rot-1", "Financeiro › Contas a Pagar", "Relatório de folha consolidado")?.codigo).toBe("PRIVA-FIN-001");

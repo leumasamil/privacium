@@ -217,7 +217,7 @@ export function Bloco2() {
                       {canEdit && <>
                         <button aria-label="Editar" className="mr-2" onClick={() => {
                           if (demo) return avisarAcaoDemo();
-                          const { id, codigo: _c, criado_por: _p, criado_em: _e, atualizado_em: _a, ...form } = r;
+                          const { id, codigo: _c, criado_por: _p, criado_em: _e, atualizado_em: _a, excluido_em: _x, excluido_por: _xp, motivo_exclusao: _xm, ...form } = r;
                           setEdit({ id, form: normalizeHipoteses(form) });
                         }}><Pencil className="h-3 w-3 text-muted-foreground" /></button>
                         <button aria-label="Excluir" onClick={() => void remove(r)}><Trash2 className="h-3 w-3 text-muted-foreground" /></button>
