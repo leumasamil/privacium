@@ -20,7 +20,7 @@ describe('Medidas ANPD Parte 3', () => {
   });
   it('não presume comunicação à ANPD a partir da etapa 6', () => expect(sugerirMedidas([{ numero: 6, concluida: true }])).toEqual([]));
   it('gera frase separada por ponto e vírgula e inclui complemento opcional', () => {
-    expect(textoMedidas(['Isolamento dos endpoints afetados da rede', 'Restauração a partir de backup íntegro'], 'Verificação adicional.')).toBe('Isolamento dos endpoints afetados da rede; Restauração a partir de backup íntegro; Verificação adicional. Fontes: CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação); CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação).');
+    expect(textoMedidas(['Isolamento dos endpoints afetados da rede', 'Restauração a partir de backup íntegro'], 'Verificação adicional.')).toBe('Isolamento dos endpoints afetados da rede; Restauração a partir de backup íntegro; Verificação adicional. Fontes: CIS Controls v8 / ISO/IEC 27002:2022 (controles em verificação).');
     expect(textoMedidas([])).toBe('');
   });
   it('salva somente decisão final com fonte e ignora texto adulterado', () => {
