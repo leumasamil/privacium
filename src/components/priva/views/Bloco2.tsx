@@ -8,10 +8,10 @@ import { AlertTriangle, BookOpen, Lightbulb, Pencil, Plus, Trash2 } from "lucide
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AREAS_SETORES, ROTULO_AREA_SETOR, areaSetorCompleto, chaveDaArea, exibirAreaSetor } from "@/lib/priva/areasSetores";
-import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, ETAPA1, ETAPA2, NOTA_CICLO, NOTA_ETAPA2_COMPARTILHAR, NOTA_ETAPA2_ELIMINAR, NOTA_METODO_CICLO, NOTA_RESPONSAVEL_ETAPAS, ROTULO_ETAPA1, ROTULO_ETAPA2, alertaRetencao, alternar, cicloDaLinha, citacoesISO, destinoDeclarado, formatarCiclo, formatarCicloEtapas, generosMarcados, type CicloVida, type Genero } from "@/lib/priva/cicloVida";
+import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, ETAPA1, ETAPA2, NOTA_CICLO, NOTA_ETAPA2_COMPARTILHAR, NOTA_ETAPA2_ELIMINAR, NOTA_METODO_CICLO, NOTA_RESPONSAVEL_ETAPAS, ROTULO_ETAPA1, ROTULO_ETAPA2, alertaRetencao, alternar, cicloDaLinha, citacoesISO, destinoDeclarado, formatarCiclo, formatarCicloEtapas, generosMarcados, temEtapa2, type CicloVida, type Genero } from "@/lib/priva/cicloVida";
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { citacaoSimplificada } from '@/lib/priva/enquadramento';
-import { DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, MEIOS, SALVAGUARDAS, SENSIVEIS, TITULARES, alertasCoerencia, hasSensivel, isRisky, normalizeHipoteses, sugerir, validateRot, type RotInput, type RotRow } from "@/lib/priva/rot";
+import { ALERTA_FINALIDADE_OPERADOR, ALERTA_PRODUTO_AUSENTE, DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, LITERAL_ART5_VI, LITERAL_ART5_VII, MEIOS, NOTA_DESTINO_OPERADOR, NOTA_PRODUTO, PAPEIS_AGENTE, ROTULO_PAPEL, SALVAGUARDAS, SENSIVEIS, TITULARES, alertaFinalidadeOperador, alertaProdutoAusente, alertasCoerencia, finalidadeDoContrato, hasSensivel, isRisky, montarLinhaReceptora, normalizeHipoteses, sugerir, sugerirProduto, validateRot, type DestinoProduto, type OrigemCompartilhamento, type PapelAgente, type RotInput, type RotRow } from "@/lib/priva/rot";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ROT } from "@/lib/priva/demo";
 import { responsavelDaArea, useMembros } from "@/components/priva/MembrosEmpresa";
@@ -26,18 +26,21 @@ import { BadgeFornecedorROT } from '@/components/priva/AlertaFornecedorVazado';
 
 
 
-const HEADS = ["ID Processo", "Área › Setor", "Ciclo de vida (gênero × espécie)", "Categoria de Titulares", "Dado pessoal", "Dado pessoal sensível", "Finalidade Específica",
+const HEADS = ["ID Processo", "Área › Setor", "Papel do agente", "Ciclo de vida (gênero × espécie)", "Categoria de Titulares", "Dado pessoal", "Dado pessoal sensível", "Finalidade Específica",
   "7A. Hipótese art. 7º (dado pessoal)", "7B. Hipótese art. 11 (dado pessoal sensível)", "Tempo de Retenção", "Base do Prazo", "Comunicação e transferência / Destinatários",
-  "Insumo (documento de entrada)", "Meio de fornecimento", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
+  "Insumo (documento de entrada)", "Produto interno gerado", "Meio de fornecimento", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
 
-const empty = (cnpj: string): RotInput => ({
+const empty = (cnpj: string, papel: PapelAgente = "CONTROLADOR"): RotInput => ({
   empresa_cnpj: cnpj, setor: "RH", genero_verbo: "Coletar", ciclo_vida: {}, categoria_titulares: [], dados_pessoais: [], dados_sensiveis: ["N/A"],
   finalidade_especifica: "", hipotese_tratamento: "", hipotese_sensivel: null, tempo_retencao: "", base_prazo: "", compartilhamento: "Não Compartilhado",
   salvaguardas: [], infraestrutura: "Servidor Local", justificativa_mitigacao: null, area_setor: null, insumo: null, meio_fornecimento: null,
+  papel_agente: papel, contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null,
 });
 
 export function Bloco2() {
   const { cnpj, log, roles, demo } = usePriva();
+  const enq = useEnquadramento();
+  const papelPadrao = ((enq.declaracao?.criterios as { papelAgente?: PapelAgente } | null)?.papelAgente) ?? "CONTROLADOR";
   const qc = useQueryClient();
   const canEdit = (roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA"));
   const key = ["registro_operacoes", cnpj] as const;
