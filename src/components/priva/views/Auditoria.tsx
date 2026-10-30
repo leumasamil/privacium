@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePriva } from "@/lib/priva/store";
 import { maskCNPJ, maskCPF, maskEmail } from "@/lib/priva/data";
 import { PageHeader, Panel, Tag } from "@/components/priva/ui";
+import { CitacaoNormativa } from "@/components/priva/CitacaoNormativa";
 import { Button } from "@/components/ui/button";
 
 
@@ -101,6 +102,9 @@ export function Auditoria() {
       <PageHeader eyebrow={`Visual Law · CNPJ ${cnpj ? maskCNPJ(cnpj) : ""}`} title="Painel de Auditoria e Evidências Civis">
         Cada ação feita dentro da sua empresa fica registrada com horário, responsável e uma assinatura digital (hash SHA-256) que comprova que o registro não foi alterado. Logs de outras empresas são bloqueados pelo servidor.
       </PageHeader>
+      <p className="text-xs text-muted-foreground" data-testid="mci-art10">
+        <CitacaoNormativa citacao="MCI art. 10" /> — guarda e disponibilização de registros de acesso, em ambiente controlado e de segurança. Prazo de retenção vigente: <strong>6 meses</strong>.
+      </p>
       <Panel title={`Linha do tempo de evidências · ${rows.length} eventos`} action={action}>
         <ol className="relative space-y-3 border-l-2 border-primary/30 pl-6">
           {rows.map((l) => (

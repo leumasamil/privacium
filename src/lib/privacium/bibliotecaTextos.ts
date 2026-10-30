@@ -142,3 +142,108 @@ export function textoCompleto(t: TextoModelo): string {
 export function enveloparModelo(corpo: string, pi: string, fonte: string): string {
   return textoCompleto({ id: "politica-ia", titulo: "", corpo, fonte, pi });
 }
+
+/* ------------------------------------------------------------------ */
+/* Módulo Lei de IA — ressalva de escopo e classificação determinística */
+/* ------------------------------------------------------------------ */
+
+/** Ressalva obrigatória do módulo de IA: o regime legal brasileiro está em consolidação. */
+export const ROTULO_ESCOPO_IA =
+  "Avaliação preventiva de conformidade. O regime legal de IA no Brasil está em consolidação — este módulo não substitui parecer jurídico.";
+
+/** O PL 2338 é projeto em tramitação, nunca obrigação vigente. */
+export const PL_2338_RESSALVA =
+  "PL 2338/2023 — projeto de lei em tramitação no Congresso Nacional; ainda não é lei vigente.";
+
+export type NivelRiscoIA = "Risco Excessivo" | "Alto Risco" | "Risco Limitado" | "Risco Mínimo";
+export const NIVEIS_RISCO_IA: NivelRiscoIA[] = ["Risco Excessivo", "Alto Risco", "Risco Limitado", "Risco Mínimo"];
+
+export interface ClassificacaoIA {
+  nivel: NivelRiscoIA;
+  /** Critérios que geraram o nível, exibidos em "Derivado de:". */
+  derivadoDe: string[];
+}
+
+/**
+ * Classificação determinística a partir das respostas do RIPO:
+ * - Risco Excessivo: uso de IA sobre dados pessoais sensíveis (saúde/rastreamento ativos);
+ * - Alto Risco: decisão exclusivamente automatizada sobre pessoa natural (LGPD art. 20);
+ * - Risco Limitado: dados pessoais tratados com apoio de IA, sem decisão automatizada;
+ * - Risco Mínimo: nenhuma das condições acima.
+ */
+export function classificarRiscoIA(r: {
+  saud_tracking: boolean;
+  sens_ai: boolean;
+  decisao_automatizada: boolean;
+  pessoais: boolean;
+}): ClassificacaoIA {
+  if (r.sens_ai) {
+    return {
+      nivel: "Risco Excessivo",
+      derivadoDe: [
+        "RIPO: uso de IA sobre dados pessoais sensíveis (saúde / rastreamento)",
+        "Setor declarado com categorias de dados pessoais sensíveis ativas",
+      ],
+    };
+  }
+  if (r.decisao_automatizada) {
+    return {
+      nivel: "Alto Risco",
+      derivadoDe: ["RIPO: decisão exclusivamente automatizada sobre pessoa natural (LGPD art. 20)"],
+    };
+  }
+  if (r.pessoais) {
+    return {
+      nivel: "Risco Limitado",
+      derivadoDe: ["RIPO: tratamento de dados pessoais com apoio de IA, sem decisão automatizada"],
+    };
+  }
+  return { nivel: "Risco Mínimo", derivadoDe: ["RIPO: nenhuma categoria de risco de IA ativa"] };
+}
+
+/* ---------------- Avaliação de Impacto Algorítmico (AIA) ---------------- */
+
+export interface DimensaoAIA { id: string; titulo: string; pergunta: string; }
+export const DIMENSOES_AIA: DimensaoAIA[] = [
+  { id: "autonomia", titulo: "Autonomia da decisão", pergunta: "O sistema decide sozinho ou apenas apoia uma decisão humana?" },
+  { id: "afetados", titulo: "Categorias de afetados", pergunta: "Quais grupos de titulares são afetados pelas decisões do sistema?" },
+  { id: "revisao", titulo: "Revisão humana (LGPD art. 20)", pergunta: "Existe canal para o titular pedir revisão de decisão automatizada?" },
+  { id: "mitigacao", titulo: "Medidas de mitigação específicas de IA", pergunta: "Quais controles reduzem vieses, erros e usos indevidos do modelo?" },
+];
+
+/** Respostas determinísticas da AIA, sugeridas a partir do RIPO quando os dados existem. */
+export function respostasAIA(r: {
+  decisao_automatizada: boolean;
+  sens_ai: boolean;
+  pessoais: boolean;
+}): Record<string, { resposta: string; sugerida: boolean }> {
+  const sugerida = r.pessoais || r.sens_ai || r.decisao_automatizada;
+  return {
+    autonomia: {
+      resposta: r.decisao_automatizada
+        ? "Decisão exclusivamente automatizada identificada no RIPO — exige revisão humana e canal de contestação (LGPD art. 20)."
+        : "Sistema de apoio à decisão humana; nenhuma decisão exclusivamente automatizada declarada no RIPO.",
+      sugerida,
+    },
+    afetados: {
+      resposta: r.sens_ai
+        ? "Titulares de dados pessoais sensíveis (saúde / rastreamento), conforme categorias ativas no RIPO."
+        : r.pessoais
+          ? "Titulares de dados pessoais comuns declarados no RIPO."
+          : "Nenhuma categoria de afetados declarada no RIPO.",
+      sugerida,
+    },
+    revisao: {
+      resposta: r.decisao_automatizada
+        ? "Canal de revisão humana obrigatório (LGPD art. 20): registrar no ROT e no canal de titulares."
+        : "Revisão humana recomendada como boa prática, mesmo sem decisão automatizada.",
+      sugerida,
+    },
+    mitigacao: {
+      resposta: r.sens_ai
+        ? "Mitigações reforçadas: testes de viés, minimização de dados pessoais sensíveis e supervisão humana contínua."
+        : "Mitigações padrão: validação periódica do modelo, registro de versões e higienização de entradas (Escudo Digital).",
+      sugerida,
+    },
+  };
+}

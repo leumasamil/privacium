@@ -86,6 +86,21 @@ export const NORMAS: Record<string, Norma> = {
     resumo: "Define o que é incidente de segurança para fins de comunicação: qualquer evento adverso confirmado que afete a confidencialidade, integridade ou disponibilidade de dados pessoais.",
     porque: "É o critério que decide se a sua ocorrência exige comunicação formal à ANPD.",
   },
+  "MCI art. 15": {
+    citacao: "MCI art. 15",
+    resumo: "Guarda de registros de acesso a aplicações, sob sigilo, em ambiente controlado e de segurança, pelo prazo de 6 meses (Lei nº 12.965/2014).",
+    porque: "Por que importa: o pgAudit mensal é a prova de que a guarda existe e é íntegra.",
+  },
+  "MCI art. 10": {
+    citacao: "MCI art. 10",
+    resumo: "Guarda e disponibilização de registros de acesso, em ambiente controlado e de segurança (Lei nº 12.965/2014).",
+    porque: "Fundamenta a trilha de auditoria com cadeia de integridade SHA-256 que esta plataforma mantém.",
+  },
+  "MCI art. 7º, VIII": {
+    citacao: "MCI art. 7º, VIII",
+    resumo: "O usuário tem direito a informações claras e completas sobre coleta, uso, armazenamento e tratamento de seus dados pessoais (Lei nº 12.965/2014).",
+    porque: "O Privacium atende este artigo mantendo o ROT por operação, a trilha de acessos e os documentos de evidência sempre visíveis ao controlador.",
+  },
   "Res. CD/ANPD nº 4/2023": {
     citacao: "Res. CD/ANPD nº 4/2023",
     resumo: "Regulamenta a dosimetria das sanções administrativas da LGPD, incluindo atenuantes por boas práticas e governança comprovadas.",
