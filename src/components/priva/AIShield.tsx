@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Panel, Tag } from "./ui";
+import { CitacaoNormativa } from "./CitacaoNormativa";
+import { EXEMPLOS_ESCUDO, type ExemploEscudo } from "@/lib/privacium/bibliotecaMitigacao";
 import { usePriva } from "@/lib/priva/store";
 
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
@@ -62,7 +64,15 @@ export function AIShield() {
   const [prompt, setPrompt] = useState("");
   const [url, setUrl] = useState("http://localhost:8000/api/v1/shield/execute");
   const [result, setResult] = useState<{ packet: string; raw: string; answer: string; vault: Vault; source: "api" | "mock" } | null>(null);
+  const [exemplo, setExemplo] = useState<ExemploEscudo | null>(null);
   const [busy, setBusy] = useState(false);
+
+  /** Exemplo fixo da biblioteca: preenche o prompt e mostra o antes/depois sem chamar rede. */
+  const verExemplo = (ex: ExemploEscudo) => {
+    setExemplo(ex);
+    setPrompt(ex.prompt);
+    setResult({ packet: JSON.stringify({ provider, user_prompt: ex.higienizado }, null, 2), raw: "", answer: "", vault: [], source: "mock" });
+  };
 
   useEffect(() => { if (!demo) setUrl(localStorage.getItem(URL_KEY) || "http://localhost:8000/api/v1/shield/execute"); }, [demo]);
 
