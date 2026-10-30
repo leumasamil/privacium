@@ -35,16 +35,16 @@ describe('PI-05 · biblioteca determinística', () => {
     const { 'PI-03': _x, ...sem } = DEMO_SIGNATURES;
     expect(sugestaoMitigacao('vazamento', sem)).toEqual({ aviso: 'Conclua o PI-03 para receber a sugestão.' });
   });
-  it('e) riscos do seed: 2×4, 3×4, 3×3 descontam 29 pontos de 60 → 31%', () => {
+  it('e) riscos do seed não declaram pontos percentuais; PIs 01–04 somam 60%', () => {
     const r = IDS.map((id) => derivarRisco(id, DEMO_SIGNATURES));
     expect(r.map((x) => [x.prob, x.imp])).toEqual([[2, 4], [3, 4], [3, 3]]);
-    const m = memoriaDosimetria(DEMO_SIGNATURES, r.map((v, i) => ({ ...v, label: IDS[i] ?? '' })), 100_000);
-    expect(m.descontoResidual).toBe(29);
-    expect(m.reducaoEfetiva).toBe(31);
+    const m = memoriaDosimetria(DEMO_SIGNATURES, r.map((v, i) => ({ label: IDS[i] ?? '' })), 100_000);
+    expect(m.descontoResidual).toBe(0);
+    expect(m.reducaoEfetiva).toBe(60);
   });
   it('sem PIs o risco é 5×5 e a redução é 0%', () => {
     expect(derivarRisco('vies', {})).toMatchObject({ prob: 5, imp: 5 });
-    expect(memoriaDosimetria({}, [{ label: 'Viés', prob: 5, imp: 5 }], 100_000).reducaoEfetiva).toBe(0);
+    expect(memoriaDosimetria({}, [{ label: 'Viés' }], 100_000).reducaoEfetiva).toBe(0);
   });
   it('h) demonstração pública sem PI-04: Bloco 5 continua bloqueado', () => {
     expect(isUnlocked(DEMO_PUBLIC_SIGNATURES, 5)).toBe(false);
@@ -57,13 +57,13 @@ describe('PI-05 · tela', () => {
     ctx.signatures = DEMO_SIGNATURES; ctx.log.mockClear();
     await renderBloco5();
     for (const id of IDS) expect(screen.getByTestId(`rotulo-${id}`).textContent).toMatch(/^Sugerido a partir do PI-0/);
-    expect(screen.getByTestId('reducao').textContent).toBe('−31%');
+    expect(screen.getByTestId('reducao').textContent).toBe('−60%');
     fireEvent.change(screen.getByLabelText('Medidas de mitigação · Injeção de prompts'), { target: { value: 'Texto revisado pelo DPO com mais detalhes.' } });
     expect(screen.getByTestId('rotulo-injecao').textContent).toBe('Revisado manualmente pelo DPO');
     expect(ctx.log).toHaveBeenCalledWith('UPDATE', 'ripd_ia', expect.stringContaining('revisada manualmente pelo DPO'));
     fireEvent.change(screen.getByLabelText('Probabilidade · Vazamento por prompts'), { target: { value: '5' } });
-    // vazamento 5×4=20: 60 − (20 + 12 + 9) = 19
-    expect(screen.getByTestId('reducao').textContent).toBe('−19%');
+    // Alterar o escore não inventa pontos percentuais de desconto.
+    expect(screen.getByTestId('reducao').textContent).toBe('−60%');
     expect(screen.getByTestId('resp-sig-dpo').textContent).toContain('Aguardando assinatura de DPO_OPERACIONAL · DPO Cenográfico');
     expect(screen.getByTestId('resp-sig-dir').textContent).toContain('Aguardando assinatura de C_SUITE (Diretoria) · Diretoria Cenográfica');
     expect(database.from).not.toHaveBeenCalled(); expect(database.rpc).not.toHaveBeenCalled();

@@ -54,8 +54,8 @@ test('a-i) circuito completo: envio → encerramento → chancela PI-04 → Bloc
   await expect(page.locator('[data-testid="rotulo-desc-vazamento"]')).toContainText('Sugerido a partir do PI-0');
   await expect(page.locator('[data-testid="rotulo-vazamento"]')).toContainText('Sugerido a partir do PI-0');
   await expect(page.locator('[data-testid="derivado-vazamento"]')).toContainText('risco inerente 5×5 = 25');
-  await expect(page.locator('[data-testid="calculo-reducao"]')).toContainText('PI-01+PI-02: +20% | PI-03: +20% | PI-04: +20% | PI-05: +0% | Subtotal: 60%');
-  await expect(page.locator('[data-testid="calculo-reducao"]')).toContainText('= Redução efetiva: 31%');
+  await expect(page.locator('[data-testid="calculo-reducao"]')).toContainText('PI-01+02: +20% | PI-03: +20% | PI-04: +20% | PI-05: +0% | Subtotal: 60%');
+  await expect(page.locator('[data-testid="calculo-reducao"]')).toContainText('= Redução efetiva: 60%');
   await expect(page.locator('[data-testid="reducao"]')).toBeVisible();
 
   // h) Trilho Core: contador cresceu com as ações da sessão e os hashes estão visíveis.
