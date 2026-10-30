@@ -99,6 +99,23 @@ export function Bloco5() {
   const pendSig = pendencias.filter((p) => p.id.startsWith("sig"));
   const tone = (n: number): "destructive" | "warning" | "success" => (n >= 15 ? "destructive" : n >= 8 ? "warning" : "success");
 
+  /* ---- Módulo Lei de IA: classificação determinística a partir do RIPO ---- */
+  const sensivelNoRot = rotRows.rows.some((r) => !!(r as { hipotese_sensivel?: string | null }).hipotese_sensivel);
+  const viesEfetivo = efetivos.find((e) => e.id === "vies")!;
+  const decisaoAuto = viesEfetivo.descricao.trim().length > 0 && viesEfetivo.mitig.trim().length > 0;
+  const entradaIA = { saud_tracking: sensivelNoRot, sens_ai: sensivelNoRot && decisaoAuto, decisao_automatizada: decisaoAuto, pessoais: sistema.trim().length > 2 };
+  const derivadaIA = classificarRiscoIA(entradaIA);
+  const nivelIA = overrideIA ?? derivadaIA.nivel;
+  const aia = respostasAIA(entradaIA);
+  const sobrescreverIA = (n: NivelRiscoIA) => {
+    setOverrideIA(n);
+    const detalhe = `Classificação de risco de IA sobrescrita pelo DPO: ${derivadaIA.nivel} → ${n}`;
+    if (demo) demoRegistrarEvento(detalhe); else log("UPDATE", "ripd_ia", detalhe);
+    toast.success("Classificação sobrescrita e registrada na trilha.");
+  };
+  const PROVEDORES = ["OpenAI", "Anthropic", "Google", "Meta", "Mistral", "Microsoft", "Azure", "AWS"];
+  const provedorIA = PROVEDORES.find((p) => `${sistema} ${escudo}`.toLowerCase().includes(p.toLowerCase())) ?? "Não declarado";
+
   const finalizar = async () => {
     if (demo) return avisarAcaoDemo();
     setBusy(true);
