@@ -116,7 +116,7 @@ export function Pendencias() {
                 </div>
                 <Tag tone={TOM[p.estado]}>{ROTULO[p.estado]}</Tag>
                 <Tag tone={bloqueante(p) ? "destructive" : "muted"}>{bloqueante(p) ? "Bloqueante" : "Normal"}</Tag>
-                <AppLink to={d.to} hash={d.hash} className="flex items-center gap-1 text-xs text-primary hover:underline" data-testid={`atalho-${p.id}`}>
+                <AppLink to={d.to} {...(d.hash ? { hash: d.hash } : {})} className="flex items-center gap-1 text-xs text-primary hover:underline" data-testid={`atalho-${p.id}`}>
                   {p.acao} <ArrowRight className="h-3 w-3" />
                 </AppLink>
               </li>
