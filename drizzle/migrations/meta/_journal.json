@@ -309,6 +309,13 @@
       "when": 1793390262730,
       "tag": "0043_dosimetria_legados_metodo_rejeitado_null",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1793391642584,
+      "tag": "0044_rot_exclusao_logica",
+      "breakpoints": true
     }
   ]
 }

@@ -752,6 +752,8 @@ export type Database = {
           dados_sensiveis: string[]
           destino_produto: Json | null
           empresa_cnpj: string
+          excluido_em: string | null
+          excluido_por: string | null
           finalidade_especifica: string
           fundamento_produto: string | null
           genero_verbo: string
@@ -762,6 +764,7 @@ export type Database = {
           insumo: string | null
           justificativa_mitigacao: string | null
           meio_fornecimento: string | null
+          motivo_exclusao: string | null
           origem_compartilhamento: Json | null
           papel_agente: string
           prazo_produto: string | null
@@ -788,6 +791,8 @@ export type Database = {
           dados_sensiveis?: string[]
           destino_produto?: Json | null
           empresa_cnpj: string
+          excluido_em?: string | null
+          excluido_por?: string | null
           finalidade_especifica: string
           fundamento_produto?: string | null
           genero_verbo: string
@@ -798,6 +803,7 @@ export type Database = {
           insumo?: string | null
           justificativa_mitigacao?: string | null
           meio_fornecimento?: string | null
+          motivo_exclusao?: string | null
           origem_compartilhamento?: Json | null
           papel_agente?: string
           prazo_produto?: string | null
@@ -824,6 +830,8 @@ export type Database = {
           dados_sensiveis?: string[]
           destino_produto?: Json | null
           empresa_cnpj?: string
+          excluido_em?: string | null
+          excluido_por?: string | null
           finalidade_especifica?: string
           fundamento_produto?: string | null
           genero_verbo?: string
@@ -834,6 +842,7 @@ export type Database = {
           insumo?: string | null
           justificativa_mitigacao?: string | null
           meio_fornecimento?: string | null
+          motivo_exclusao?: string | null
           origem_compartilhamento?: Json | null
           papel_agente?: string
           prazo_produto?: string | null
@@ -1297,6 +1306,10 @@ export type Database = {
       enviar_comunicacao_anpd: {
         Args: { _form: Json; _incidente: string; _processo: string }
         Returns: string
+      }
+      excluir_linha_rot: {
+        Args: { _motivo: string; _rot_id: string }
+        Returns: Json
       }
       fonte_natureza_anpd: { Args: { _valor: string }; Returns: string }
       has_any_role: { Args: { _user_id: string }; Returns: boolean }
