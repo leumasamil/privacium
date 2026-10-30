@@ -41,10 +41,12 @@ test('e) ANPD preenche seletores e fontes', async ({ page }) => {
   expect(await page.getByRole('checkbox', { checked: true }).count()).toBeGreaterThanOrEqual(7);
   await expect(page.getByText('LGPD art. 5º, I', { exact: false }).first()).toBeVisible();
 });
-test('f) enviar ANPD responde com aviso sem gravação HTTP', async ({ page }) => {
+test('f) enviar ANPD conclui a etapa 06 em memória, sem gravação HTTP', async ({ page }) => {
   const writes: string[] = []; page.on('request', request => { if (['POST','PUT','PATCH','DELETE'].includes(request.method()) && request.url().includes('/rest/v1/')) writes.push(request.url()); });
   await page.goto(`${base}/demo?aba=anpd`, { waitUntil: "networkidle" }); await page.getByRole('button', { name: 'Enviar à ANPD (simulado)' }).click();
-  await expect(page.getByText(aviso)).toBeVisible(); expect(writes).toEqual([]);
+  await expect(page.getByText('Envio simulado registrado nesta sessão de demonstração.')).toBeVisible();
+  await expect(page.getByText('Comunicação registrada.', { exact: false }).first()).toBeVisible();
+  expect(writes).toEqual([]);
 });
 test('g) sair da demonstração retorna ao login', async ({ page }) => {
   await page.goto(`${base}/demo`, { waitUntil: "networkidle" }); await page.getByRole('button', { name: 'Sair do modo demonstração' }).click(); await expect(page).toHaveURL(/\/auth/);
