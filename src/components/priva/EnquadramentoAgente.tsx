@@ -13,7 +13,7 @@ import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 const inicial: CriteriosPorte = { grupoGrande: false, receitaAcimaTeto: false, tipo: 'ME', titulares: 0, infraLimitada: false, descricaoInfra: '', sensivelLargaEscala: false, altoRisco: false, menoresAltoRisco: false };
 const perguntas = [ ['grupoGrande', 'Faz parte de grupo econômico com receita global acima do teto aplicável?'], ['receitaAcimaTeto', 'Receita bruta anual do agente acima do teto aplicável?'], ['infraLimitada', 'Infraestrutura limitada?'], ['sensivelLargaEscala', 'Dado pessoal sensível em larga escala?'], ['altoRisco', 'Tratamento de alto risco (critério geral e específico do art. 4º)?'], ['menoresAltoRisco', 'Dado pessoal de crianças e adolescentes com perfil de risco alto?'] ] as const;
 export function EnquadramentoAgente() {
-  const { cnpj, enterprise, demo, roles, refreshAudit } = usePriva();
+  const { cnpj, enterprise, demo, roles, refreshAudit, demoPorte, setDemoPorte } = usePriva();
   const e = useEnquadramento();
   const [c, setC] = useState<CriteriosPorte>(inicial);
   const [erro, setErro] = useState(''); const [busy, setBusy] = useState(false);
@@ -22,6 +22,7 @@ export function EnquadramentoAgente() {
   const porte = valida.success ? calcularPorte(c) : null;
   const trava = valida.success ? travaPorte(c, enterprise) : null;
   return <Panel id="enquadramento" title="Enquadramento do agente">
+    {demo && <div className="mb-4"><Label htmlFor="cenario-porte">Cenário demonstrativo de enquadramento</Label><select id="cenario-porte" value={demoPorte} onChange={event => setDemoPorte(event.target.value === 'PEQUENO' ? 'PEQUENO' : 'COMPLETO')} className="mt-1 w-full rounded-sm border bg-background p-2 text-sm"><option value="COMPLETO">Médio/grande porte — cenográfico</option><option value="PEQUENO">Pequeno porte — cenográfico</option></select></div>}
     <p className="mb-4 text-xs text-muted-foreground">{FUNDAMENTO_PORTE}. Alto risco: art. 4º. Teto geral de receita: R$ 4.800.000/ano (LC 123/2006, art. 3º, II); startups: R$ 16.000.000/ano (LC 182/2021, art. 4º). S.A. e mais de 10 mil titulares/mês são gatilhos conservadores do método.</p>
     <form className="space-y-4" onSubmit={async event => {
       event.preventDefault(); if (demo) return avisarAcaoDemo();

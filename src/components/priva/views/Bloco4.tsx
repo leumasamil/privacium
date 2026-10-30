@@ -33,7 +33,7 @@ import { PainelNoticiasIncidentes } from '@/components/priva/PainelNoticiasIncid
 import { AlertaFornecedorVazado } from '@/components/priva/AlertaFornecedorVazado';
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { prazoPorPorte } from '@/lib/priva/enquadramento';
-import { DEMO_AGORA, DEMO_INICIO_INCIDENTE } from '@/lib/priva/demo';
+import { DEMO_AGORA, DEMO_ROWS } from '@/lib/priva/demo';
 
 type Lote = Database["public"]["Tables"]["lotes_pgaudit"]["Row"];
 type Incidente = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
@@ -208,7 +208,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
   const ref = ativo ? ativo.id.slice(0, 6) : "";
   const passos = estado?.etapas.itens.map(i => i.concluida) ?? [false, false, false, false, false, false];
   const atual = passos.findIndex((p) => !p);
-  const restante = demo ? restanteANPD(DEMO_INICIO_INCIDENTE, ativo?.enviado_anpd_em ?? null, DEMO_AGORA, dias) : (ativo ? restanteANPD(ativo.iniciado_em, ativo.enviado_anpd_em, now, dias) : dias * 24 * 3600000);
+  const restante = demo ? restanteANPD(DEMO_ROWS.incidentes_seguranca[0]?.iniciado_em ?? '', ativo?.enviado_anpd_em ?? null, DEMO_AGORA, dias) : (ativo ? restanteANPD(ativo.iniciado_em, ativo.enviado_anpd_em, now, dias) : dias * 24 * 3600000);
   const tom = !ativo ? "neutro" : restante === 0 ? "vencido" : restante < 24 * 3600000 ? "atencao" : "andamento";
   const TOM_SLA = {
     neutro: { caixa: "", texto: "text-primary", rotulo: "Nenhum incidente ativo" },
