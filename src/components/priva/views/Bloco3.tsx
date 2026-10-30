@@ -8,9 +8,11 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { AIShield } from "@/components/priva/AIShield";
+import { CitacaoNormativa } from "@/components/priva/CitacaoNormativa";
 import { sha256 } from "@/lib/priva/data";
 import { usePriva } from "@/lib/priva/store";
-import { DEMO_ATIVOS } from "@/lib/priva/demo";
+import { DEMO_ATIVOS, DEMO_ROT } from "@/lib/priva/demo";
+import { estruturaSugerida, padraoHostname } from "@/lib/privacium/bibliotecaMitigacao";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +45,17 @@ export function Bloco3() {
       return data;
     },
   });
+  // Setores do ROT (PI-02) alimentam a sugestão de estrutura de pasta do cofre.
+  const { data: setoresRot = [] } = useQuery({
+    queryKey: ["rot_setores", cnpj, demo],
+    enabled: !!cnpj,
+    queryFn: async (): Promise<string[]> => {
+      if (demo) return DEMO_ROT.map((r) => r.setor);
+      const { data, error } = await supabase.from("registro_operacoes").select("setor").eq("empresa_cnpj", cnpj ?? "");
+      if (error) throw error;
+      return [...new Set(data.map((r) => r.setor))];
+    },
+  });
   useEffect(() => {
     if (!cnpj || demo) return;
     const ch = supabase.channel(`ativos_${cnpj}`)
@@ -72,9 +85,13 @@ export function Bloco3() {
       <PageHeader eyebrow="Bloco 3 · (I) Ciclo Privacium Semestral · Art. 46 LGPD" title="Implementar Salvaguardas Técnicas e Jurídicas" />
       {AJUDA[3] && <AjudaTarefa {...AJUDA[3]} />}
 
+      <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <CitacaoNormativa citacao="LGPD art. 46" />
+        <CitacaoNormativa citacao="ISO/IEC 27701" />
+      </p>
       <div id="ativos" className="grid scroll-mt-6 gap-6 xl:grid-cols-2">
         <BitLockerCard endpoints={endpoints} prot={prot} cnpj={cnpj} canEdit={canEdit} refresh={refresh} remove={remove} />
-        <CryptomatorCard cofres={cofres} cnpj={cnpj} canEdit={canEdit} refresh={refresh} remove={remove} />
+        <CryptomatorCard cofres={cofres} cnpj={cnpj} canEdit={canEdit} refresh={refresh} remove={remove} setoresRot={setoresRot} localizacoes={[...new Set(ativos.map((a) => a.localizacao).filter((l): l is string => !!l))]} />
       </div>
 
       <AIShield />
@@ -93,6 +110,7 @@ export function Bloco3() {
 }
 
 function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { endpoints: Ativo[]; prot: number; cnpj: string; canEdit: boolean; refresh: () => void; remove: (a: Ativo) => void }) {
+  const sugestaoHost = padraoHostname(endpoints.map((a) => a.descricao).filter((d): d is string => !!d));
   const { log, demo } = usePriva();
   const [hw, setHw] = useState("");
   const [host, setHost] = useState("");
@@ -141,7 +159,7 @@ function BitLockerCard({ endpoints, prot, cnpj, canEdit, refresh, remove }: { en
       {canEdit && (
         <div className="mt-3 flex flex-wrap gap-2">
           <Input placeholder="ID do hardware (ex: SN-5CG1234XYZ)" value={hw} onChange={(e) => setHw(e.target.value)} />
-          <Input placeholder="Hostname" value={host} onChange={(e) => setHost(e.target.value)} />
+          <Input placeholder={sugestaoHost ?? "Hostname"} value={host} onChange={(e) => setHost(e.target.value)} />
           <Input aria-label="Responsável pelo endpoint" placeholder="Responsável / fornecedor (opcional)" value={responsavel} onChange={e=>setResponsavel(e.target.value)} />
           <Input aria-label="Localização do endpoint" placeholder="Localização / domínio (opcional)" value={localizacao} onChange={e=>setLocalizacao(e.target.value)} />
           <Button onClick={() => void add()}><Plus className="h-4 w-4" /></Button>
@@ -202,14 +220,16 @@ function ChaveRecuperacao({ ativo }: { ativo: Ativo }) {
   );
 }
 
-function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove }: { cofres: Ativo[]; cnpj: string; canEdit: boolean; refresh: () => void; remove: (a: Ativo) => void }) {
+function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove, setoresRot, localizacoes }: { cofres: Ativo[]; cnpj: string; canEdit: boolean; refresh: () => void; remove: (a: Ativo) => void; setoresRot: string[]; localizacoes: string[] }) {
   const { log, demo } = usePriva();
   const [raiz, setRaiz] = useState("");
   const [provedor, setProvedor] = useState("Google Drive");
   const [estrutura, setEstrutura] = useState("");
+  const [rotuloEstrutura, setRotuloEstrutura] = useState<string | null>(null);
   const [preview, setPreview] = useState("");
   const [responsavel, setResponsavel] = useState('');
   const [localizacao, setLocalizacao] = useState('');
+  const [localizacaoOutra, setLocalizacaoOutra] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -255,9 +275,27 @@ function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove }: { cofres: A
               {["Google Drive", "OneDrive", "Dropbox", "Amazon S3"].map((p) => <option key={p}>{p}</option>)}
             </select>
           </div>
-          <Textarea rows={3} placeholder={"Estrutura da pasta (um caminho por linha)\nholerites/2026-01.pdf\ncontratos/"} value={estrutura} onChange={(e) => setEstrutura(e.target.value)} />
+          <div className="space-y-1">
+            <Textarea rows={4} aria-label="Estrutura da pasta" placeholder={"Estrutura da pasta (um caminho por linha)\nholerites/2026-01.pdf\ncontratos/"} value={estrutura} onChange={(e) => { setEstrutura(e.target.value); setRotuloEstrutura(null); }} />
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => {
+                const s = estruturaSugerida(setoresRot);
+                setEstrutura(s.estrutura);
+                setRotuloEstrutura(`${s.rotulo} · ${s.cenarios.join(", ")}`);
+              }}>Usar estrutura sugerida</Button>
+              {rotuloEstrutura && <span className="text-[11px] text-muted-foreground" data-testid="rotulo-estrutura">{rotuloEstrutura} (editável)</span>}
+            </div>
+          </div>
           <Input aria-label="Responsável pelo cofre" placeholder="Responsável / fornecedor (opcional)" value={responsavel} onChange={e=>setResponsavel(e.target.value)} />
-          <Input aria-label="Localização do cofre" placeholder="Localização / domínio (opcional)" value={localizacao} onChange={e=>setLocalizacao(e.target.value)} />
+          {localizacoes.length > 0 && !localizacaoOutra ? (
+            <select aria-label="Localização do cofre" className="w-full rounded-sm border bg-background px-3 py-2 text-sm" value={localizacao} onChange={(e) => { if (e.target.value === "__outra__") { setLocalizacaoOutra(true); setLocalizacao(""); } else setLocalizacao(e.target.value); }}>
+              <option value="">Localização / domínio (herdar dos ativos cadastrados)</option>
+              {localizacoes.map((l) => <option key={l} value={l}>{l}</option>)}
+              <option value="__outra__">Outra localização…</option>
+            </select>
+          ) : (
+            <Input aria-label="Localização do cofre" placeholder="Localização / domínio (opcional)" value={localizacao} onChange={e=>setLocalizacao(e.target.value)} />
+          )}
           {preview && <p className="break-all font-mono text-[10px] text-muted-foreground">Hash calculado: {preview}</p>}
           <Button onClick={() => void add()} className="w-full"><Plus className="h-4 w-4" /> Catalogar cofre</Button>
         </div>

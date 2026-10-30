@@ -74,3 +74,44 @@ describe('PI-05 · tela', () => {
     expect((screen.getByLabelText('Medidas de mitigação · Vazamento por prompts') as HTMLTextAreaElement).value).toBe('');
   });
 });
+
+describe('Biblioteca A1-A4 · extensões determinísticas', () => {
+  it('A1) descrição contextual sugerida com rótulo e aviso sem PI de origem', async () => {
+    const { sugestaoDescricao } = await import('@/lib/privacium/bibliotecaMitigacao');
+    for (const id of IDS) expect(sugestaoDescricao(id, DEMO_SIGNATURES)).toMatchObject({ rotulo: expect.stringMatching(/^Sugerido a partir do PI-0/), texto: expect.any(String) });
+    const { 'PI-03': _x, ...sem } = DEMO_SIGNATURES;
+    expect(sugestaoDescricao('vazamento', sem)).toEqual({ aviso: 'Conclua o PI-03 para receber a sugestão.' });
+  });
+  it('A2) estrutura de cofre sugerida a partir dos setores do ROT, determinística', async () => {
+    const { estruturaSugerida } = await import('@/lib/privacium/bibliotecaMitigacao');
+    const s = estruturaSugerida(['RH', 'Marketing']);
+    expect(s.rotulo).toBe('Sugerido a partir do ROT (PI-02)');
+    expect(s.estrutura).toContain('holerites/');
+    expect(s.estrutura).toContain('bases-consentidas/');
+    expect(estruturaSugerida(['RH', 'Marketing'])).toEqual(s);
+    expect(estruturaSugerida([]).cenarios).toEqual(['Uso geral']);
+  });
+  it('A3) padrão de hostname vira placeholder de formato, nunca valor inventado', async () => {
+    const { padraoHostname } = await import('@/lib/privacium/bibliotecaMitigacao');
+    expect(padraoHostname(['NB-FIN-01'])).toContain('NB-<SETOR>-NN');
+    expect(padraoHostname([])).toBeNull();
+  });
+  it('A4) quatro exemplos do Escudo com antes/depois fixos e fonte normativa', async () => {
+    const { EXEMPLOS_ESCUDO } = await import('@/lib/privacium/bibliotecaMitigacao');
+    expect(EXEMPLOS_ESCUDO.map((e) => e.id)).toEqual(['cpf', 'email', 'bancario', 'titular']);
+    for (const e of EXEMPLOS_ESCUDO) {
+      expect(e.higienizado).toMatch(/_TOKEN/);
+      expect(e.higienizado).not.toBe(e.prompt);
+      expect(e.fonte.length).toBeGreaterThan(3);
+      expect(e.mascara).toMatch(/\*/);
+    }
+  });
+  it('C) pedagogia normativa: resumo e relevância fixos; desconhecida sem tooltip', async () => {
+    const { buscarNorma } = await import('@/lib/priva/pedagogia');
+    const n = buscarNorma('LGPD art. 5º, I');
+    expect(n?.resumo).toContain('pessoa natural identificada');
+    expect(n?.porque).toContain('ROT');
+    expect(buscarNorma('CIS Control 03')?.resumo).toContain('exfiltração');
+    expect(buscarNorma('Lei Inexistente nº 0/0000')).toBeNull();
+  });
+});

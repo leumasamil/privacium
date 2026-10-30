@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { TETO_REDUCAO, multaComAtenuantes } from "@/lib/priva/dosimetria";
-import { INERENTE, derivarRisco, reducaoPorRiscos, sugestaoMitigacao, type RiscoId } from "@/lib/privacium/bibliotecaMitigacao";
+import { INERENTE, derivarRisco, reducaoPorRiscos, sugestaoDescricao, sugestaoMitigacao, type RiscoId } from "@/lib/privacium/bibliotecaMitigacao";
+import { CitacaoNormativa } from "@/components/priva/CitacaoNormativa";
 import { usePriva } from "@/lib/priva/store";
 import { useCnpjRows } from "@/lib/priva/useCnpjRows";
 import { DEMO_MULTA_BASE } from "@/lib/priva/demo";
@@ -24,7 +25,7 @@ const RISKS: { id: RiscoId; label: string; hint: string }[] = [
   { id: "injecao", label: "Injeção de prompts", hint: "Instruções maliciosas que forçam o modelo a revelar ou alterar dados." },
 ];
 /** prob/imp só valem quando riscoManual; caso contrário derivam dos PIs concluídos. */
-type R = { prob?: number; imp?: number; descricao: string; mitig: string; mitigManual?: boolean; riscoManual?: boolean };
+type R = { prob?: number; imp?: number; descricao: string; mitig: string; descManual?: boolean; mitigManual?: boolean; riscoManual?: boolean };
 const DEF: R = { descricao: "", mitig: "" };
 const ESCUDO_PADRAO = "O Escudo Digital do Bloco 3 tokeniza localmente CPFs, e-mails e nomes ([CPF_TOKEN], [EMAIL_TOKEN], [NOME_TOKEN]) antes do envio a qualquer IA externa e reverte os tokens apenas no navegador do usuário autorizado. Nenhum dado pessoal em claro sai do perímetro do CNPJ.";
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -67,12 +68,16 @@ export function Bloco5() {
     const v = { ...DEF, ...ripd[r.id] };
     const derivado = derivarRisco(r.id, signatures);
     const sug = sugestaoMitigacao(r.id, signatures);
+    const sugDesc = sugestaoDescricao(r.id, signatures);
     // Texto legado sem marcação é tratado como escrito pelo DPO.
     const manual = v.mitigManual ?? v.mitig.trim().length > 0;
+    const manualDesc = v.descManual ?? v.descricao.trim().length > 0;
     const riscoManual = !!v.riscoManual && typeof v.prob === "number" && typeof v.imp === "number";
     return {
-      ...r, descricao: v.descricao, derivado, riscoManual,
+      ...r, derivado, riscoManual,
       prob: riscoManual ? v.prob! : derivado.prob, imp: riscoManual ? v.imp! : derivado.imp,
+      descricao: manualDesc ? v.descricao : "texto" in sugDesc ? sugDesc.texto : "",
+      rotuloDesc: manualDesc ? "Revisado manualmente pelo DPO" : "texto" in sugDesc ? sugDesc.rotulo : sugDesc.aviso,
       mitig: manual ? v.mitig : "texto" in sug ? sug.texto : "",
       rotuloMitig: manual ? "Revisado manualmente pelo DPO" : "texto" in sug ? sug.rotulo : sug.aviso,
       aviso: "aviso" in sug ? sug.aviso : undefined,
@@ -108,6 +113,10 @@ export function Bloco5() {
       {AJUDA[5] && <AjudaTarefa {...AJUDA[5]} pendencias={pendencias} />}
 
       <Panel id="ripd" title="RIPD algorítmico · IA e LLMs (Art. 38 LGPD / ISO 42001)">
+        <p className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <CitacaoNormativa citacao="LGPD art. 38" />
+          <CitacaoNormativa citacao="ISO/IEC 42001" />
+        </p>
         <label className="text-xs text-muted-foreground">Sistema de IA avaliado
           <Input disabled={!canEdit} placeholder="Ex.: assistente interno baseado em LLM para atendimento e triagem de currículos" value={sistema}
             onChange={(e) => setSistema(e.target.value)} onBlur={() => salvar({}, "RIPD: sistema avaliado")} />
@@ -131,7 +140,12 @@ export function Bloco5() {
                       <input type="range" min={1} max={5} disabled={!canEdit} aria-label={`${k === "prob" ? "Probabilidade" : "Impacto"} · ${e.label}`} value={e[k]} onChange={(ev) => sobrescrever(k, +ev.target.value)} className="w-full accent-primary" />
                     </label>
                   ))}
-                  <Textarea rows={3} disabled={!canEdit} placeholder="Descrição do risco no contexto da empresa…" value={v.descricao} onChange={(ev) => put({ descricao: ev.target.value }, false)} onBlur={() => salvar({}, `RIPD: ${e.label}`)} />
+                  <div>
+                    <Textarea rows={3} disabled={!canEdit} aria-label={`Descrição do risco · ${e.label}`} placeholder={e.aviso ?? "Descrição do risco no contexto da empresa…"} value={e.descricao}
+                      onChange={(ev) => { if (!v.descManual) log("UPDATE", "ripd_ia", `RIPD: descrição de "${e.label}" revisada manualmente pelo DPO`); put({ descricao: ev.target.value, descManual: true }, false); }}
+                      onBlur={() => salvar({}, `RIPD: ${e.label}`)} />
+                    <p className="mt-1 text-[11px] text-muted-foreground" data-testid={`rotulo-desc-${e.id}`}>{e.rotuloDesc}</p>
+                  </div>
                   <div>
                     <Textarea rows={3} disabled={!canEdit} aria-label={`Medidas de mitigação · ${e.label}`} placeholder={e.aviso ?? "Medidas de mitigação…"} value={e.mitig}
                       onChange={(ev) => { if (!v.mitigManual) log("UPDATE", "ripd_ia", `RIPD: mitigação de "${e.label}" revisada manualmente pelo DPO`); put({ mitig: ev.target.value, mitigManual: true }, false); }}
@@ -155,6 +169,7 @@ export function Bloco5() {
       </Panel>
 
       <Panel title="Simulador do Escudo Jurídico de Dosimetria · Res. CD/ANPD nº 4/2023">
+        <p className="mb-3 text-xs text-muted-foreground"><CitacaoNormativa citacao="Res. CD/ANPD nº 4/2023" /></p>
         <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">A redução é calculada a partir dos mesmos riscos do RIPD acima: risco inerente 5×5 = {INE} contra o risco residual de cada linha.</p>

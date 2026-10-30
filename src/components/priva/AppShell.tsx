@@ -2,7 +2,7 @@ import { PrivaciumLogo } from "@/components/priva/Logo";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Lock, CheckCircle2, LayoutDashboard, KanbanSquare, ScrollText, Building2, RotateCcw, LogOut, Users, Presentation, X, BookOpen, BookA, Menu } from "lucide-react";
+import { Lock, CheckCircle2, LayoutDashboard, KanbanSquare, ScrollText, Building2, RotateCcw, LogOut, Users, Presentation, X, BookOpen, BookA, Menu, ListChecks } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { BLOCKS, ROLE_LABEL, isValidCNPJ, maskCNPJ, type Role } from "@/lib/priva/data";
 import { usePriva, isUnlocked } from "@/lib/priva/store";
@@ -15,9 +15,9 @@ import { AvisoModoDemo } from "@/components/priva/AvisoModoDemo";
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 
 const ROLE_ACCESS: Record<Role, string[]> = {
-  ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/membros", "/manual", "/glossario"],
-  DPO_OPERACIONAL: ["/painel", "/bloco", "/kanban", "/auditoria", "/enterprise", "/manual", "/membros", "/glossario"],
-  C_SUITE: ["/painel", "/enterprise", "/kanban", "/auditoria", "/manual", "/membros", "/glossario"],
+  ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/pendencias", "/membros", "/manual", "/glossario"],
+  DPO_OPERACIONAL: ["/painel", "/bloco", "/kanban", "/pendencias", "/auditoria", "/enterprise", "/manual", "/membros", "/glossario"],
+  C_SUITE: ["/painel", "/enterprise", "/kanban", "/pendencias", "/auditoria", "/manual", "/membros", "/glossario"],
 };
 const SENSITIVE = [
   { path: "/bloco-2", target: "inventario_dados_pessoais" },
@@ -172,6 +172,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             );
           })}
           <p className="px-3 pb-1 pt-4 font-mono text-[10px] uppercase tracking-widest">Transversal</p>
+          {item("/pendencias", "Dashboard · Pendências", <ListChecks className="h-4 w-4" />)}
           {item("/kanban", "Kanban 5W2H · Plano de ação", <KanbanSquare className="h-4 w-4" />)}
           {item("/auditoria", "Trilha de Auditoria (Trilho Core)", <ScrollText className="h-4 w-4" />)}
           {item("/manual", "Manual de Uso", <BookOpen className="h-4 w-4" />)}

@@ -26,6 +26,7 @@ import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedManualRouteImport } from './routes/_authenticated/manual'
 import { Route as AuthenticatedMembrosRouteImport } from './routes/_authenticated/membros'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
+import { Route as AuthenticatedPendenciasRouteImport } from './routes/_authenticated/pendencias'
 import { Route as AuthenticatedBloco4AnpdIncidenteIdRouteImport } from './routes/_authenticated/bloco-4_.anpd.$incidenteId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -112,6 +113,11 @@ const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
   path: '/painel',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPendenciasRoute = AuthenticatedPendenciasRouteImport.update({
+  id: '/pendencias',
+  path: '/pendencias',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBloco4AnpdIncidenteIdRoute =
   AuthenticatedBloco4AnpdIncidenteIdRouteImport.update({
     id: '/bloco-4_/anpd/$incidenteId',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/manual': typeof AuthenticatedManualRoute
   '/membros': typeof AuthenticatedMembrosRoute
   '/painel': typeof AuthenticatedPainelRoute
+  '/pendencias': typeof AuthenticatedPendenciasRoute
   '/bloco-4/anpd/$incidenteId': typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 export interface FileRoutesByTo {
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/manual': typeof AuthenticatedManualRoute
   '/membros': typeof AuthenticatedMembrosRoute
   '/painel': typeof AuthenticatedPainelRoute
+  '/pendencias': typeof AuthenticatedPendenciasRoute
   '/bloco-4/anpd/$incidenteId': typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 export interface FileRoutesById {
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/_authenticated/manual': typeof AuthenticatedManualRoute
   '/_authenticated/membros': typeof AuthenticatedMembrosRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
+  '/_authenticated/pendencias': typeof AuthenticatedPendenciasRoute
   '/_authenticated/bloco-4_/anpd/$incidenteId': typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 export interface FileRouteTypes {
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/membros'
     | '/painel'
+    | '/pendencias'
     | '/bloco-4/anpd/$incidenteId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/membros'
     | '/painel'
+    | '/pendencias'
     | '/bloco-4/anpd/$incidenteId'
   id:
     | '__root__'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/_authenticated/manual'
     | '/_authenticated/membros'
     | '/_authenticated/painel'
+    | '/_authenticated/pendencias'
     | '/_authenticated/bloco-4_/anpd/$incidenteId'
   fileRoutesById: FileRoutesById
 }
@@ -368,6 +380,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPainelRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pendencias': {
+      id: '/_authenticated/pendencias'
+      path: '/pendencias'
+      fullPath: '/pendencias'
+      preLoaderRoute: typeof AuthenticatedPendenciasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/bloco-4_/anpd/$incidenteId': {
       id: '/_authenticated/bloco-4_/anpd/$incidenteId'
       path: '/bloco-4/anpd/$incidenteId'
@@ -391,6 +410,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedManualRoute: typeof AuthenticatedManualRoute
   AuthenticatedMembrosRoute: typeof AuthenticatedMembrosRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
+  AuthenticatedPendenciasRoute: typeof AuthenticatedPendenciasRoute
   AuthenticatedBloco4AnpdIncidenteIdRoute: typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 
@@ -407,6 +427,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedManualRoute: AuthenticatedManualRoute,
   AuthenticatedMembrosRoute: AuthenticatedMembrosRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
+  AuthenticatedPendenciasRoute: AuthenticatedPendenciasRoute,
   AuthenticatedBloco4AnpdIncidenteIdRoute:
     AuthenticatedBloco4AnpdIncidenteIdRoute,
 }

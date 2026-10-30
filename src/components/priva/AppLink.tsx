@@ -6,8 +6,9 @@ import { usePublicDemo } from '@/lib/priva/store';
 export function AppLink({ children, className, onClick, ...props }: LinkProps & { children?: ReactNode; className?: string | undefined; onClick?: MouseEventHandler<HTMLAnchorElement> | undefined }) {
   const publicDemo = usePublicDemo();
   if (publicDemo && props.to && props.to !== '/auth' && props.to !== '/demo') {
-    const aba = props.to.includes('/anpd/') ? 'anpd' : props.to.replace(/^\//, '');
-    return <Link to="/demo" search={{ aba }} {...(props.hash ? { hash: props.hash } : {})} className={className} onClick={onClick}>{children}</Link>;
+    const { to: _to, search: _search, hash, ...rest } = props as Record<string, unknown>;
+    const aba = String(props.to).includes('/anpd/') ? 'anpd' : String(props.to).replace(/^\//, '');
+    return <Link to="/demo" search={{ aba }} {...(typeof hash === 'string' && hash ? { hash } : {})} {...rest} className={className} onClick={onClick}>{children}</Link>;
   }
   return <Link {...props} className={className} onClick={onClick}>{children}</Link>;
 }

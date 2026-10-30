@@ -9,6 +9,7 @@ import { Bloco3 } from '@/components/priva/views/Bloco3';
 import { Bloco4 } from '@/components/priva/views/Bloco4';
 import { Bloco5 } from '@/components/priva/views/Bloco5';
 import { Kanban } from '@/components/priva/views/Kanban';
+import { Pendencias } from '@/components/priva/views/Pendencias';
 import { Manual } from '@/components/priva/views/Manual';
 import { Glossario } from '@/components/priva/views/Glossario';
 import { Auditoria } from '@/components/priva/views/Auditoria';
@@ -18,7 +19,7 @@ import { DEMO_ROWS, DEMO_PUBLIC_SIGNATURES, carregarEstadoIncidenteDemo } from '
 import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 
-const ABAS = ['painel', 'bloco-1', 'bloco-2', 'bloco-3', 'bloco-4', 'bloco-5', 'anpd', 'kanban', 'manual', 'glossario', 'auditoria', 'encarregado'];
+const ABAS = ['painel', 'bloco-1', 'bloco-2', 'bloco-3', 'bloco-4', 'bloco-5', 'anpd', 'kanban', 'pendencias', 'manual', 'glossario', 'auditoria', 'encarregado'];
 export const Route = createFileRoute('/demo')({
   validateSearch: (search: Record<string, unknown>): { aba?: string } => ({ aba: typeof search['aba'] === 'string' && ABAS.includes(search['aba']) ? search['aba'] : 'painel' }),
   head: () => ({ meta: [
@@ -47,6 +48,7 @@ function DemoConteudo({ aba }: { aba: string }) {
     case 'bloco-4': return <BlockGate n={4}><Bloco4 /></BlockGate>;
     case 'bloco-5': return <BlockGate n={5}><Bloco5 /></BlockGate>;
     case 'kanban': return <Kanban />;
+    case 'pendencias': return <Pendencias />;
     case 'manual': return <Manual aba="guias" />;
     case 'glossario': return <Glossario />;
     case 'auditoria': return <Auditoria />;
