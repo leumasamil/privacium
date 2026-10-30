@@ -10,10 +10,12 @@ describe("dosimetria Res. CD/ANPD nº 4/2023", () => {
   it("PI-04 concede 20%", () => expect(reducaoDosimetria({ "PI-04": 1 })).toBe(20));
   it("PI-05 concede 15%", () => expect(reducaoDosimetria({ "PI-05": 1 })).toBe(15));
   it("multa de 1 milhão com 75% cai para 250 mil", () => expect(multaComAtenuantes(1_000_000, 75)).toBe(250_000));
-  it("SLA começa em 72h e zera após o prazo", () => {
+  it("prazo começa em 72h úteis (3 dias úteis) e zera após o limite", () => {
     expect(SLA_MS).toBe(72 * 3600 * 1000);
-    const inicio = new Date(0).toISOString();
+    const inicio = new Date(0).toISOString(); // qui 01/01/1970 00:00 → limite ter 06/01 00:00
     expect(slaRestante(inicio, 3600 * 1000)).toBe(71 * 3600 * 1000);
-    expect(slaRestante(inicio, 80 * 3600 * 1000)).toBe(0);
+    // 80h corridas depois cai num domingo: restam 24h úteis (segunda), provando que o fim de semana não conta.
+    expect(slaRestante(inicio, 80 * 3600 * 1000)).toBe(24 * 3600 * 1000);
+    expect(slaRestante(inicio, 200 * 3600 * 1000)).toBe(0);
   });
 });

@@ -34,7 +34,7 @@ describe('fonte única do incidente', () => {
     expect(carregarEstadoIncidente(i.id,f).podeEncerrar).toBe(false);
     expect(carregarEstadoIncidente(i.id,f).correcoes.some(c => c.ancora === 'incidente-etapa-5')).toBe(true);
   });
-  it('prazo de 72 horas congela no envio', () => {
+  it('prazo de 3 dias úteis congela no envio', () => {
     const f = fonte(); const i = f.incidentes[0]; if (!i) throw new Error('fixture');
     i.enviado_anpd_em = '2026-10-30T12:00:00Z'; f.agora = Date.parse('2026-11-10T12:00:00Z');
     expect(carregarEstadoIncidente(i.id,f).anpd.prazo_vencido).toBe(false);

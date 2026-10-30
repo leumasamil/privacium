@@ -30,7 +30,7 @@ describe("checklist da tela de bloqueio", () => {
     const ant = montarChecklist({ n: 4, lotes: [{ mes_referencia: "2026-09", hash_sha256: null }], incidentes: [], agora }, {});
     expect(ant.find((i) => i.id === "lote")!.acao).toBe("Selar o lote de setembro/2026");
   });
-  it("incidente com SLA de 72h estourado é crítico", () => {
+  it("incidente com prazo de 3 dias úteis estourado é crítico", () => {
     const agora = Date.parse("2026-10-15T12:00:00Z");
     const c = montarChecklist({ n: 4, lotes: [], incidentes: [{ id: "a54ac7ff", passos: [true, false, false, false, false, false], iniciado_em: "2026-10-11T12:00:00Z", enviado_anpd_em: null, encerrado_em: null }], agora }, {});
     expect(c.find((i) => i.id === "anpd-a54ac7ff")!.estado).toBe("critico");
