@@ -253,6 +253,13 @@
       "when": 1793379963074,
       "tag": "0035_blindar_documento_membros",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793380468189,
+      "tag": "0036_assinaturas_etapas_rot",
+      "breakpoints": true
     }
   ]
 }
