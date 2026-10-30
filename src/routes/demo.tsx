@@ -14,8 +14,7 @@ import { Glossario } from '@/components/priva/views/Glossario';
 import { Auditoria } from '@/components/priva/views/Auditoria';
 import { FormularioANPD } from '@/components/priva/FormularioANPD';
 import { EncarregadoDPO } from '@/components/priva/EncarregadoDPO';
-import { DEMO_ROWS, DEMO_PUBLIC_SIGNATURES } from '@/lib/priva/demo';
-import { carregarEstadoIncidente } from '@/lib/priva/estadoIncidente';
+import { DEMO_ROWS, DEMO_PUBLIC_SIGNATURES, carregarEstadoIncidenteDemo } from '@/lib/priva/demo';
 import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 
@@ -55,7 +54,7 @@ function DemoConteudo({ aba }: { aba: string }) {
     case 'anpd': {
       const incidente = DEMO_ROWS.incidentes_seguranca[0];
       if (!incidente) return null;
-      const estado = carregarEstadoIncidente(incidente.id, { incidentes: DEMO_ROWS.incidentes_seguranca, lotes: DEMO_ROWS.lotes_pgaudit, assinaturas: DEMO_PUBLIC_SIGNATURES, agora: Date.parse(incidente.iniciado_em) });
+      const estado = carregarEstadoIncidenteDemo(incidente.id, { incidentes: DEMO_ROWS.incidentes_seguranca, lotes: DEMO_ROWS.lotes_pgaudit, assinaturas: DEMO_PUBLIC_SIGNATURES, agora: Date.parse(incidente.iniciado_em) });
       return <FormularioANPD incidente={incidente} estado={estado} canEdit refresh={() => undefined} encerramento={<EncerrarIncidente estado={estado} busy={false} onClick={avisarAcaoDemo} />} />;
     }
     default: return <Painel />;

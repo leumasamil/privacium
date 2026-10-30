@@ -2,7 +2,7 @@ import { useEffect, useId } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { usePriva } from './store';
-import { DEMO_ROWS } from './demo';
+import { DEMO_ROWS, carregarEstadoIncidenteDemo } from './demo';
 import { carregarEstadoIncidente } from './estadoIncidente';
 
 export function useEstadoBloco4(cnpj: string | null) {
@@ -31,6 +31,6 @@ export function useEstadoBloco4(cnpj: string | null) {
     return () => { void supabase.removeChannel(ch); };
   }, [cnpj, demo, qc, subscriber]);
   const fonte = q.data ? { ...q.data, assinaturas: signatures, agora: demo ? Date.parse(DEMO_ROWS.incidentes_seguranca[0]?.iniciado_em ?? "2026-10-01T12:00:00Z") + 14 * 3600000 : Date.now() } : null;
-  return { ...q, data: fonte ? { n: 4 as const, ...fonte, estados: fonte.incidentes.map(i => carregarEstadoIncidente(i.id, fonte)) } : undefined,
+  return { ...q, data: fonte ? { n: 4 as const, ...fonte, estados: fonte.incidentes.map(i => demo ? carregarEstadoIncidenteDemo(i.id, fonte) : carregarEstadoIncidente(i.id, fonte)) } : undefined,
     refresh: () => qc.invalidateQueries({ queryKey: ['estado-bloco-4', cnpj] }) };
 }

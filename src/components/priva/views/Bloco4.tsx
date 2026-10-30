@@ -174,7 +174,7 @@ function ConsolePgAudit({ cnpj, lotes, incidentes, canEdit, refresh }: { cnpj: s
               {l.hash_sha256 ? <p className="mt-1 break-all font-mono text-[10px] text-success">{l.hash_sha256}</p> : <Tag tone="warning">Sem hash</Tag>}
               <div className="mt-2 flex gap-2">
                 {canEdit && !l.hash_sha256 && <Button size="sm" variant="outline" onClick={() => calcularHash(l)}><Hash className="h-3 w-3" /> SHA-256</Button>}
-                <Button size="sm" variant="outline" disabled={!l.hash_sha256} onClick={() => gerarPdf(l)}><FileDown className="h-3 w-3" /> PDF PI-04</Button>
+                <Button size="sm" variant="outline" disabled={!demo && !l.hash_sha256} onClick={() => gerarPdf(l)}><FileDown className="h-3 w-3" /> PDF PI-04</Button>
               </div>
             </li>
           ))}

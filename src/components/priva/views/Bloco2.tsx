@@ -187,6 +187,7 @@ function Chips({ options, value, onChange, exclusive }: { options: string[]; val
 }
 
 function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form: RotInput }; setEdit: (e: { id: string | null; form: RotInput } | null) => void; onSave: () => void }) {
+  const { demo } = usePriva();
   const f = edit.form;
   const up = (p: Partial<RotInput>) => setEdit({ ...edit, form: { ...f, ...p } });
   const risk = isRisky(f);
@@ -256,7 +257,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
         {erro && <p className="text-xs text-destructive">Pendência para salvar: {erro}</p>}
         <DialogFooter>
           <Button variant="outline" onClick={() => setEdit(null)}>Cancelar</Button>
-          <Button disabled={!!erro} onClick={onSave}>Salvar processo</Button>
+          <Button disabled={!demo && !!erro} onClick={() => demo ? avisarAcaoDemo() : onSave()}>Salvar processo</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

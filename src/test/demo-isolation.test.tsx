@@ -1,7 +1,7 @@
 import { render, screen, act } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { PrivaProvider, usePriva, isUnlocked } from '@/lib/priva/store';
-import { DEMO_CNPJ, DEMO_ROT, DEMO_ROWS, DEMO_PUBLIC_SIGNATURES } from '@/lib/priva/demo';
+import { DEMO_CNPJ, DEMO_ROT, DEMO_ROWS, DEMO_PUBLIC_SIGNATURES, carregarEstadoIncidenteDemo } from '@/lib/priva/demo';
 import { carregarEstadoIncidente } from '@/lib/priva/estadoIncidente';
 import { isLoginSessionEvent, safeAuthPath } from '@/lib/priva/authNavigation';
 import { assinaturasVigentes } from '@/lib/priva/ciclo';
@@ -38,10 +38,26 @@ describe('regras da demonstração pública', () => {
       expect(items.length).toBeGreaterThan(0); expect(items.every(item => item && item.valor && item.fonte_normativa)).toBe(true);
     }
   });
-  it('etapas 1–3 possuem evidência e PI-04 ausente bloqueia Bloco 5', () => {
+  it('seis etapas cenográficas possuem data, responsável e evidência', () => {
     const incident = DEMO_ROWS.incidentes_seguranca[0]; if (!incident) throw new Error('Missing incident');
-    const state = carregarEstadoIncidente(incident.id, { incidentes: [incident], lotes: [], assinaturas: DEMO_PUBLIC_SIGNATURES, agora: Date.parse(incident.iniciado_em) });
-    expect(state.etapas.concluidas).toBe(3); expect(state.etapas.itens.slice(0, 3).every(item => item.data && item.responsavel)).toBe(true);
+    const state = carregarEstadoIncidenteDemo(incident.id, { incidentes: [incident], lotes: [], assinaturas: DEMO_PUBLIC_SIGNATURES, agora: Date.parse(incident.iniciado_em) });
+    expect(incident.passos).toEqual([true, true, true, true, true, true]);
+    expect(state.etapas.concluidas).toBe(6);
+    const registros = incident.etapas_registro as Record<string, { data: string; responsavel: string; evidencia: string }>;
+    expect(Object.keys(registros)).toEqual(['1', '2', '3', '4', '5', '6']);
+    for (const registro of Object.values(registros)) {
+      expect(registro.data).toBe('2026-10-01T12:00:00.000Z');
+      expect(registro.responsavel).toBe('DPO Cenográfico');
+      expect(registro.evidencia.length).toBeGreaterThan(0);
+    }
+  });
+  it('cenário não enviado e não encerrado nunca libera PI-04 ou Bloco 5', () => {
+    const incident = DEMO_ROWS.incidentes_seguranca[0]; if (!incident) throw new Error('Missing incident');
+    const fonte = { incidentes: [incident], lotes: [], assinaturas: DEMO_PUBLIC_SIGNATURES, agora: Date.parse(incident.iniciado_em) };
+    const state = carregarEstadoIncidenteDemo(incident.id, fonte);
+    expect(incident.enviado_anpd_em).toBeNull(); expect(incident.encerrado_em).toBeNull();
+    expect(state.anpd.enviado).toBe(false); expect(state.podeEncerrar).toBe(false);
+    expect(carregarEstadoIncidente(incident.id, fonte).etapas.concluidas).toBe(5);
     expect(isUnlocked(DEMO_PUBLIC_SIGNATURES, 5)).toBe(false);
   });
   it('eventos de login aceitam somente SIGNED_IN e INITIAL_SESSION', () => {
