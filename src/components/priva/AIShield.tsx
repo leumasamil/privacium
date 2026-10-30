@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Panel, Tag } from "./ui";
 import { CitacaoNormativa } from "./CitacaoNormativa";
+import { CopiarModelo } from "./CopiarModelo";
 import { EXEMPLOS_ESCUDO, type ExemploEscudo } from "@/lib/privacium/bibliotecaMitigacao";
 import { usePriva } from "@/lib/priva/store";
 

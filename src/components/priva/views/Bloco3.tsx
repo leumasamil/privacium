@@ -13,6 +13,7 @@ import { sha256 } from "@/lib/priva/data";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ATIVOS, DEMO_ROT } from "@/lib/priva/demo";
 import { estruturaSugerida, padraoHostname } from "@/lib/privacium/bibliotecaMitigacao";
+import { CopiarModelo } from "@/components/priva/CopiarModelo";
 import { BlockGate, PageHeader, Panel, PIOutput, Tag } from "@/components/priva/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,7 +98,8 @@ export function Bloco3() {
       <AIShield />
 
       <PIOutput dual pi="PI-03: Book de Evidências Tecnológicas e Contratuais" ready={endpoints.length > 0 && prot === endpoints.length && cofres.length > 0}
-        readyHint="Proteja todos os endpoints com BitLocker e catalogue ao menos um cofre Cryptomator.">
+        readyHint="Proteja todos os endpoints com BitLocker e catalogue ao menos um cofre Cryptomator."
+        acoesExtras={<CopiarModelo textoId="dossie-pi03" rotulo="Copiar dossiê (modelo)" />}>
         <h3 className="font-semibold">Laudo técnico · Art. 46 da LGPD · ISO/IEC 27701 cl. 6.9</h3>
         <p className="mt-2"><b>1. Criptografia de endpoint (BitLocker):</b> {prot}/{endpoints.length} máquinas protegidas, com chaves de recuperação custodiadas offline pelo DPO.</p>
         <ul className="list-disc pl-5">{endpoints.map((a) => <li key={a.id}>{a.identificador} {a.descricao && `· ${a.descricao}`} — {a.protegido ? "protegido" : "pendente"}</li>)}</ul>
