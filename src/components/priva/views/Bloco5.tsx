@@ -163,7 +163,7 @@ export function Bloco5() {
         <p className="mb-3 text-xs text-muted-foreground">Alimentado pelos dados já declarados no PI-03 (Escudo Digital) e no RIPO abaixo — sem digitação duplicada.</p>
         {sistema.trim().length > 2 ? (
           <ul className="divide-y text-sm" data-testid="inventario-ia">
-            <li className="grid gap-1 py-2 md:grid-cols-[1fr_160px_200px_140px]">
+            <li className="grid gap-x-4 gap-y-1 py-2 md:grid-cols-2 [&>span]:min-w-0 [&>span]:break-words [&>span]:whitespace-normal">
               <span><b>{sistema}</b><span className="block text-xs text-muted-foreground">Finalidade declarada no RIPO</span></span>
               <span className="text-xs">Provedor do modelo: <b>{provedorIA}</b></span>
               <span className="text-xs">Papel na cadeia: <b>Operador</b> (usa sistema de terceiro)</span>
