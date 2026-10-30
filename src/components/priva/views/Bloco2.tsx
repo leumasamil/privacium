@@ -206,42 +206,69 @@ function Chips({ options, value, onChange, exclusive }: { options: string[]; val
 
 function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form: RotInput }; setEdit: (e: { id: string | null; form: RotInput } | null) => void; onSave: () => void }) {
   const { demo } = usePriva();
+  const { data: membros = [] } = useMembros();
   const f = edit.form;
   const up = (p: Partial<RotInput>) => setEdit({ ...edit, form: { ...f, ...p } });
   const risk = isRisky(f);
   const sensitive = hasSensivel(f);
   const dicas = sugerir(f);
+  const coerencia = alertasCoerencia(f);
+  const retencao = alertaRetencao(cicloDaLinha(f));
   const erro = validateRot(f);
+  const areaAtual = (f.area_setor ?? "").split("›")[0]?.trim() || AREAS_SETORES[0]!.area;
+  const setorAtual = (f.area_setor ?? "").split("›")[1]?.trim() ?? "";
+  const setoresDaArea = AREAS_SETORES.find((a) => a.area === areaAtual)?.setores ?? [];
+  const responsavel = responsavelDaArea(membros, f.area_setor);
+  const escolherArea = (area: string, setor: string) => up({ area_setor: areaSetorCompleto(area, setor), setor: chaveDaArea(area) });
+  const generoBtns = (g: Genero) => {
+    const c = cicloDaLinha(f);
+    return (
+      <fieldset key={g} className="rounded-sm border p-2">
+        <legend className="px-1 text-xs font-semibold">{g}{g === "Compartilhar" ? <span className="font-normal text-muted-foreground"> — {NOTA_ETAPA2_COMPARTILHAR}</span> : g === "Eliminar" ? <span className="font-normal text-muted-foreground"> — {NOTA_ETAPA2_ELIMINAR}</span> : null}</legend>
+        <div className="flex flex-wrap gap-1">
+          {ESPECIES[g].map((e) => {
+            const on = (c[g] ?? []).includes(e);
+            return <button type="button" key={e} aria-pressed={on} onClick={() => { const n = alternar(c, g, e); up({ ciclo_vida: n, genero_verbo: generosMarcados(n)[0] ?? "Coletar" }); }} className={cn("rounded-sm border px-2 py-0.5 text-xs", on ? "border-primary bg-primary text-primary-foreground" : "bg-background")}>{e}</button>;
+          })}
+        </div>
+      </fieldset>
+    );
+  };
   return (
     <Dialog open onOpenChange={(o) => !o && setEdit(null)}>
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader><DialogTitle>{edit.id ? "Editar processo" : "Novo processo de tratamento"}</DialogTitle></DialogHeader>
         <div className={cn("grid gap-4 md:grid-cols-2", risk && "rounded-sm border-l-4 border-destructive pl-3")}>
           {!edit.id && (
-            <Field label="Área › Setor (gera o ID Processo)">
-              <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.setor} onChange={(e) => up({ setor: e.target.value })}>
-                {DEPARTMENTS.map((d) => <option key={d}>{d}</option>)}
-              </select>
+            <Field label={`1. ${ROTULO_AREA_SETOR} (a área gera o ID Processo)`} wide>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <select aria-label="Área" className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={areaAtual} onChange={(e) => escolherArea(e.target.value, "")}>
+                  {AREAS_SETORES.map((a) => <option key={a.area} value={a.area}>{a.area}</option>)}
+                </select>
+                <select aria-label="Setor" className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={setoresDaArea.includes(setorAtual) ? setorAtual : setorAtual ? "__outro__" : ""} onChange={(e) => escolherArea(areaAtual, e.target.value === "__outro__" ? "" : e.target.value)}>
+                  <option value="">Setor…</option>
+                  {setoresDaArea.map((s) => <option key={s} value={s}>{s}</option>)}
+                  <option value="__outro__">outro (especificar)</option>
+                </select>
+              </div>
+              {(setorAtual && !setoresDaArea.includes(setorAtual)) && <Input className="mt-1" value={setorAtual} onChange={(e) => escolherArea(areaAtual, e.target.value)} placeholder="Especifique o setor" />}
+              {responsavel && <p className="text-[11px] text-muted-foreground" data-testid="responsavel-area">Responsável (R) vinculado: <b>{responsavel}</b> — cadastro de membros do Bloco 1.</p>}
             </Field>
           )}
           <Field label="2. Ciclo de vida do dado pessoal (gênero × espécie)" wide>
             <p className="text-[11px] text-muted-foreground">{AJUDA_CICLO}</p>
-            <div className="grid gap-2 sm:grid-cols-2" data-testid="ciclo-vida">
-              {GENEROS.map((g) => {
-                const c = cicloDaLinha(f);
-                return (
-                  <fieldset key={g} className="rounded-sm border p-2">
-                    <legend className="px-1 text-xs font-semibold">{g}</legend>
-                    <div className="flex flex-wrap gap-1">
-                      {ESPECIES[g].map((e) => {
-                        const on = (c[g] ?? []).includes(e);
-                        return <button type="button" key={e} aria-pressed={on} onClick={() => { const n = alternar(c, g, e); up({ ciclo_vida: n, genero_verbo: generosMarcados(n)[0] ?? "Coletar" }); }} className={cn("rounded-sm border px-2 py-0.5 text-xs", on ? "border-primary bg-primary text-primary-foreground" : "bg-background")}>{e}</button>;
-                      })}
-                    </div>
-                  </fieldset>
-                );
-              })}
+            <p className="rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="nota-metodo-ciclo">{NOTA_METODO_CICLO} {NOTA_RESPONSAVEL_ETAPAS}</p>
+            <div className="space-y-2" data-testid="ciclo-vida">
+              <div>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">{ROTULO_ETAPA1}</p>
+                <div className="grid gap-2 sm:grid-cols-3">{ETAPA1.map(generoBtns)}</div>
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">{ROTULO_ETAPA2}</p>
+                <div className="grid gap-2 sm:grid-cols-2">{ETAPA2.map(generoBtns)}</div>
+              </div>
             </div>
+            {retencao && <p role="alert" className="flex items-center gap-1 text-xs font-semibold text-warning-foreground" data-testid="alerta-retencao"><AlertTriangle className="h-3 w-3" /> {retencao}</p>}
           </Field>
           <Field label="3. Categoria de Titulares" wide><Chips options={TITULARES} value={f.categoria_titulares} onChange={(v) => up({ categoria_titulares: v })} /></Field>
           <Field label="4. Dado pessoal" wide><Chips options={DADOS} value={f.dados_pessoais} onChange={(v) => up({ dados_pessoais: v })} /></Field>
