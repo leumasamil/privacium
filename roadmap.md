@@ -39,3 +39,9 @@
 - [x] Executar os seis testes do anexo: todos passaram na visualização local; fluxo demo sem requisições ao banco.
 - [x] Exibir responsável cenográfico nas seis etapas do Bloco 4 e completar as evidências específicas do anexo.
 - [x] Executar os sete critérios do checklist demo: a–g passaram localmente, com zero requisições ao banco ou funções internas.
+- [ ] Quebrar o circuito fechado do incidente: etapa 06 como consequência do envio, não pré-requisito (regra, não seed).
+- [ ] Demo em memória: envio ANPD simulado → etapa 06 → encerramento → chancela PI-04 → Bloco 5 na mesma sessão, delta 0 no banco.
+- [ ] Substituir "SLA de 72 horas" por 3 dias úteis (Res. CD/ANPD nº 15/2024, art. 6º) com contador de dias úteis.
+- [ ] Corrigir atalhos do Dashboard e do Bloco 4 para aba=anpd; auditar todos os atalhos.
+- [ ] Popular Trilho Core no demo com eventos do seed + eventos em memória com SHA-256 encadeado.
+- [ ] Executar provas de aceitação (a) a (j) e atualizar testes que codificavam o comportamento antigo.
