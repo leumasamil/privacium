@@ -42,7 +42,7 @@ export function useDadosBloco(n: number, cnpj: string | null) {
         return { n: 1, perguntas: p.count ?? 0, respondidas: rows.length, naos: rows.filter((x) => x.resposta_binaria !== "SIM").length };
       }
       if (n === 2) {
-        const { data } = await supabase.from("registro_operacoes").select("*").eq("empresa_cnpj", c);
+        const { data } = await supabase.from("registro_operacoes").select("*").eq("empresa_cnpj", c).is("excluido_em", null);
         return { n: 2, rot: (data ?? []) as unknown as RotInput[] };
       }
       if (n === 3) {

@@ -50,7 +50,7 @@ export function Pendencias() {
     enabled: !!cnpj,
     queryFn: async (): Promise<Rot[]> => {
       if (demo) return DEMO_ROT;
-      const { data, error } = await supabase.from("registro_operacoes").select("*").eq("empresa_cnpj", cnpj ?? "");
+      const { data, error } = await supabase.from("registro_operacoes").select("*").eq("empresa_cnpj", cnpj ?? "").is("excluido_em", null);
       if (error) throw error;
       return data;
     },
