@@ -98,7 +98,7 @@ export const NORMAS: Record<string, Norma> = {
   },
   "MCI art. 10": {
     citacao: "MCI art. 10",
-    resumo: "Guarda e disponibilização de registros de acesso, em ambiente controlado e de segurança (Lei nº 12.965/2014).",
+    resumo: "Guarda e disponibilização de registros de conexão e de acesso a aplicações devem atender à preservação da intimidade, da vida privada, da honra e da imagem das partes (Lei nº 12.965/2014). A guarda "em ambiente controlado e de segurança" é do art. 15.",
     porque: "Fundamenta a trilha de auditoria com cadeia de integridade SHA-256 que esta plataforma mantém.",
   },
   "MCI art. 7º, VIII": {

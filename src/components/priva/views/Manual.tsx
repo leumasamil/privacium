@@ -85,7 +85,7 @@ export function Manual({ aba }: { aba?: string | undefined }) {
               <li>No art. 11, o consentimento deve ser <b>específico e destacado</b>, para finalidades específicas.</li>
               <li>Legítimo interesse (7º, IX) e proteção do crédito (7º, X) <b>não</b> têm correspondente no art. 11.</li>
               <li>A prevenção à fraude e segurança do titular (11, II, g) existe só no art. 11.</li>
-              <li>Dado de menor de idade segue o art. 14: consentimento específico de ao menos um dos pais ou responsável legal.</li>
+              <li>Dado de criança ou adolescente segue o art. 14: tratamento sempre no seu melhor interesse (caput); para criança, consentimento específico e em destaque de pelo menos um dos pais ou do responsável legal (§ 1º).</li>
             </ul>
           </Panel>
         </TabsContent>
@@ -117,7 +117,7 @@ export function Manual({ aba }: { aba?: string | undefined }) {
           <Panel title="Marco Civil da Internet" className="mt-4">
             <ul className="space-y-3 text-sm" data-testid="manual-mci">
               <li><b>MCI art. 7º, VIII</b> — informações claras e completas sobre coleta, uso, armazenamento e tratamento de dados: o Privacium atende este artigo mantendo o ROT por operação, a trilha de acessos e os documentos de evidência sempre visíveis ao controlador.</li>
-              <li><b>MCI art. 10</b> — guarda e disponibilização de registros de acesso, em ambiente controlado e de segurança: é a Trilha de Auditoria com cadeia SHA-256.</li>
+              <li><b>MCI art. 10</b> — guarda e disponibilização de registros de conexão e de acesso a aplicações, devendo atender à preservação da intimidade, da vida privada, da honra e da imagem das partes: é a Trilha de Auditoria com cadeia SHA-256.</li>
               <li><b>MCI art. 15</b> — guarda de registros de acesso a aplicações, sob sigilo, em ambiente controlado, pelo prazo de 6 meses: são os lotes mensais de pgAudit do Bloco 4.</li>
             </ul>
           </Panel>

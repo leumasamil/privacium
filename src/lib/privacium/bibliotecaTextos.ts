@@ -29,7 +29,7 @@ export const BIBLIOTECA_TEXTOS: Record<TextoId, TextoModelo> = {
 1. É proibido colar dado pessoal (nome, CPF, e-mail, dado bancário) em prompts de serviços de IA externos sem higienização prévia pelo Escudo Digital.
 2. Todo prompt destinado a provedor externo passa pelo proxy de tokenização: o dado pessoal é substituído por tokens sintéticos e a tabela de reversão permanece no endpoint do colaborador.
 3. Dado pessoal sensível (art. 5º, II da LGPD) nunca é enviado a IA externa, mesmo tokenizado, sem autorização escrita do Encarregado (DPO).
-4. O uso de IA em decisões que afetem titulares exige revisão humana documentada (art. 20 da LGPD).
+4. O uso de IA em decisões que afetem titulares deve assegurar ao titular o direito de solicitar a revisão das decisões tomadas unicamente com base em tratamento automatizado (art. 20 da LGPD).
 5. Violões desta política são registrados na trilha de auditoria e tratados como incidente pelo Bloco 4.`,
   },
   "clausula-llm": {
@@ -221,7 +221,7 @@ export function respostasAIA(r: {
   return {
     autonomia: {
       resposta: r.decisao_automatizada
-        ? "Decisão exclusivamente automatizada identificada no RIPO — exige revisão humana e canal de contestação (LGPD art. 20)."
+        ? "Decisão exclusivamente automatizada identificada no RIPO — o titular tem direito de solicitar a revisão; mantenha canal para o pedido (LGPD art. 20)."
         : "Sistema de apoio à decisão humana; nenhuma decisão exclusivamente automatizada declarada no RIPO.",
       sugerida,
     },
@@ -235,7 +235,7 @@ export function respostasAIA(r: {
     },
     revisao: {
       resposta: r.decisao_automatizada
-        ? "Canal de revisão humana obrigatório (LGPD art. 20): registrar no ROT e no canal de titulares."
+        ? "Canal para o titular solicitar a revisão (LGPD art. 20): registrar no ROT e no canal de titulares."
         : "Revisão humana recomendada como boa prática, mesmo sem decisão automatizada.",
       sugerida,
     },

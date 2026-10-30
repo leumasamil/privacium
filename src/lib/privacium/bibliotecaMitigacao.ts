@@ -34,7 +34,7 @@ export const BIBLIOTECA: Record<RiscoId, Entrada> = {
   vies: {
     pis: ["PI-02", "PI-01"],
     descricao: "Decisões automatizadas de RH ou crédito reproduzem discriminação histórica do dataset, afetando candidatos e clientes sem revisão humana.",
-    medida: "Revisar o dataset de treinamento contra atributos de dado pessoal sensível, executar teste de adversidade por grupo e garantir revisão humana das decisões automatizadas (art. 20 LGPD)",
+    medida: "Revisar o dataset de treinamento contra atributos de dado pessoal sensível, executar teste de adversidade por grupo e manter canal para o titular solicitar a revisão das decisões automatizadas (art. 20 LGPD)",
     fonte: "ISO/IEC 42001 — A.7.4 / ISO/IEC 23894 — 6.4",
     controles: [
       { pi: "PI-02", eixo: "prob", delta: 1, motivo: "ROT mapeia as decisões automatizadas (PI-02)" },
