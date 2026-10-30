@@ -27,6 +27,7 @@ import { Route as AuthenticatedManualRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedMembrosRouteImport } from './routes/_authenticated/membros'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedPendenciasRouteImport } from './routes/_authenticated/pendencias'
+import { Route as AuthenticatedQualidadeNormativaRouteImport } from './routes/_authenticated/qualidade-normativa'
 import { Route as AuthenticatedBloco4AnpdIncidenteIdRouteImport } from './routes/_authenticated/bloco-4_.anpd.$incidenteId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -118,6 +119,12 @@ const AuthenticatedPendenciasRoute = AuthenticatedPendenciasRouteImport.update({
   path: '/pendencias',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedQualidadeNormativaRoute =
+  AuthenticatedQualidadeNormativaRouteImport.update({
+    id: '/qualidade-normativa',
+    path: '/qualidade-normativa',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedBloco4AnpdIncidenteIdRoute =
   AuthenticatedBloco4AnpdIncidenteIdRouteImport.update({
     id: '/bloco-4_/anpd/$incidenteId',
@@ -143,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/membros': typeof AuthenticatedMembrosRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/pendencias': typeof AuthenticatedPendenciasRoute
+  '/qualidade-normativa': typeof AuthenticatedQualidadeNormativaRoute
   '/bloco-4/anpd/$incidenteId': typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 export interface FileRoutesByTo {
@@ -163,6 +171,7 @@ export interface FileRoutesByTo {
   '/membros': typeof AuthenticatedMembrosRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/pendencias': typeof AuthenticatedPendenciasRoute
+  '/qualidade-normativa': typeof AuthenticatedQualidadeNormativaRoute
   '/bloco-4/anpd/$incidenteId': typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 export interface FileRoutesById {
@@ -185,6 +194,7 @@ export interface FileRoutesById {
   '/_authenticated/membros': typeof AuthenticatedMembrosRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
   '/_authenticated/pendencias': typeof AuthenticatedPendenciasRoute
+  '/_authenticated/qualidade-normativa': typeof AuthenticatedQualidadeNormativaRoute
   '/_authenticated/bloco-4_/anpd/$incidenteId': typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 export interface FileRouteTypes {
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/membros'
     | '/painel'
     | '/pendencias'
+    | '/qualidade-normativa'
     | '/bloco-4/anpd/$incidenteId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/membros'
     | '/painel'
     | '/pendencias'
+    | '/qualidade-normativa'
     | '/bloco-4/anpd/$incidenteId'
   id:
     | '__root__'
@@ -248,6 +260,7 @@ export interface FileRouteTypes {
     | '/_authenticated/membros'
     | '/_authenticated/painel'
     | '/_authenticated/pendencias'
+    | '/_authenticated/qualidade-normativa'
     | '/_authenticated/bloco-4_/anpd/$incidenteId'
   fileRoutesById: FileRoutesById
 }
@@ -387,6 +400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPendenciasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/qualidade-normativa': {
+      id: '/_authenticated/qualidade-normativa'
+      path: '/qualidade-normativa'
+      fullPath: '/qualidade-normativa'
+      preLoaderRoute: typeof AuthenticatedQualidadeNormativaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/bloco-4_/anpd/$incidenteId': {
       id: '/_authenticated/bloco-4_/anpd/$incidenteId'
       path: '/bloco-4/anpd/$incidenteId'
@@ -411,6 +431,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMembrosRoute: typeof AuthenticatedMembrosRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
   AuthenticatedPendenciasRoute: typeof AuthenticatedPendenciasRoute
+  AuthenticatedQualidadeNormativaRoute: typeof AuthenticatedQualidadeNormativaRoute
   AuthenticatedBloco4AnpdIncidenteIdRoute: typeof AuthenticatedBloco4AnpdIncidenteIdRoute
 }
 
@@ -428,6 +449,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMembrosRoute: AuthenticatedMembrosRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
   AuthenticatedPendenciasRoute: AuthenticatedPendenciasRoute,
+  AuthenticatedQualidadeNormativaRoute: AuthenticatedQualidadeNormativaRoute,
   AuthenticatedBloco4AnpdIncidenteIdRoute:
     AuthenticatedBloco4AnpdIncidenteIdRoute,
 }

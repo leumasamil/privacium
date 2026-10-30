@@ -18,9 +18,9 @@ import { rotuloPorte } from '@/lib/priva/enquadramento';
 import { Tag } from './ui';
 
 const ROLE_ACCESS: Record<Role, string[]> = {
-  ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/pendencias", "/membros", "/manual", "/glossario"],
-  DPO_OPERACIONAL: ["/painel", "/bloco", "/kanban", "/pendencias", "/auditoria", "/enterprise", "/manual", "/membros", "/glossario"],
-  C_SUITE: ["/painel", "/enterprise", "/kanban", "/pendencias", "/auditoria", "/manual", "/membros", "/glossario"],
+  ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/pendencias", "/membros", "/manual", "/glossario", "/qualidade-normativa"],
+  DPO_OPERACIONAL: ["/painel", "/bloco", "/kanban", "/pendencias", "/auditoria", "/enterprise", "/manual", "/membros", "/glossario", "/qualidade-normativa"],
+  C_SUITE: ["/painel", "/enterprise", "/kanban", "/pendencias", "/auditoria", "/manual", "/membros", "/glossario", "/qualidade-normativa"],
 };
 const SENSITIVE = [
   { path: "/bloco-2", target: "inventario_dados_pessoais" },
@@ -179,6 +179,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {item("/pendencias", "Dashboard · Pendências", <ListChecks className="h-4 w-4" />)}
           {item("/kanban", "Kanban 5W2H · Plano de ação", <KanbanSquare className="h-4 w-4" />)}
           {item("/auditoria", "Trilha de Auditoria (Trilho Core)", <ScrollText className="h-4 w-4" />)}
+          {item("/qualidade-normativa", "Qualidade normativa", <ShieldCheck className="h-4 w-4" />)}
           {item("/manual", "Manual de Uso", <BookOpen className="h-4 w-4" />)}
           {item("/glossario", "Glossário", <BookA className="h-4 w-4" />)}
           {publicDemo && item('/encarregado', 'Encarregado (DPO)', <Users className="h-4 w-4" />)}
