@@ -51,8 +51,7 @@ function assinaturas(n: number, sigs: Record<string, Signature>, base: boolean, 
   const exigeGen = base ? "Gerar o documento e assinar com Gov.br na seção \"Saída obrigatória\"." : "Disponível depois que as etapas acima estiverem concluídas.";
   // Com responsáveis informados, a pendência nasce atribuída ao papel (RBAC), faltando só o ato de assinar.
   const ex = (r: Responsavel) => {
-    if (!resp) return exigeGen;
-    const quem = `${PAPEL[r]}${resp[r] ? ` · ${resp[r]}` : ""}`;
+    const quem = `${PAPEL[r]}${resp?.[r] ? ` · ${resp[r]}` : ""}`;
     return base ? `Aguardando assinatura de ${quem}.` : `Responsável atribuído: ${quem}. ${exigeGen}`;
   };
   const exigeBase = ex("DPO_OPERACIONAL");
