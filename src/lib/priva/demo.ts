@@ -140,10 +140,10 @@ export const DEMO_ROWS: {
     empresa_cnpj: DEMO_CNPJ, sistema_avaliado: "Assistente LLM de triagem de currículos e atendimento", atualizado_por: null, atualizado_em: ts,
     escudo_digital: "O Escudo Digital do Bloco 3 tokeniza localmente CPFs, e-mails e nomes antes do envio a qualquer IA externa e reverte os tokens apenas no navegador do usuário autorizado.",
     riscos: {
-      // Probabilidade, impacto e mitigação derivam da biblioteca estática (PI-05); o seed guarda só a descrição.
-      vazamento: { descricao: "Colaboradores colando currículos no chat.", mitig: "" },
-      vies: { descricao: "Ranqueamento de candidatos por gênero ou idade.", mitig: "" },
-      injecao: { descricao: "Currículos com instruções ocultas.", mitig: "" },
+      // Descrição, mitigação, probabilidade e impacto nascem da biblioteca estática (PI-05); o seed fica vazio.
+      vazamento: { descricao: "", mitig: "" },
+      vies: { descricao: "", mitig: "" },
+      injecao: { descricao: "", mitig: "" },
     },
   }],
   ciclos_priva: [],
