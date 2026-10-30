@@ -38,9 +38,26 @@ describe.skipIf(!sessionText || !url || !key)('membros_empresa autenticado no ba
     expect(off.error).toBeNull();
 
     // O cadastro entrou no ROT como operação de governança de privacidade (uma vez por empresa)
-    const rot = await db.from('registro_operacoes').select('codigo, finalidade_especifica, hipotese_tratamento').eq('empresa_cnpj', emp.data.cnpj).like('finalidade_especifica', 'Governança de privacidade: cadastro de membros%');
+    const rot = await db.from('registro_operacoes').select('id, codigo, finalidade_especifica, hipotese_tratamento').eq('empresa_cnpj', emp.data.cnpj).like('finalidade_especifica', 'Governança de privacidade: cadastro de membros%');
     expect(rot.error).toBeNull();
     expect(rot.data?.length).toBe(1);
     expect(rot.data?.[0]?.hipotese_tratamento).toMatch(/^Art\. 7º/);
+
+    // Item 3c: as duas assinaturas por etapa são gravadas com hash e registradas na trilha
+    const rotId = rot.data![0]!.id;
+    const a1 = await db.rpc('assinar_etapa_rot', { _rot_id: rotId, _etapa: 1 });
+    expect(a1.error).toBeNull();
+    const a2 = await db.rpc('assinar_etapa_rot', { _rot_id: rotId, _etapa: 2 });
+    expect(a2.error).toBeNull();
+    for (const a of [a1.data, a2.data] as { sha256: string; assinante: string }[]) {
+      expect(a.sha256).toMatch(/^[0-9a-f]{64}$/);
+      expect(a.assinante.length).toBeGreaterThan(0);
+    }
+    const trilhaAss = await db.from('trilha_auditoria_sistema').select('campo_mascarado_acessado').eq('cnpj', emp.data.cnpj).eq('target', 'registro_operacoes').in('campo_mascarado_acessado', ['assinatura_etapa1', 'assinatura_etapa2']);
+    expect(trilhaAss.error).toBeNull();
+    expect(new Set(trilhaAss.data?.map((t) => t.campo_mascarado_acessado))).toEqual(new Set(['assinatura_etapa1', 'assinatura_etapa2']));
+    // Etapa inválida é recusada
+    const a3 = await db.rpc('assinar_etapa_rot', { _rot_id: rotId, _etapa: 3 });
+    expect(a3.error).not.toBeNull();
   }, 40000);
 });
