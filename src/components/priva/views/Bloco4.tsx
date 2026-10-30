@@ -292,7 +292,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
               {corrente && (
                 <>
                   <p className="mt-1 text-muted-foreground">{s.d}</p>
-                   {i === 5 ? <p className="mt-1 text-pendencia">Consome o prazo de 3 dias úteis · preencha o formulário abaixo.</p>
+                   {i === 5 ? <p className="mt-1 text-pendencia">Consome o prazo de 3 dias úteis (<CitacaoNormativa citacao="Res. CD/ANPD nº 15/2024, art. 6º" />) · preencha o formulário abaixo.</p>
                     : canEdit && <Button size="sm" variant="outline" disabled={!demo && busy} className="mt-2 h-auto min-h-7 w-full whitespace-normal" onClick={() => concluirEtapa(i)}>Marcar como concluída</Button>}
                 </>
               )}
@@ -313,7 +313,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
           {ativo?.enviado_anpd_em && <div className="mt-2"><Tag tone="success">ANPD comunicada</Tag></div>}
         </div>
         <ul className="space-y-1 text-xs text-foreground">
-          <li><b>O que mede:</b> Prazo de comunicação à ANPD — 3 dias úteis (Res. CD/ANPD nº 15/2024, art. 6º), contados do conhecimento do incidente; não inclui fins de semana e feriados. Vinculado à etapa 6 (Reporte).</li>
+          <li><b>O que mede:</b> Prazo de comunicação à ANPD — 3 dias úteis (<CitacaoNormativa citacao="Res. CD/ANPD nº 15/2024, art. 6º" />), contados do conhecimento do incidente; não inclui fins de semana e feriados. Vinculado à etapa 6 (Reporte).</li>
           <li><b>Ao zerar:</b> Após o prazo, o incidente é marcado como comunicado em atraso e a trilha registra o descumprimento.</li>
           <li><b>Contador:</b> conta apenas horas úteis (segunda a sexta) e não pausa durante a resposta; após a comunicação simulada, congela no instante de envio.</li>
         </ul>
