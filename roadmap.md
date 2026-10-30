@@ -45,3 +45,7 @@
 - [ ] Corrigir atalhos do Dashboard e do Bloco 4 para aba=anpd; auditar todos os atalhos.
 - [ ] Popular Trilho Core no demo com eventos do seed + eventos em memória com SHA-256 encadeado.
 - [ ] Executar provas de aceitação (a) a (j) e atualizar testes que codificavam o comportamento antigo.
+- [ ] Envio 2: bibliotecaTextos.ts determinística com modelos copiáveis (cabeçalho/rodapé obrigatórios) e evento de cópia na trilha.
+- [ ] Envio 2: PI-03 — "Copiar modelo" nos chips do Escudo, estrutura+inventário no Cryptomator, padrão de nomenclatura no BitLocker, "Copiar dossiê (modelo)".
+- [ ] Envio 2: PI-05 — botões de copiar nas sugestões; pedagogia normativa expansível (LGPD arts. 5º/6º/14/20/46/48; Res. 15/2024 arts. 3º e 6º).
+- [ ] Envio 2: provas de aceitação (a) a (k).

@@ -35,7 +35,7 @@ test('a-i) circuito completo: envio → encerramento → chancela PI-04 → Bloc
   await expect(lista.getByText(/Responsável: DPO Cenográfico/)).toHaveCount(6);
 
   // c) Encerramento habilitado no instante do envio; encerrar e confirmar.
-  const encerrar = page.getByRole('button', { name: 'Encerrar incidente', exact: true });
+  const encerrar = page.getByRole('button', { name: 'Encerrar incidente', exact: true }).first();
   await expect(encerrar).toBeVisible();
   await encerrar.click();
   await expect(page.getByText('Incidente encerrado nesta sessão de demonstração.')).toBeVisible();
