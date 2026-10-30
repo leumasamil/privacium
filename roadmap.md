@@ -51,10 +51,10 @@
 - [ ] Envio 2: provas e2e de cópia com clipboard (e, f, h, i) — unitárias feitas; e2e de clipboard pendente.
 
 ## Envio 3 — MCI + Lei de IA
-- [ ] MCI art. 15 no console pgAudit (Bloco 4) com tooltip pedagógico.
-- [ ] MCI art. 10 + prazo de retenção na Trilha de Auditoria.
-- [ ] Seção "Marco Civil da Internet" (art. 7º, VIII) no Manual de Uso.
-- [ ] PI-05: classificação determinística de risco de IA com "Derivado de:" e override auditado.
-- [ ] Inventário de sistemas de IA alimentado pelo PI-03 (sem digitação duplicada).
-- [ ] Painel AIA com 4 eixos + rótulo de escopo + ressalva PL 2338 em tramitação.
-- [ ] Testes unitários + e2e (a)–(i); provar delta 0, guards/migrations intactos.
+- [x] MCI art. 15 no console pgAudit (Bloco 4) com tooltip pedagógico.
+- [x] MCI art. 10 + prazo de retenção na Trilha de Auditoria.
+- [x] Seção "Marco Civil da Internet" (art. 7º, VIII) no Manual de Uso.
+- [x] PI-05: classificação determinística de risco de IA com "Derivado de:" e override auditado.
+- [x] Inventário de sistemas de IA alimentado pelo PI-03 (sem digitação duplicada).
+- [x] Painel AIA com 4 eixos + rótulo de escopo + ressalva PL 2338 em tramitação.
+- [x] Testes unitários + e2e (a)–(i); provar delta 0, guards/migrations intactos.
