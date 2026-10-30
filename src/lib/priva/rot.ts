@@ -2,7 +2,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { cicloDaLinha, temProcessar, validarCiclo } from "./cicloVida";
 
 export type RotRow = Database["public"]["Tables"]["registro_operacoes"]["Row"];
-export type RotInput = Omit<RotRow, "id" | "codigo" | "criado_por" | "criado_em" | "atualizado_em" | "assinatura_etapa1" | "assinatura_etapa2">;
+export type RotInput = Omit<RotRow, "id" | "codigo" | "criado_por" | "criado_em" | "atualizado_em" | "assinatura_etapa1" | "assinatura_etapa2" | "excluido_em" | "excluido_por" | "motivo_exclusao">;
 
 /** Papel do agente na linha (LGPD art. 5º, VI e VII); o padrão vem do enquadramento do Bloco 1 e é editável por linha. */
 export const PAPEIS_AGENTE = ["CONTROLADOR", "OPERADOR", "CONTROLADOR_OPERADOR"] as const;
