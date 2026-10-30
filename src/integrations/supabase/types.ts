@@ -112,6 +112,51 @@ export type Database = {
         }
         Relationships: []
       }
+      biblioteca_normativa: {
+        Row: {
+          atualizado_em: string
+          categoria: Database["public"]["Enums"]["categoria_normativa"]
+          criado_em: string
+          id: string
+          identificador: string
+          norma: string
+          observacao: string | null
+          status: Database["public"]["Enums"]["status_normativo"]
+          texto_literal: string | null
+          url_oficial: string | null
+          verificado_em: string | null
+          verificado_por: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          categoria: Database["public"]["Enums"]["categoria_normativa"]
+          criado_em?: string
+          id?: string
+          identificador: string
+          norma: string
+          observacao?: string | null
+          status?: Database["public"]["Enums"]["status_normativo"]
+          texto_literal?: string | null
+          url_oficial?: string | null
+          verificado_em?: string | null
+          verificado_por?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          categoria?: Database["public"]["Enums"]["categoria_normativa"]
+          criado_em?: string
+          id?: string
+          identificador?: string
+          norma?: string
+          observacao?: string | null
+          status?: Database["public"]["Enums"]["status_normativo"]
+          texto_literal?: string | null
+          url_oficial?: string | null
+          verificado_em?: string | null
+          verificado_por?: string | null
+        }
+        Relationships: []
+      }
       chaves_recuperacao: {
         Row: {
           ativo_id: string
@@ -149,7 +194,7 @@ export type Database = {
           finalizado_em: string
           finalizado_por: string | null
           id: string
-          reducao_dosimetria: number
+          reducao_dosimetria: number | null
         }
         Insert: {
           ano_fiscal: number
@@ -158,7 +203,7 @@ export type Database = {
           finalizado_em?: string
           finalizado_por?: string | null
           id?: string
-          reducao_dosimetria: number
+          reducao_dosimetria?: number | null
         }
         Update: {
           ano_fiscal?: number
@@ -167,7 +212,7 @@ export type Database = {
           finalizado_em?: string
           finalizado_por?: string | null
           id?: string
-          reducao_dosimetria?: number
+          reducao_dosimetria?: number | null
         }
         Relationships: []
       }
@@ -1367,6 +1412,29 @@ export type Database = {
       }
       revelar_cnpj_terceiro: { Args: { _id: string }; Returns: string }
       revelar_documento_membro: { Args: { _id: string }; Returns: string }
+      verificar_citacao_normativa: {
+        Args: { _id: string; _texto: string; _url: string }
+        Returns: {
+          atualizado_em: string
+          categoria: Database["public"]["Enums"]["categoria_normativa"]
+          criado_em: string
+          id: string
+          identificador: string
+          norma: string
+          observacao: string | null
+          status: Database["public"]["Enums"]["status_normativo"]
+          texto_literal: string | null
+          url_oficial: string | null
+          verificado_em: string | null
+          verificado_por: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "biblioteca_normativa"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       verificar_trilha: {
         Args: never
         Returns: {
@@ -1396,6 +1464,16 @@ export type Database = {
     }
     Enums: {
       app_role: "ADMIN_SISTEMA" | "DPO_OPERACIONAL" | "C_SUITE"
+      categoria_normativa:
+        | "REGIME_GERAL"
+        | "LEI_ESPECIAL_SETORIAL"
+        | "FOMENTO_ECONOMICO"
+        | "REFERENCIA_TECNICA"
+      status_normativo:
+        | "VERIFICADA"
+        | "PENDENTE"
+        | "DIVERGENTE"
+        | "NAO_VERIFICAVEL"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1524,6 +1602,18 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["ADMIN_SISTEMA", "DPO_OPERACIONAL", "C_SUITE"],
+      categoria_normativa: [
+        "REGIME_GERAL",
+        "LEI_ESPECIAL_SETORIAL",
+        "FOMENTO_ECONOMICO",
+        "REFERENCIA_TECNICA",
+      ],
+      status_normativo: [
+        "VERIFICADA",
+        "PENDENTE",
+        "DIVERGENTE",
+        "NAO_VERIFICAVEL",
+      ],
     },
   },
 } as const

@@ -295,6 +295,13 @@
       "when": 1793386140826,
       "tag": "0041_corrigir_fontes_catalogo_riscos",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1793388334933,
+      "tag": "0042_dosimetria_null_e_biblioteca_normativa",
+      "breakpoints": true
     }
   ]
 }
