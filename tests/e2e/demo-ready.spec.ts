@@ -36,9 +36,9 @@ test('d) Bloco 5 bloqueado oferece ação e detalhes clicáveis', async ({ page 
   await expect(page.getByRole('heading', { name: 'Bloco 5 bloqueado' })).toBeVisible();
   await expect(page.getByText('Falta concluir o Bloco 4 para liberar esta etapa.')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'O que falta no Bloco 4' })).toBeVisible();
-  const action = page.locator('main a').filter({ hasText: /Encerrar incidente/ }).last();
+  const action = page.getByRole('link', { name: /^Preencher e enviar o formulário ANPD/ }).last();
   await action.click();
-  await expect(page).toHaveURL(/aba=bloco-4/);
+  await expect(page).toHaveURL(/aba=anpd/);
   await page.goto(`${base}/demo?aba=bloco-5`, { waitUntil: 'networkidle' });
   await page.getByRole('link', { name: 'Ver o que falta neste bloco em detalhes' }).click();
   await expect(page).toHaveURL(/aba=manual/);
