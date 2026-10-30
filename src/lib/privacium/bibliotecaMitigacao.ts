@@ -68,6 +68,116 @@ export function sugestaoMitigacao(id: RiscoId, sigs: Record<string, unknown>): S
   return { rotulo, texto: `${rotulo}: ${e.medida}. Fonte: ${e.fonte}.` };
 }
 
+/** Descrição contextual do risco, condicionada ao mesmo PI de origem da mitigação. */
+export function sugestaoDescricao(id: RiscoId, sigs: Record<string, unknown>): Sugestao {
+  const e = BIBLIOTECA[id];
+  const falta = e.pis.find((p) => !concluido(sigs, p));
+  if (falta) return { aviso: `Conclua o ${falta} para receber a sugestão.` };
+  const origem = e.pis.map((p) => `${p} (${NOMES_PI[p]})`).join(" e do ");
+  const rotulo = `Sugerido a partir do ${origem}`;
+  return { rotulo, texto: e.descricao };
+}
+
+// ---------------------------------------------------------------------------
+// A2 · Estruturas de cofre do PI-03 — modelos por cenário do ROT (PI-02).
+// Sugerem apenas a ESTRUTURA lógica da pasta; IDs e hashes seguem manuais.
+// ---------------------------------------------------------------------------
+export const ESTRUTURAS_COFRE: Record<string, { cenario: string; estrutura: string }> = {
+  RH: {
+    cenario: "RH / folha de pagamento",
+    estrutura: "holerites/\ncontratos/\ndocumentos-pessoais/\nafastamentos/",
+  },
+  Financeiro: {
+    cenario: "Financeiro",
+    estrutura: "notas-fiscais/\nboletos/\ndados-bancarios/\ncomprovantes/",
+  },
+  Marketing: {
+    cenario: "Marketing",
+    estrutura: "bases-consentidas/\ncampanhas/\nrevogacoes/",
+  },
+  Recepcao: {
+    cenario: "Recepção / controle de acesso",
+    estrutura: "registros-visitantes/\nbiometria-templates/\nlogs-acesso/",
+  },
+  Juridico: {
+    cenario: "Jurídico",
+    estrutura: "contratos/\nprocuracoes/\nprocessos/",
+  },
+  generico: {
+    cenario: "Uso geral",
+    estrutura: "documentos/\ncontratos/\nregistros/",
+  },
+};
+
+export type SugestaoEstrutura = { estrutura: string; rotulo: string; cenarios: string[] };
+
+/** Modelo de estrutura de pasta derivado dos setores presentes no ROT (PI-02). */
+export function estruturaSugerida(setores: string[]): SugestaoEstrutura {
+  const norm = setores.map((s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase());
+  const achados = Object.entries(ESTRUTURAS_COFRE).filter(([k]) =>
+    k !== "generico" && norm.some((s) => s.includes(k.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase())),
+  );
+  const escolhidos = achados.length ? achados : [["generico", ESTRUTURAS_COFRE.generico] as const];
+  const blocos = escolhidos.map(([k, v]) => `${k === "generico" ? "" : `/${k}\n`}${v.estrutura.split("\n").map((l) => (k === "generico" ? l : `  ${l}`)).join("\n")}`);
+  return {
+    estrutura: blocos.join("\n"),
+    cenarios: escolhidos.map(([, v]) => v.cenario),
+    rotulo: "Sugerido a partir do ROT (PI-02)",
+  };
+}
+
+// ---------------------------------------------------------------------------
+// A3 · Padrão de hostname — apenas placeholder de formato, nunca valor inventado.
+// ---------------------------------------------------------------------------
+/** Detecta o padrão do primeiro endpoint cadastrado e devolve um placeholder de formato. */
+export function padraoHostname(hostnames: string[]): string | null {
+  const primeiro = hostnames.find((h) => h.trim());
+  if (!primeiro) return null;
+  const m = primeiro.trim().match(/^([A-Za-z]+)-([A-Za-z]+)-(\d+)$/);
+  if (m) return `${m[1]}-<SETOR>-${"N".repeat(m[3].length)} (padrão detectado a partir de ${primeiro.trim()})`;
+  return `Padrão detectado: ${primeiro.trim()} — mantenha o mesmo formato`;
+}
+
+// ---------------------------------------------------------------------------
+// A4 · Prompts de exemplo do Escudo Digital — antes/depois fixos, sem IA.
+// ---------------------------------------------------------------------------
+export type ExemploEscudo = { id: string; rotulo: string; prompt: string; higienizado: string; mascara: string; fonte: string };
+
+export const EXEMPLOS_ESCUDO: ExemploEscudo[] = [
+  {
+    id: "cpf",
+    rotulo: "CPF",
+    prompt: "Resuma o cadastro do cliente portador do CPF 123.456.789-00 e informe o status do último atendimento.",
+    higienizado: "Resuma o cadastro do cliente portador do CPF [CPF_TOKEN_4821] e informe o status do último atendimento.",
+    mascara: "123.456.789-**",
+    fonte: "LGPD art. 46 / CIS Control 03",
+  },
+  {
+    id: "email",
+    rotulo: "E-mail",
+    prompt: "Envie a proposta comercial revisada para maria.souza@cliente.com.br até sexta-feira.",
+    higienizado: "Envie a proposta comercial revisada para [EMAIL_TOKEN_7312] até sexta-feira.",
+    mascara: "m****@cliente.com.br",
+    fonte: "LGPD art. 5º, I / CIS Control 03",
+  },
+  {
+    id: "bancario",
+    rotulo: "Dado bancário",
+    prompt: "Registre o reembolso do colaborador no banco 341, agência 1234, conta corrente 56789-0.",
+    higienizado: "Registre o reembolso do colaborador no banco [BANCO_TOKEN_10], agência [AGENCIA_TOKEN_20], conta corrente [CONTA_TOKEN_30].",
+    mascara: "banco 3** · ag. **** · c/c *****-0",
+    fonte: "LGPD art. 7º / ISO/IEC 27002",
+  },
+  {
+    id: "titular",
+    rotulo: "Nome de titular",
+    prompt: "Analise o histórico de atendimento de João da Silva e sugira o próximo contato.",
+    higienizado: "Analise o histórico de atendimento de [NOME_TOKEN_01] e sugira o próximo contato.",
+    mascara: "J*** da S****",
+    fonte: "LGPD art. 5º, I / CIS Control 03",
+  },
+];
+
 export type RiscoDerivado = { prob: number; imp: number; reducoes: string[] };
 
 /** Risco residual: parte de 5×5 e reduz pelos controles dos PIs concluídos (mínimo 1). */
