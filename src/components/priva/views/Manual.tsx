@@ -114,6 +114,13 @@ export function Manual({ aba }: { aba?: string | undefined }) {
           <Panel title="Glossário LGPD">
             <dl className="space-y-3 text-sm">{GLOSSARIO.map(([t, d]) => <div key={t}><dt className="font-semibold text-primary">{t}</dt><dd className="text-muted-foreground">{d}</dd></div>)}</dl>
           </Panel>
+          <Panel title="Marco Civil da Internet" className="mt-4">
+            <ul className="space-y-3 text-sm" data-testid="manual-mci">
+              <li><b>MCI art. 7º, VIII</b> — informações claras e completas sobre coleta, uso, armazenamento e tratamento de dados: o Privacium atende este artigo mantendo o ROT por operação, a trilha de acessos e os documentos de evidência sempre visíveis ao controlador.</li>
+              <li><b>MCI art. 10</b> — guarda e disponibilização de registros de acesso, em ambiente controlado e de segurança: é a Trilha de Auditoria com cadeia SHA-256.</li>
+              <li><b>MCI art. 15</b> — guarda de registros de acesso a aplicações, sob sigilo, em ambiente controlado, pelo prazo de 6 meses: são os lotes mensais de pgAudit do Bloco 4.</li>
+            </ul>
+          </Panel>
         </TabsContent>
 
         <TabsContent value="faq">
