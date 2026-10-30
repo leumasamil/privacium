@@ -114,7 +114,7 @@ export function PIOutput({ pi, ready, readyHint, children, dual, acoesExtras }: 
         <div>
           <p className="font-semibold text-primary">{pi}</p>
           {sig ? (
-            <p className="mt-1 flex items-center gap-1 text-xs text-success"><ShieldCheck className="h-3 w-3" /> Chancelado em {new Date(sig.ts).toLocaleString("pt-BR")} · <span className="font-mono">{sig.hash.slice(0, 16)}…</span></p>
+            <p className="mt-1 flex flex-wrap items-center gap-1 text-xs text-success" data-testid="rodape-chancela"><ShieldCheck className="h-3 w-3 shrink-0" /> Chancelado em {new Date(sig.ts).toLocaleString("pt-BR")} · <span className="break-all font-mono">SHA-256 {sig.hash}</span></p>
           ) : (
             <p className="mt-1 text-xs text-muted-foreground">{ready ? "Pronto para chancela digital." : readyHint}</p>
           )}
