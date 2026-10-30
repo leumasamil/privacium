@@ -275,9 +275,27 @@ function CryptomatorCard({ cofres, cnpj, canEdit, refresh, remove, setoresRot, l
               {["Google Drive", "OneDrive", "Dropbox", "Amazon S3"].map((p) => <option key={p}>{p}</option>)}
             </select>
           </div>
-          <Textarea rows={3} placeholder={"Estrutura da pasta (um caminho por linha)\nholerites/2026-01.pdf\ncontratos/"} value={estrutura} onChange={(e) => setEstrutura(e.target.value)} />
+          <div className="space-y-1">
+            <Textarea rows={4} aria-label="Estrutura da pasta" placeholder={"Estrutura da pasta (um caminho por linha)\nholerites/2026-01.pdf\ncontratos/"} value={estrutura} onChange={(e) => { setEstrutura(e.target.value); setRotuloEstrutura(null); }} />
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => {
+                const s = estruturaSugerida(setoresRot);
+                setEstrutura(s.estrutura);
+                setRotuloEstrutura(`${s.rotulo} · ${s.cenarios.join(", ")}`);
+              }}>Usar estrutura sugerida</Button>
+              {rotuloEstrutura && <span className="text-[11px] text-muted-foreground" data-testid="rotulo-estrutura">{rotuloEstrutura} (editável)</span>}
+            </div>
+          </div>
           <Input aria-label="Responsável pelo cofre" placeholder="Responsável / fornecedor (opcional)" value={responsavel} onChange={e=>setResponsavel(e.target.value)} />
-          <Input aria-label="Localização do cofre" placeholder="Localização / domínio (opcional)" value={localizacao} onChange={e=>setLocalizacao(e.target.value)} />
+          {localizacoes.length > 0 && !localizacaoOutra ? (
+            <select aria-label="Localização do cofre" className="w-full rounded-sm border bg-background px-3 py-2 text-sm" value={localizacao} onChange={(e) => { if (e.target.value === "__outra__") { setLocalizacaoOutra(true); setLocalizacao(""); } else setLocalizacao(e.target.value); }}>
+              <option value="">Localização / domínio (herdar dos ativos cadastrados)</option>
+              {localizacoes.map((l) => <option key={l} value={l}>{l}</option>)}
+              <option value="__outra__">Outra localização…</option>
+            </select>
+          ) : (
+            <Input aria-label="Localização do cofre" placeholder="Localização / domínio (opcional)" value={localizacao} onChange={e=>setLocalizacao(e.target.value)} />
+          )}
           {preview && <p className="break-all font-mono text-[10px] text-muted-foreground">Hash calculado: {preview}</p>}
           <Button onClick={() => void add()} className="w-full"><Plus className="h-4 w-4" /> Catalogar cofre</Button>
         </div>
