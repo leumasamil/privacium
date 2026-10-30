@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { AppLink as Link } from "@/components/priva/AppLink";
 import { Info } from "lucide-react";
 import type { ReactNode } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

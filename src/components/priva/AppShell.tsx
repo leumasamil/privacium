@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { FollowUpBanner, FollowUpBell } from "@/components/priva/FollowUp";
 import { ProximoPasso } from "@/components/priva/ProximoPasso";
 import { AvisoModoDemo } from "@/components/priva/AvisoModoDemo";
+import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 
 const ROLE_ACCESS: Record<Role, string[]> = {
   ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/membros", "/manual", "/glossario"],
@@ -28,19 +29,20 @@ export function canAccess(role: Role, path: string) {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { role, roles, setRole, set, enterprise, signatures, reset, ready, email, cnpj, empresas, selectEmpresa, createEmpresa, log, demo, setDemo } = usePriva();
+  const { role, roles, setRole, set, enterprise, signatures, reset, ready, email, cnpj, empresas, selectEmpresa, createEmpresa, log, demo, publicDemo, setDemo } = usePriva();
   const [demoAsk, setDemoAsk] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
   const podeDemo = roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL");
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, searchStr } = useLocation();
   const [novo, setNovo] = useState({ cnpj: "", razao: "", err: "" });
   const lastRead = useRef("");
   const [suspensa, setSuspensa] = useState(false);
   useEffect(() => {
+    if (demo) { setSuspensa(false); return; }
     if (!cnpj || roles.includes("ADMIN_SISTEMA")) { setSuspensa(false); return; }
     void supabase.rpc("empresa_ativa", { _cnpj: cnpj }).then(({ data }) => setSuspensa(data === false));
-  }, [cnpj, roles]);
+  }, [cnpj, roles, demo]);
   // Rastreabilidade forense: abertura de telas com dados pessoais registra leitura
   useEffect(() => {
     if (!ready || !cnpj || !roles.length) return;
@@ -65,7 +67,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <button onClick={submitEmpresa} className="w-full rounded-sm bg-primary px-2 py-1.5 text-sm text-primary-foreground">Cadastrar CNPJ</button>
     </div>
   );
-  const signOut = async () => { await supabase.auth.signOut(); navigate({ to: "/auth" }); };
+  const signOut = async () => { if (!publicDemo) await supabase.auth.signOut(); navigate({ to: "/auth" }); };
 
   if (!ready) return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Carregando…</div>;
   if (!roles.length) return (
@@ -92,11 +94,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const allowed = (demo || canAccess(role, pathname));
 
   const item = (to: string, label: ReactNode, icon: ReactNode, extra?: ReactNode, locked = false) => {
+    if (demo && ['/membros', '/enterprise'].includes(to)) return null;
     if (!(demo || canAccess(role, to))) return null;
-    const active = pathname.startsWith(to);
+    const active = publicDemo ? (searchStr.includes(`aba=${to.slice(1)}`)) : pathname.startsWith(to);
     return (
       <Link
-        to={to as "/"}
+        to={publicDemo ? '/demo' : to as "/"}
+        search={publicDemo ? { aba: to.slice(1) } : {}}
         className={cn(
           "flex items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors",
           active ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/60",
@@ -137,13 +141,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             {empresas.map((e) => <option key={e.cnpj} value={e.cnpj}>{maskCNPJ(e.cnpj)} · {e.razao_social}</option>)}
           </select>
-          {role !== "C_SUITE" && (
+          {role !== "C_SUITE" && !demo && (
             <details className="mt-2 text-xs"><summary className="cursor-pointer opacity-70">+ Nova empresa</summary><div className="mt-2">{empresaForm}</div></details>
           )}
         </div>
         {podeDemo && (
           <div className="border-b border-sidebar-border px-5 py-3">
-            <button onClick={() => (demo ? setDemo(false) : setDemoAsk(true))}
+            <button onClick={() => (demo ? publicDemo ? void navigate({ to: '/auth' }) : setDemo(false) : setDemoAsk(true))}
               className={cn("flex w-full items-center gap-2 rounded-sm border px-3 py-2 text-sm font-medium", demo ? "border-warning bg-warning text-warning-foreground" : "border-sidebar-primary text-sidebar-accent-foreground hover:bg-sidebar-accent")}>
               <Presentation className="h-4 w-4" /> {demo ? "Encerrar Demonstração" : "Modo Demonstração Comercial"}
             </button>
@@ -172,6 +176,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {item("/auditoria", "Trilha de Auditoria (Trilho Core)", <ScrollText className="h-4 w-4" />)}
           {item("/manual", "Manual de Uso", <BookOpen className="h-4 w-4" />)}
           {item("/glossario", "Glossário", <BookA className="h-4 w-4" />)}
+          {publicDemo && item('/encarregado', 'Encarregado (DPO)', <Users className="h-4 w-4" />)}
           {item("/membros", "Membros e cargos", <Users className="h-4 w-4" />)}
           {item("/enterprise", "Enterprise", <Building2 className="h-4 w-4" />, enterprise ? null : <Lock className="h-3 w-3" />)}
         </nav>
@@ -180,7 +185,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span>Gatilho Crítico de Migração<br /><span className="text-[10px] opacity-70">&gt;10 mil titulares/mês ou S.A.</span></span>
             <Switch
               checked={enterprise}
-              onCheckedChange={(v) => set({ enterprise: v }, { op: "UPDATE", target: "tenant", detail: `Trilho ${v ? "Enterprise" : "Core"}` })}
+              onCheckedChange={(v) => demo ? avisarAcaoDemo() : set({ enterprise: v }, { op: "UPDATE", target: "tenant", detail: `Trilho ${v ? "Enterprise" : "Core"}` })}
             />
           </label>
           <p className="truncate opacity-70">{email}</p>

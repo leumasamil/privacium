@@ -21,6 +21,7 @@ export function respostaHerdada(timestamp: string, now: Date) {
 
 /** Só valem as assinaturas coletadas no ciclo vigente: um novo semestre exige novo PI-01..PI-05. */
 export function assinaturasVigentes<T extends { ts: string }>(sigs: Record<string, T>, now: Date): Record<string, T> {
+  const safeSigs = (sigs && typeof sigs === 'object' && !Array.isArray(sigs)) ? sigs : {};
   const ini = cicloSemestral(now).inicio.getTime();
-  return Object.fromEntries(Object.entries(sigs).filter(([, s]) => new Date(s.ts).getTime() >= ini));
+  return Object.fromEntries(Object.entries(safeSigs).filter(([, s]) => s && typeof s === 'object' && new Date(s.ts).getTime() >= ini));
 }

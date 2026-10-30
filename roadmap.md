@@ -30,3 +30,7 @@
 - [x] Criar página 404 explícita e verificar navegação.
 - [x] Extrair AvisoModoDemo com AlertTriangle no topo das telas e ajustar texto da página 404; verificar saída e rotas inexistentes.
 - [x] Revalidar exclusões de ambiente, credenciais privadas e RLS das 23 tabelas; documentar limpeza do histórico e recomendação de rotação (exclusão bloqueada conforme pendência acima).
+- [x] Corrigir retorno do login e destino seguro, com Lovable apenas na visualização incorporada.
+- [x] Criar demonstração pública isolada, seed ANPD completo e ações com aviso, preservando guard e RLS.
+- [x] Executar os dez critérios: b–j passaram localmente (b com resposta controlada e dica condicional sem enumerar contas); a aguarda publicação e autorização Google interativa.
+- [ ] Validar login Google completo no app publicado: bloqueado pela publicação ainda não solicitada e consentimento Google interativo.

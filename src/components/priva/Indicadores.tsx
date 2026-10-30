@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { AppLink as Link } from "@/components/priva/AppLink";
 import { ArrowRight, CheckCircle2, Circle } from "lucide-react";
 import type { ReactNode } from "react";
 import { Tag } from "@/components/priva/ui";

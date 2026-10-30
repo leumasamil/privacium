@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AuthenticatedAuditoriaRouteImport } from './routes/_authenticated/auditoria'
 import { Route as AuthenticatedBloco1RouteImport } from './routes/_authenticated/bloco-1'
 import { Route as AuthenticatedBloco2RouteImport } from './routes/_authenticated/bloco-2'
@@ -44,6 +45,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAuditoriaRoute = AuthenticatedAuditoriaRouteImport.update({
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/bloco-1': typeof AuthenticatedBloco1Route
   '/bloco-2': typeof AuthenticatedBloco2Route
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/bloco-1': typeof AuthenticatedBloco1Route
   '/bloco-2': typeof AuthenticatedBloco2Route
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/$': typeof SplatRoute
   '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
   '/_authenticated/auditoria': typeof AuthenticatedAuditoriaRoute
   '/_authenticated/bloco-1': typeof AuthenticatedBloco1Route
   '/_authenticated/bloco-2': typeof AuthenticatedBloco2Route
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/auth'
+    | '/demo'
     | '/auditoria'
     | '/bloco-1'
     | '/bloco-2'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/auth'
+    | '/demo'
     | '/auditoria'
     | '/bloco-1'
     | '/bloco-2'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/$'
     | '/auth'
+    | '/demo'
     | '/_authenticated/auditoria'
     | '/_authenticated/bloco-1'
     | '/_authenticated/bloco-2'
@@ -232,6 +244,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   SplatRoute: typeof SplatRoute
   AuthRoute: typeof AuthRoute
+  DemoRoute: typeof DemoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -262,6 +275,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/auditoria': {
@@ -399,6 +419,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   SplatRoute: SplatRoute,
   AuthRoute: AuthRoute,
+  DemoRoute: DemoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

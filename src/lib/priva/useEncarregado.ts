@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { usePriva } from "./store";
+import { DEMO_DPO } from './demo';
 export function useEncarregado() {
   const { cnpj, demo, log } = usePriva();
   const query = useQuery({
@@ -13,5 +14,5 @@ export function useEncarregado() {
     },
   });
   useEffect(() => { if (cnpj && !demo) log("SELECT", "encarregado_dpo", "Leitura do contato do encarregado"); }, [cnpj, demo, log]);
-  return query;
+  return demo ? { ...query, data: DEMO_DPO, isLoading: false, isError: false, refetch: async () => ({ ...query, data: DEMO_DPO }) } : query;
 }

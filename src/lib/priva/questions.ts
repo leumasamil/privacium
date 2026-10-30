@@ -3,7 +3,7 @@ import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Question } from "./data";
-import { DEMO_CPF, demoAnswers } from "./demo";
+import { DEMO_CPF, DEMO_QUESTIONS, demoAnswers } from "./demo";
 import { useDemo } from "./store";
 
 export const questionsQuery = queryOptions({
@@ -19,7 +19,11 @@ export const questionsQuery = queryOptions({
   },
 });
 
-export const useQuestions = () => useQuery(questionsQuery).data ?? [];
+export const useQuestions = () => {
+  const demo = useDemo();
+  const query = useQuery({ ...questionsQuery, enabled: !demo });
+  return demo ? DEMO_QUESTIONS : query.data ?? [];
+};
 
 export type Resposta = "SIM" | "NÃO";
 
@@ -80,9 +84,10 @@ export function useResponder(cnpj: string | null, cpf: string | null) {
 /** CPF do usuário logado (tabela usuarios). */
 export function useMeuCpf(userId: string | null) {
   const qc = useQueryClient();
+  const demo = useDemo();
   const q = useQuery({
     queryKey: ["meu_cpf", userId],
-    enabled: !!userId,
+    enabled: !!userId && !demo,
     queryFn: async () => {
       const { data } = await supabase.from("usuarios").select("cpf").eq("id", userId ?? "").maybeSingle();
       return data?.cpf ?? null;
@@ -95,7 +100,6 @@ export function useMeuCpf(userId: string | null) {
     qc.setQueryData(["meu_cpf", userId], d);
     return null;
   };
-  const demo = useDemo();
   if (demo) return { cpf: DEMO_CPF, loading: false, salvar: async () => "Indisponível no Modo Demonstração." };
   return { cpf: q.data ?? null, loading: q.isLoading, salvar };
 }

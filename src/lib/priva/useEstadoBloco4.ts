@@ -30,7 +30,7 @@ export function useEstadoBloco4(cnpj: string | null) {
     ch.subscribe();
     return () => { void supabase.removeChannel(ch); };
   }, [cnpj, demo, qc, subscriber]);
-  const fonte = q.data ? { ...q.data, assinaturas: signatures, agora: Date.now() } : null;
+  const fonte = q.data ? { ...q.data, assinaturas: signatures, agora: demo ? Date.parse(DEMO_ROWS.incidentes_seguranca[0]?.iniciado_em ?? "2026-10-01T12:00:00Z") + 14 * 3600000 : Date.now() } : null;
   return { ...q, data: fonte ? { n: 4 as const, ...fonte, estados: fonte.incidentes.map(i => carregarEstadoIncidente(i.id, fonte)) } : undefined,
     refresh: () => qc.invalidateQueries({ queryKey: ['estado-bloco-4', cnpj] }) };
 }

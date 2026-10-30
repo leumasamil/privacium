@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { AppLink as Link } from "@/components/priva/AppLink";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { usePriva } from "@/lib/priva/store";
@@ -9,6 +9,7 @@ import { Panel } from "./ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { avisarAcaoDemo } from '@/lib/priva/demoAction';
 const vazio = { nome: "", email: "", telefone: "", endereco: "", publicar_contato: false };
 export function EncarregadoDPO() {
   const { cnpj, role, roles, demo } = usePriva();
@@ -17,11 +18,12 @@ export function EncarregadoDPO() {
   const [form, setForm] = useState(vazio);
   const [busy, setBusy] = useState(false);
   const [salvo, setSalvo] = useState(false);
-  const editavel = !demo && role !== "C_SUITE" && (roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL"));
+  const editavel = role !== "C_SUITE" && (roles.includes("ADMIN_SISTEMA") || roles.includes("DPO_OPERACIONAL"));
   useEffect(() => { setForm(q.data ? { ...q.data, telefone: q.data.telefone ?? "", endereco: q.data.endereco ?? "" } : vazio); setSalvo(false); }, [q.data, cnpj]);
   useEffect(() => { if (!q.isLoading && editavel) document.getElementById(!q.data?.nome ? "dpo-nome" : !q.data?.email ? "dpo-email" : "dpo-nome")?.focus(); }, [q.isLoading, cnpj, editavel]);
   const motivos = [!form.nome.trim() && "Informe o nome do encarregado", !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && "Informe um e-mail de contato válido", !cnpj && "Selecione um CNPJ", demo && "Cadastro indisponível no modo demonstração"].filter(Boolean);
   const salvar = async () => {
+    if (demo) return avisarAcaoDemo();
     if (!editavel || motivos.length || !cnpj || busy) return;
     setBusy(true);
     try {
@@ -41,7 +43,7 @@ export function EncarregadoDPO() {
     <form onSubmit={e => { e.preventDefault(); void salvar(); }} className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">{([ ["nome", "Nome do encarregado", "Ex.: Maria Oliveira"], ["email", "E-mail de contato do encarregado", "Ex.: privacidade@organizacao.com.br"], ["telefone", "Telefone (opcional)", "Ex.: (11) 3333-4444"], ["endereco", "Endereço para correspondência (opcional)", "Ex.: Rua das Flores, 120, São Paulo — SP"] ] as const).map(([campo, titulo, exemplo]) => <div key={campo}><label htmlFor={`dpo-${campo}`} className="text-sm font-medium">{titulo}</label><Input id={`dpo-${campo}`} className="mt-1" type={campo === "email" ? "email" : "text"} value={form[campo]} placeholder={exemplo} readOnly={!editavel} disabled={q.isLoading} onChange={e => {setForm({ ...form, [campo]: e.target.value }); setSalvo(false);}} /></div>)}</div>
       <label className="flex items-center gap-2 text-sm"><Checkbox checked={form.publicar_contato} disabled={!editavel} onCheckedChange={v => {setForm({ ...form, publicar_contato: v === true }); setSalvo(false);}} />Publicar o contato do encarregado na política de privacidade</label>
-      {editavel && <><ul className="text-sm text-atencao">{motivos.map(m => <li key={String(m)}>{m}</li>)}</ul><Button type="submit" disabled={!!motivos.length || busy || q.isLoading}>{busy ? "Salvando…" : "Salvar dados do encarregado"}</Button></>}
+      {editavel && <><ul className="text-sm text-atencao">{motivos.map(m => <li key={String(m)}>{m}</li>)}</ul><Button type="submit" disabled={!demo && (!!motivos.length || busy || q.isLoading)}>{busy ? "Salvando…" : "Salvar dados do encarregado"}</Button></>}
     </form>
   </Panel>;
 }
