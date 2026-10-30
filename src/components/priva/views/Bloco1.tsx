@@ -19,6 +19,18 @@ import { cn } from "@/lib/utils";
 const ZONE_BG = { destructive: "bg-destructive", warning: "bg-warning", success: "bg-success" } as const;
 const ZONE_TEXT = { destructive: "text-destructive", warning: "text-warning-foreground", success: "text-success" } as const;
 
+// Normalize display only: preserve question IDs, persisted answers and scoring.
+function textoDiagnostico(texto: string) {
+  return texto
+    .replace(/dados pessoais sensíveis\s*\(art\.\s*5º,\s*II\)/gi, "Dado pessoal sensível (art. 5º, II)")
+    .replace(/dados pessoais sensíveis/gi, "dado pessoal sensível")
+    .replace(/compartilhamento com terceiros(?:\s*\(arts\.\s*26 e 39\))?/gi, "Comunicação e transferência a terceiros (LGPD art. 5º, X)")
+    .replace(/base legal/gi, "hipótese de tratamento")
+    .replace(/controlador de dados/gi, "controlador")
+    .replace(/titular de dados/gi, "titular")
+    .replace(/incidente de dados/gi, "incidente de segurança");
+}
+
 function Gauge({ gm, tone }: { gm: number; tone: keyof typeof ZONE_BG }) {
   const angle = -90 + (Math.min(gm, 100) / 100) * 180;
   return (
@@ -149,8 +161,8 @@ export function Bloco1() {
                 <div className="flex items-start gap-3">
                   <span className="font-mono text-xs text-muted-foreground">Q{questions.indexOf(q) + 1}</span>
                   <div className="flex-1">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{q.principle} · peso de criticidade {q.weight}</p>
-                    <p className="mt-1 text-sm">{q.text}</p>
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{textoDiagnostico(q.principle)} · peso de criticidade {q.weight}</p>
+                    <p className="mt-1 text-sm">{textoDiagnostico(q.text)}</p>
                     {herdadas.has(q.id) && <span title="Resposta herdada do ciclo anterior. Confirme ou altere." className="mt-1 inline-flex items-center gap-1 rounded-sm border border-dashed px-1.5 py-0.5 font-mono text-[10px] uppercase text-muted-foreground"><History className="h-3 w-3" /> Histórico</span>}
                   </div>
                 </div>
