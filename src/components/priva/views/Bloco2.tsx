@@ -290,6 +290,16 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
           <Field label="8. Tempo de Retenção"><Input value={f.tempo_retencao} placeholder="5 anos pós-rescisão" onChange={(e) => up({ tempo_retencao: e.target.value })} /></Field>
           <Field label="9. Base do Prazo"><Input value={f.base_prazo} placeholder="Art. 206 do Código Civil" onChange={(e) => up({ base_prazo: e.target.value })} /></Field>
           <Field label="10. Comunicação e transferência / Destinatários"><Input value={f.compartilhamento} onChange={(e) => up({ compartilhamento: e.target.value })} /></Field>
+          <Field label="10A. Insumo (documento de entrada) — LGPD art. 5º, I / ISO/IEC 27002 — 5.12">
+            <Chips options={INSUMOS} value={f.insumo ? [f.insumo] : []} onChange={(v) => up({ insumo: v[v.length - 1] ?? null })} />
+          </Field>
+          <Field label="10B. Meio de fornecimento — LGPD art. 37">
+            <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.meio_fornecimento ?? ""} onChange={(e) => up({ meio_fornecimento: e.target.value || null })}>
+              <option value="">Selecione…</option>
+              {MEIOS.map((m) => <option key={m}>{m}</option>)}
+              {f.meio_fornecimento && !MEIOS.includes(f.meio_fornecimento) && <option>{f.meio_fornecimento}</option>}
+            </select>
+          </Field>
           <Field label="12. Infraestrutura / Mídia">
             {edit.id && <BadgeFornecedorROT processoId={edit.id} />}
             <select className="w-full rounded-sm border bg-background px-2 py-2 text-sm" value={f.infraestrutura} onChange={(e) => up({ infraestrutura: e.target.value })}>
@@ -305,11 +315,16 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
             </div>
           )}
         </div>
+        {coerencia.length > 0 && (
+          <div className="rounded-sm border border-warning bg-warning/10 p-3" data-testid="alerta-coerencia">
+            {coerencia.map((a) => <p key={a} className="flex items-start gap-2 text-xs font-medium text-warning-foreground"><AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" /> {a} O alerta é informativo: não impede salvar, mas fica registrado na trilha.</p>)}
+          </div>
+        )}
         {dicas.length > 0 && (
           <div className="rounded-sm border bg-muted/50 p-3">
-            <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary"><Lightbulb className="h-3 w-3" /> Sugestões automáticas</p>
+            <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary"><Lightbulb className="h-3 w-3" /> Sugestões automáticas — nunca pré-selecionadas</p>
             <div className="flex flex-wrap gap-2">
-              {dicas.map((d) => <Button key={d.texto} type="button" size="sm" variant="outline" className="h-auto whitespace-normal py-1 text-left text-xs" onClick={() => up(d.patch)}>{d.texto}</Button>)}
+              {dicas.map((d) => <Button key={d.texto} type="button" size="sm" variant="outline" className="h-auto whitespace-normal py-1 text-left text-xs" title={`Origem: ${d.origem}`} onClick={() => up(d.patch)}><span><b>Sugerido — confirme:</b> {d.texto}<span className="block text-[10px] text-muted-foreground">Origem: {d.origem}</span></span></Button>)}
             </div>
           </div>
         )}
