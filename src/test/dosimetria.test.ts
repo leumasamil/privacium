@@ -40,6 +40,12 @@ describe("dosimetria Res. CD/ANPD nº 4/2023", () => {
   it("valor final mantém centavos em vez de arredondar para reais inteiros", () => {
     expect(multaComAtenuantes(100.50, 75)).toBe(25.13);
   });
+  it("sem pontos percentuais declarados não fabrica desconto a partir de escores", () => {
+    const m = memoriaDosimetria(todos, [{ label: "Risco sem pontos declarados" }], 500_000);
+    expect(m.descontoResidual).toBe(0);
+    expect(m.reducaoEfetiva).toBe(75);
+    expect(m.valorFinal).toBe(125_000);
+  });
   it("prazo começa em 72h úteis (3 dias úteis) e zera após o limite", () => {
     expect(SLA_MS).toBe(72 * 3600 * 1000);
     const inicio = new Date(0).toISOString(); // qui 01/01/1970 00:00 → limite ter 06/01 00:00

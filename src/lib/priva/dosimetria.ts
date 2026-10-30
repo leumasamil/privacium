@@ -25,7 +25,7 @@ export function multaComAtenuantes(base: number, reducao: number) {
 }
 
 /** Desconta apenas pontos percentuais explicitamente declarados; probabilidade × impacto não é percentual. */
-export function memoriaDosimetria(chancelados: Record<string, unknown>, riscos: readonly { label: string; pontosResiduaisNaoMitigados?: number }[], base: number) {
+export function memoriaDosimetria(chancelados: Record<string, unknown>, riscos: readonly { label: string; pontosResiduaisNaoMitigados?: number | undefined }[], base: number) {
   const componentes = DOSIMETRIA.map((d) => ({
     label: d.pis.length === 2 ? "PI-01+02" : d.pis.join("+"), percentual: fatorAtivo(d.pis, chancelados) ? d.pct : 0,
   }));
