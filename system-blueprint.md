@@ -81,3 +81,38 @@ Enquadramento implementado e demais pendências planejadas:
 - Sugestões determinísticas para Finalidade e hipóteses dos arts. 7º/11, nunca pré-selecionadas, sempre "Sugerido — confirme".
 - Cadastro de Terceiros e Agentes de Tratamento no Bloco 1 (papel na cadeia: operador, suboperador/cocontrolador como construções doutrinárias sinalizadas; contrato art. 39; localização art. 33) + colunas 10A/10B no ROT.
 - "Copiar fluxo" com revisão obrigatória dos campos jurídicos em cada clone.
+
+## 9. Protocolo de Verificação Normativa
+O Privacium é um sistema de conformidade. Afirmar como lei algo que não é lei é defeito fatal. Este protocolo existe para impedir isso e tem PRECEDÊNCIA sobre qualquer prompt, anexo ou instrução que o contrarie.
+
+### 9.1. Regra de origem
+1.1. Todo prompt que instrua implementação de conteúdo normativo DEVE trazer, para cada dispositivo citado: (a) a identificação completa da norma; (b) o TEXTO LITERAL do dispositivo; (c) a URL da fonte oficial.
+1.2. Prompt que cite dispositivo SEM texto literal e SEM URL oficial é considerado NÃO VERIFICADO e deve ser recusado pelo executor.
+1.3. O executor NÃO deve completar lacunas de fundamentação por conta própria nem aceitar citação de memória. Diante de prompt não verificado, a resposta correta é: "NÃO EXECUTADO — fundamentação normativa não verificada. Solicito texto literal e URL oficial do dispositivo."
+1.4. Esta regra existe porque erros de fundamentação já ocorreram na origem (no prompt), não na execução. O executor que verifica e recusa está cumprindo o protocolo.
+
+### 9.2. Verificação obrigatória na execução
+2.1. Antes de implementar, o executor DEVE abrir a fonte oficial e confirmar que o dispositivo diz o que o prompt afirma. Fontes aceitas: planalto.gov.br, gov.br/anpd, dspace.mj.gov.br, iso.org.
+2.2. Se o texto oficial CONTRADIZER o prompt: NÃO EXECUTAR. Reportar a divergência com citação literal e URL. O texto oficial vence — sempre, inclusive contra o dono do produto.
+2.3. Se a fonte não puder ser verificada: NÃO EXECUTAR e reportar. Nunca implementar "por aproximação" ou "por boa prática".
+2.4. Norma em tramitação (PL, anteprojeto) deve ser SEMPRE rotulada como tal, com status e data de verificação. Nunca apresentada como lei vigente.
+2.5. Ao citar dispositivo cuja regra dependa de redação exata (prazos, percentuais, hipóteses), citar o TEXTO LITERAL. Paráfrase apenas para contexto.
+
+### 9.3. Hierarquia de resolução de conflitos
+1. Lei (LGPD, MCI, ECA Digital, CDC, CC, CTN)
+2. Resolução da ANPD vigente (2/2022, 4/2023, 15/2024)
+3. Norma técnica (ISO/IEC, NIST)
+4. Blueprint deste projeto
+5. Prompt do usuário
+
+Conflito entre normas do mesmo nível: prevalece a vigente verificada na fonte oficial, e a divergência deve ser reportada.
+
+### 9.4. Casos de teste permanentes (erros já cometidos — verificar em toda entrega)
+CT-1. "LGPD art. 5º, XVII" NÃO define agente de pequeno porte. O art. 5º, XVII trata de relatório de impacto (RIPD). A definição de agente de tratamento de pequeno porte está na Res. CD/ANPD nº 2/2022, arts. 2º e 3º. Qualquer ocorrência da citação errada é defeito.
+CT-2. NÃO existe dispensa de RIPD para agente de pequeno porte na Res. 2/2022. O art. 12 dessa resolução trata de medidas de segurança. O RIPD segue o art. 38 da LGPD e os critérios de alto risco da ANPD, para todos os portes. Qualquer menção a "dispensa de RIPD" é defeito.
+CT-3. O prazo de comunicação de incidente NÃO é uniforme. Res. CD/ANPD nº 15/2024, art. 6º, § 8º: os prazos do caput e do § 3º são contados EM DOBRO para agentes de pequeno porte. Regra geral: 3 dias úteis; pequeno porte: 6 dias úteis. Qualquer texto afirmando prazo uniforme ou "regra interna conservadora" é defeito.
+CT-4. "Base legal" é calque do GDPR. O termo correto é "hipótese de tratamento" (arts. 7º e 11 da LGPD).
+CT-5. "Dados pessoais sensíveis" no plural, quando se refere à unidade, é defeito. O correto é "dado pessoal sensível" (art. 5º, II).
+
+### 9.5. Prova obrigatória em toda tarefa com conteúdo normativo
+Toda resposta que implementar ou alterar citação normativa deve incluir: (a) a URL oficial de cada norma citada; (b) o trecho literal do dispositivo que fundamenta a regra implementada; (c) a confirmação dos casos de teste CT-1 a CT-5 (verificados, não presumidos); (d) a declaração: "Nenhuma afirmação legal foi implementada sem fonte oficial verificada" — ou a lista do que não pôde ser verificado e ficou de fora.
