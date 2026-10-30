@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { EnquadramentoAgente } from '../EnquadramentoAgente';
 import { MembrosEmpresa } from '../MembrosEmpresa';
+import { TerceirosEmpresa } from '../TerceirosEmpresa';
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { FUNDAMENTO_PORTE, rotuloPorte } from '@/lib/priva/enquadramento';
 
@@ -103,6 +104,7 @@ export function Bloco1() {
       </PageHeader>
       <EnquadramentoAgente />
       <MembrosEmpresa />
+      <TerceirosEmpresa />
       {AJUDA[1] && <AjudaTarefa {...AJUDA[1]} />}
 
       <div className="grid gap-4 md:grid-cols-2">

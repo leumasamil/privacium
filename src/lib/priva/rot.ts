@@ -204,7 +204,7 @@ export function sugerirProduto(r: Pick<RotInput, "area_setor" | "insumo" | "cicl
   const area = (r.area_setor ?? "").split("›")[0]?.trim() ?? "";
   const insumo = r.insumo?.trim().toLowerCase() ?? "";
   const regra = SUGESTOES_PRODUTO_V1[area]?.find((x) => x.insumo === insumo);
-  return (regra?.produtos ?? []).map((p) => ({ texto: `Produto interno: ${p}`, origem: ORIGEM_PRODUTO, patch: { produto_interno: p, produtos_tratamento: [{ nome: p }] } }));
+  return (regra?.produtos ?? []).map((p) => ({ texto: `PRT: ${p}`, origem: ORIGEM_PRODUTO, patch: { produto_interno: p, produtos_tratamento: [{ nome: p }] } }));
 }
 
 /**
