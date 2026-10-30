@@ -208,12 +208,15 @@ export function Bloco2() {
 
       {edit && <RotDialog edit={edit} setEdit={setEdit} onSave={save} />}
 
-      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0 && semDestino === 0} readyHint={rows.length === 0 ? "Cadastre ao menos um processo na planilha mestre." : `${semDestino} processo(s) sem destino declarado: a Etapa 2 (compartilhamento com destinatário identificado ou eliminação com prazo e fundamento — LGPD art. 16) é obrigatória para chancelar o PI-02.`}>
-        <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico{semDestino > 0 ? `, ${semDestino} sem destino declarado (Etapa 2)` : ""}.</p>
+      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0 && semDestino === 0 && semProduto === 0} readyHint={rows.length === 0 ? "Cadastre ao menos um processo na planilha mestre." : [
+        semDestino > 0 ? `${semDestino} processo(s) sem destino declarado: a Etapa 2 (compartilhamento com destinatário identificado ou eliminação com prazo e fundamento — LGPD art. 16) é obrigatória para chancelar o PI-02.` : "",
+        semProduto > 0 ? `${semProduto} processo(s) com Processar sem produto interno declarado — art. 6º, I não comprovado; a chancela do PI-02 fica bloqueada neste estado.` : "",
+      ].filter(Boolean).join(" ")}>
+        <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico{semDestino > 0 ? `, ${semDestino} sem destino declarado (Etapa 2)` : ""}{semProduto > 0 ? `, ${semProduto} sem produto interno declarado (art. 6º, I)` : ""}.</p>
         <p className="mt-2"><b>Ciclo de vida do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO} {NOTA_METODO_CICLO}</p>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           {rows.map((r) => (
-            <li key={r.id}><b>{r.codigo}</b> — {exibirAreaSetor(r)}. Ciclo de vida: {formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção: {r.tempo_retencao} ({r.base_prazo}).{r.insumo && <> Insumo: {r.insumo}.</>}{r.meio_fornecimento && <> Meio de fornecimento: {r.meio_fornecimento}.</>}{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
+            <li key={r.id}><b>{r.codigo}</b> — {exibirAreaSetor(r)}. Papel do agente: {ROTULO_PAPEL[(r.papel_agente as PapelAgente) ?? "CONTROLADOR"]}. Ciclo de vida: {formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção do insumo: {r.tempo_retencao} ({r.base_prazo}).{r.insumo && <> Insumo: {r.insumo}.</>}{r.produto_interno && <> Produto interno: {r.produto_interno}{r.prazo_produto ? ` (eliminação: ${r.prazo_produto} — ${r.fundamento_produto})` : ""}.</>}{r.meio_fornecimento && <> Meio de fornecimento: {r.meio_fornecimento}.</>}{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
           ))}
         </ul>
       </PIOutput>
