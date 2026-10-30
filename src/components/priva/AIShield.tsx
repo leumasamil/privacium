@@ -140,6 +140,12 @@ export function AIShield() {
               </button>
             ))}
           </div>
+          <div className="flex flex-wrap items-center gap-2" aria-label="Modelos contextualizados">
+            <span className="text-[11px] text-muted-foreground">Modelos contextualizados:</span>
+            <CopiarModelo textoId="politica-ia" rotulo="Copiar modelo · Política de IA" />
+            <CopiarModelo textoId="clausula-llm" rotulo="Copiar modelo · Cláusula de fornecedor" />
+            <CopiarModelo textoId="rot-llm" rotulo="Copiar modelo · Entrada de ROT" />
+          </div>
           {exemplo && (
             <div className="rounded-sm border bg-muted/40 p-3 text-xs" data-testid="exemplo-antes-depois">
               <p className="font-semibold uppercase tracking-wider text-muted-foreground">Antes (o que você digitou)</p>

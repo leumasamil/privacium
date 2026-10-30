@@ -76,6 +76,16 @@ export const NORMAS: Record<string, Norma> = {
     resumo: "Regulamenta a comunicação de incidente de segurança à ANPD: prazo de 3 dias úteis, conteúdo mínimo da comunicação e obrigações de registro.",
     porque: "Define o prazo de 3 dias úteis (art. 6º) e os campos obrigatórios que o formulário ANPD desta plataforma valida.",
   },
+  "Res. CD/ANPD nº 15/2024, art. 6º": {
+    citacao: "Res. CD/ANPD nº 15/2024, art. 6º",
+    resumo: "A comunicação de incidente à ANPD deve ocorrer em 3 (três) dias úteis, contados do conhecimento do incidente.",
+    porque: "É o prazo que o contador do Bloco 4 mede — fins de semana e feriados não consomem o prazo.",
+  },
+  "Res. CD/ANPD nº 15/2024, art. 3º": {
+    citacao: "Res. CD/ANPD nº 15/2024, art. 3º",
+    resumo: "Define o que é incidente de segurança para fins de comunicação: qualquer evento adverso confirmado que afete a confidencialidade, integridade ou disponibilidade de dados pessoais.",
+    porque: "É o critério que decide se a sua ocorrência exige comunicação formal à ANPD.",
+  },
   "Res. CD/ANPD nº 4/2023": {
     citacao: "Res. CD/ANPD nº 4/2023",
     resumo: "Regulamenta a dosimetria das sanções administrativas da LGPD, incluindo atenuantes por boas práticas e governança comprovadas.",
