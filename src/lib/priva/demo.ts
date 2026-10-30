@@ -135,7 +135,7 @@ export const DEMO_ROWS: {
       titulares: '1250', riscos_selecionados: riscosDemo.map(vincularRisco), riscos_detalhes: detalhesDemo,
       riscos: textoRiscos(riscosDemo, detalhesDemo), medidas_selecionadas: medidasDemo.map(vincularMedida),
       medidas: textoMedidas(medidasDemo), encarregado: 'dpo@cenografica.com.br' },
-    enviado_anpd_em: null, encerrado_em: null, criado_por: null, processo_id: 'demo-rot-1', comunicacao_atrasada: false,
+    enviado_anpd_em: null, encerrado_em: null, criado_por: null, processo_id: 'demo-rot-1', comunicacao_atrasada: false, prazo_dias_uteis: null,
     etapas_registro: Object.fromEntries(etapasDemo.map(({ numero }) => [String(numero), { data: ts, responsavel: 'DPO Cenográfico', evidencia: evidenciasDemo[numero - 1] ?? '' }])),
   }],
   ripd_ia: [{

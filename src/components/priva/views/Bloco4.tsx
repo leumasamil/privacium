@@ -31,6 +31,9 @@ import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
 import { ConsultarBasesPublicas } from '@/components/priva/ConsultarBasesPublicas';
 import { PainelNoticiasIncidentes } from '@/components/priva/PainelNoticiasIncidentes';
 import { AlertaFornecedorVazado } from '@/components/priva/AlertaFornecedorVazado';
+import { useEnquadramento } from '@/lib/priva/useEnquadramento';
+import { prazoPorPorte } from '@/lib/priva/enquadramento';
+import { DEMO_AGORA, DEMO_INICIO_INCIDENTE } from '@/lib/priva/demo';
 
 type Lote = Database["public"]["Tables"]["lotes_pgaudit"]["Row"];
 type Incidente = Database["public"]["Tables"]["incidentes_seguranca"]["Row"];
@@ -43,7 +46,7 @@ const STEPS = [
   { t: "Sandbox", d: "Analisar a amostra do ransomware em ambiente isolado e preservar evidências (ISO 27037)." },
   { t: "Descriptografia", d: "Restaurar a partir de backups íntegros ou ferramentas de descriptografia validadas." },
   { t: "Validação", d: "Conferir hashes de integridade dos dados restaurados e encerrar a contenção." },
-  { t: "Reporte", d: "Comunicar a ANPD e os titulares em até 3 dias úteis (Res. CD/ANPD nº 15/2024, art. 6º)." },
+  { t: "Reporte", d: "Comunicar a ANPD e os titulares no prazo aplicável ao enquadramento do agente." },
 ];
 
 const mesAtual = () => new Date().toISOString().slice(0, 7);
@@ -72,6 +75,7 @@ export function Bloco4() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Bloco 4 · (V) Ciclo Privacium Semestral · ISO 27037" title="Vigiar a Privacidade e Processar Incidentes" />
+      <p className="text-sm" data-testid="prazo-porte">Prazo legal aplicável: <b>{consulta.data.prazoDias} dias úteis</b> — Res. CD/ANPD nº 15/2024, art. 6º, § 8º. Regra geral: 3 dias úteis; agente de pequeno porte: 6 dias úteis.</p>
       <AlertaFornecedorVazado />
       {AJUDA[4] && <AjudaTarefa {...AJUDA[4]} pendencias={montarChecklist(consulta.data, signatures)} />}
       <ConsolePgAudit cnpj={cnpj} lotes={lotes.rows} incidentes={incs.rows} canEdit={canEdit} refresh={lotes.refresh} />
@@ -191,6 +195,8 @@ function ConsolePgAudit({ cnpj, lotes, incidentes, canEdit, refresh }: { cnpj: s
 }
 
 function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: string; ativo: Incidente | null; estado: EstadoIncidente | null; canEdit: boolean; refresh: () => Promise<unknown> }) {
+  const enquadramento = useEnquadramento();
+  const dias = estado?.anpd.prazoDias ?? prazoPorPorte(enquadramento.porte);
   const { log, demo } = usePriva();
   const qc = useQueryClient();
   const [now, setNow] = useState(Date.now());
@@ -202,7 +208,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
   const ref = ativo ? ativo.id.slice(0, 6) : "";
   const passos = estado?.etapas.itens.map(i => i.concluida) ?? [false, false, false, false, false, false];
   const atual = passos.findIndex((p) => !p);
-  const restante = demo ? DEMO_SLA_MS : (ativo ? restanteANPD(ativo.iniciado_em, ativo.enviado_anpd_em, now) : SLA_MS);
+  const restante = demo ? restanteANPD(DEMO_INICIO_INCIDENTE, ativo?.enviado_anpd_em ?? null, DEMO_AGORA, dias) : (ativo ? restanteANPD(ativo.iniciado_em, ativo.enviado_anpd_em, now, dias) : dias * 24 * 3600000);
   const tom = !ativo ? "neutro" : restante === 0 ? "vencido" : restante < 24 * 3600000 ? "atencao" : "andamento";
   const TOM_SLA = {
     neutro: { caixa: "", texto: "text-primary", rotulo: "Nenhum incidente ativo" },
@@ -245,7 +251,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
     if (!canEdit || busy) return;
     const { error } = await supabase.from("incidentes_seguranca").insert({ empresa_cnpj: cnpj });
     if (error) { toast.error("Falha ao declarar."); return; }
-    log("INSERT", "incidentes_seguranca", "Incidente de ransomware declarado · prazo de 3 dias úteis iniciado");
+    log("INSERT", "incidentes_seguranca", `Incidente de ransomware declarado · prazo de ${dias} dias úteis iniciado`);
     refresh();
     qc.invalidateQueries({ queryKey: ["pendencias"] });
   };
@@ -292,7 +298,7 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
               {corrente && (
                 <>
                   <p className="mt-1 text-muted-foreground">{s.d}</p>
-                   {i === 5 ? <p className="mt-1 text-pendencia">Consome o prazo de 3 dias úteis (<CitacaoNormativa citacao="Res. CD/ANPD nº 15/2024, art. 6º" />) · preencha o formulário abaixo.</p>
+                   {i === 5 ? <p className="mt-1 text-pendencia">Consome o prazo de {dias} dias úteis (<CitacaoNormativa citacao="Res. CD/ANPD nº 15/2024, art. 6º, § 8º" />) · preencha o formulário abaixo.</p>
                     : canEdit && <Button size="sm" variant="outline" disabled={!demo && busy} className="mt-2 h-auto min-h-7 w-full whitespace-normal" onClick={() => concluirEtapa(i)}>Marcar como concluída</Button>}
                 </>
               )}
@@ -313,9 +319,9 @@ function CriseRansomware({ cnpj, ativo, estado, canEdit, refresh }: { cnpj: stri
           {ativo?.enviado_anpd_em && <div className="mt-2"><Tag tone="success">ANPD comunicada</Tag></div>}
         </div>
         <ul className="space-y-1 text-xs text-foreground">
-          <li><b>O que mede:</b> Prazo de comunicação à ANPD — 3 dias úteis (<CitacaoNormativa citacao="Res. CD/ANPD nº 15/2024, art. 6º" />), contados do conhecimento do incidente; não inclui fins de semana e feriados. Vinculado à etapa 6 (Reporte).</li>
+          <li><b>O que mede:</b> Prazo de comunicação à ANPD — {dias} dias úteis (<CitacaoNormativa citacao="Res. CD/ANPD nº 15/2024, art. 6º, § 8º" />), contados do conhecimento do incidente. Vinculado à etapa 6 (Reporte).</li>
           <li><b>Ao zerar:</b> Após o prazo, o incidente é marcado como comunicado em atraso e a trilha registra o descumprimento.</li>
-          <li><b>Contador:</b> conta apenas horas úteis (segunda a sexta) e não pausa durante a resposta; após a comunicação simulada, congela no instante de envio.</li>
+          <li><b>Contador:</b> considera segunda a sexta, sem calendário de feriados configurado; confira os feriados aplicáveis. Após a comunicação simulada, congela no instante de envio.</li>
         </ul>
       </div>
 

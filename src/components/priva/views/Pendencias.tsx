@@ -10,6 +10,8 @@ import { useQuestions, useRespostas } from "@/lib/priva/questions";
 import { DEMO_ATIVOS, DEMO_ROT } from "@/lib/priva/demo";
 import { montarChecklist, ordenar, pendenciasBloco5, pendenciasKanban, type Pendencia, type Estado } from "@/lib/priva/pendencias";
 import { sugestaoMitigacao, type RiscoId } from "@/lib/privacium/bibliotecaMitigacao";
+import { useEnquadramento } from '@/lib/priva/useEnquadramento';
+import { prazoPorPorte } from '@/lib/priva/enquadramento';
 
 type Rot = Database["public"]["Tables"]["registro_operacoes"]["Row"];
 type Ativo = Database["public"]["Tables"]["ativos_seguranca"]["Row"];
@@ -35,6 +37,7 @@ function destino(p: Pendencia): { to: RotaBloco; hash?: string; params?: { incid
 
 /** Dashboard transversal: tudo que falta no ciclo, da mesma fonte de estado dos blocos. */
 export function Pendencias() {
+  const enquadramento = useEnquadramento();
   const { cnpj, signatures, kanban, demo } = usePriva();
   const questions = useQuestions();
   const answers = useRespostas(cnpj);
@@ -78,7 +81,7 @@ export function Pendencias() {
   if (isUnlocked(signatures, 1)) grupos.push({ n: 1, itens: montarChecklist({ n: 1, perguntas: questions.length, respondidas: Object.keys(answers).length, naos: Object.values(answers).filter((v) => !v).length }, signatures) });
   if (isUnlocked(signatures, 2)) grupos.push({ n: 2, itens: montarChecklist({ n: 2, rot: rot as never }, signatures) });
   if (isUnlocked(signatures, 3)) grupos.push({ n: 3, itens: montarChecklist({ n: 3, endpoints, cofres, chaves: demo ? null : null }, signatures) });
-  if (isUnlocked(signatures, 4)) grupos.push({ n: 4, itens: montarChecklist({ n: 4, lotes: lotes.rows, incidentes: incidentes.rows, agora: Date.now() }, signatures) });
+  if (isUnlocked(signatures, 4)) grupos.push({ n: 4, itens: montarChecklist({ n: 4, lotes: lotes.rows, incidentes: incidentes.rows, agora: Date.now(), prazoDias: prazoPorPorte(enquadramento.porte) }, signatures) });
   if (isUnlocked(signatures, 5)) grupos.push({ n: 5, itens: pendenciasBloco5({ sistema: salvo?.sistema_avaliado ?? "", escudo: salvo?.escudo_digital ?? "", riscos }, signatures) });
   grupos.push({ n: 0, itens: pendenciasKanban(kanban) });
 
