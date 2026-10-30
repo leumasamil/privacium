@@ -25,9 +25,11 @@ const BLOCO_NOME: Record<number, string> = { 0: "Kanban 5W2H", 1: "Bloco 1 · Di
 /** Severidade: pendência vencida ou que trava o ciclo é bloqueante. */
 const bloqueante = (p: Pendencia) => p.estado === "critico" || p.estado === "bloqueado";
 
-type RotaBloco = "/kanban" | "/bloco-1" | "/bloco-2" | "/bloco-3" | "/bloco-4" | "/bloco-5";
-function destino(p: Pendencia): { to: RotaBloco; hash?: string } {
+type RotaBloco = "/kanban" | "/bloco-1" | "/bloco-2" | "/bloco-3" | "/bloco-4" | "/bloco-5" | "/bloco-4/anpd/$incidenteId";
+function destino(p: Pendencia): { to: RotaBloco; hash?: string; params?: { incidenteId: string } } {
   if (p.bloco === 0) return { to: "/kanban", hash: p.ancora };
+  // Pendência de comunicação vai direto ao formulário ANPD do incidente (no demo público, o AppLink reescreve para aba=anpd).
+  if (p.bloco === 4 && p.ancora === "anpd" && p.incidenteId) return { to: "/bloco-4/anpd/$incidenteId", params: { incidenteId: p.incidenteId } };
   return { to: `/bloco-${p.bloco}` as RotaBloco, hash: p.ancora };
 }
 
@@ -116,7 +118,7 @@ export function Pendencias() {
                 </div>
                 <Tag tone={TOM[p.estado]}>{ROTULO[p.estado]}</Tag>
                 <Tag tone={bloqueante(p) ? "destructive" : "muted"}>{bloqueante(p) ? "Bloqueante" : "Normal"}</Tag>
-                <AppLink to={d.to} {...(d.hash ? { hash: d.hash } : {})} className="flex items-center gap-1 text-xs text-primary hover:underline" data-testid={`atalho-${p.id}`}>
+                <AppLink to={d.to} {...(d.params ? { params: d.params } : {})} {...(d.hash ? { hash: d.hash } : {})} className="flex items-center gap-1 text-xs text-primary hover:underline" data-testid={`atalho-${p.id}`}>
                   {p.acao} <ArrowRight className="h-3 w-3" />
                 </AppLink>
               </li>
