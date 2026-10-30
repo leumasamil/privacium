@@ -232,6 +232,13 @@
       "when": 1793377933162,
       "tag": "0032_feriados_prazo_anpd",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793379524302,
+      "tag": "0033_membros_empresa_e_rot_campos",
+      "breakpoints": true
     }
   ]
 }
