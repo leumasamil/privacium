@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AREAS_SETORES, ROTULO_AREA_SETOR, areaSetorCompleto, chaveDaArea, exibirAreaSetor } from "@/lib/priva/areasSetores";
 import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, ETAPA1, ETAPA2, NOTA_CICLO, NOTA_ETAPA2_COMPARTILHAR, NOTA_ETAPA2_ELIMINAR, NOTA_METODO_CICLO, NOTA_RESPONSAVEL_ETAPAS, ROTULO_ETAPA1, ROTULO_ETAPA2, alertaRetencao, alternar, cicloDaLinha, citacoesISO, destinoDeclarado, formatarCiclo, formatarCicloEtapas, generosMarcados, temEtapa2, type CicloVida, type Genero } from "@/lib/priva/cicloVida";
 import { GrafoCadeiaCustodia } from "@/components/priva/CadeiaCustodia";
+import { ContinuacaoReceptor } from '@/components/priva/ContinuacaoReceptor';
 import { linhasAtivas, linhasExcluidas, receptoraExistente } from "@/lib/priva/cadeiaCustodia";
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { citacaoSimplificada } from '@/lib/priva/enquadramento';
@@ -206,6 +207,7 @@ export function Bloco2() {
                     <td className="px-2 py-2">
                       {r.insumo ?? "—"}
                       {(r.origem_compartilhamento as OrigemCompartilhamento | null) && <p className="mt-1 rounded-sm border border-dashed px-1 py-0.5 text-[10px] text-muted-foreground" data-testid={`origem-${r.codigo}`}>Insumo recebido de {(r.origem_compartilhamento as OrigemCompartilhamento).codigo_origem} ({(r.origem_compartilhamento as OrigemCompartilhamento).area_setor_origem})</p>}
+                      {r.origem_compartilhamento && canEdit && <ContinuacaoReceptor row={r} rows={rows} onSaved={()=>void qc.invalidateQueries({queryKey:key})} />}
                     </td>
                     <td className="max-w-80 px-2 py-2" data-testid={`produto-${r.codigo}`}>
                       <PRTCelula r={r} terceiros={terceiros} />
