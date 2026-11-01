@@ -12,6 +12,7 @@ import { AREAS_SETORES, ROTULO_AREA_SETOR, areaSetorCompleto, chaveDaArea, exibi
 import { AJUDA_CICLO, CITACOES_LGPD, DESCRICAO_CICLO, ESPECIES, ETAPA1, ETAPA2, NOTA_CICLO, NOTA_ETAPA2_COMPARTILHAR, NOTA_ETAPA2_ELIMINAR, NOTA_METODO_CICLO, NOTA_RESPONSAVEL_ETAPAS, ROTULO_ETAPA1, ROTULO_ETAPA2, alertaRetencao, alternar, cicloDaLinha, citacoesISO, destinoDeclarado, formatarCiclo, formatarCicloEtapas, generosMarcados, temEtapa2, type CicloVida, type Genero } from "@/lib/priva/cicloVida";
 import { GrafoCadeiaCustodia } from "@/components/priva/CadeiaCustodia";
 import { ContinuacaoReceptor } from '@/components/priva/ContinuacaoReceptor';
+import { continuacaoConforme, lerContinuacao } from '@/lib/priva/continuacaoReceptor';
 import { linhasAtivas, linhasExcluidas, receptoraExistente } from "@/lib/priva/cadeiaCustodia";
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { citacaoSimplificada } from '@/lib/priva/enquadramento';
@@ -147,8 +148,13 @@ export function Bloco2() {
   };
 
   const riskyCount = rows.filter(isRisky).length;
-  const semDestino = rows.filter((r) => !destinoDeclarado(r)).length;
-  const semProduto = rows.filter((r) => alertaProdutoAusente(r)).length;
+  const terminalConforme = (r: RotRow) => {
+    const c=lerContinuacao(r.continuacao_receptor);
+    return !!r.origem_compartilhamento && !!c && c.tipo!=='NOVO_PRT' && continuacaoConforme(c,false);
+  };
+  const semDestino = rows.filter((r) => !terminalConforme(r) && !destinoDeclarado(r)).length;
+  const semProduto = rows.filter((r) => !terminalConforme(r) && alertaProdutoAusente(r)).length;
+  const receptoresPendentes=rows.filter(r=>r.origem_compartilhamento && !continuacaoConforme(lerContinuacao(r.continuacao_receptor),produtosDaLinha(r).some(p=>!!p.nome.trim()))).length;
   const semDestinoPRT = rows.filter((r) => alertasPRTSemDestino(r).length > 0).length;
   const externosBloqueados = rows.filter((r) => prtExternosBloqueados(r, terceiros).length > 0).length;
   const NUMS = ["", "1. ", "1A. ", "2. ", "3. ", "4. ", "5. ", "6. ", "", "", "8. ", "9. ", "10. ", "10A. ", "10C. ", "10B. ", "11. ", "12. "];
@@ -237,7 +243,8 @@ export function Bloco2() {
 
       {edit && <RotDialog edit={edit} setEdit={setEdit} onSave={save} />}
 
-      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0 && semDestino === 0 && semProduto === 0 && semDestinoPRT === 0 && externosBloqueados === 0} readyHint={rows.length === 0 ? "Cadastre ao menos um processo na planilha mestre." : [
+      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0 && semDestino === 0 && semProduto === 0 && semDestinoPRT === 0 && externosBloqueados === 0 && receptoresPendentes===0} readyHint={rows.length === 0 ? "Cadastre ao menos um processo na planilha mestre." : [
+        receptoresPendentes>0 ? `${receptoresPendentes} receptor(es) aguardando escolha expressa de continuidade.` : '',
         semDestino > 0 ? `${semDestino} processo(s) sem destino declarado: a Etapa 2 (compartilhamento com destinatário identificado ou eliminação com prazo e fundamento — LGPD art. 16) é obrigatória para chancelar o PI-02.` : "",
         semProduto > 0 ? `${semProduto} processo(s) com Processar sem PRT declarado — art. 6º, I não comprovado; a chancela do PI-02 fica bloqueada neste estado.` : "",
         semDestinoPRT > 0 ? `${semDestinoPRT} processo(s) com PRT sem destino declarado — art. 16 não comprovado; todo PRT precisa de destino individual na Etapa 2.` : "",
