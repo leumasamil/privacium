@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { AREAS_SETORES, areaSetorCompleto, chaveDaArea, exibirAreaSetor } from "@/lib/priva/areasSetores";
 import { ALERTA_RETENCAO, ETAPA1, ETAPA2, GENEROS, alertaRetencao, destinoDeclarado, formatarCicloEtapas, type CicloVida } from "@/lib/priva/cicloVida";
-import { ALERTA_COERENCIA, HIPOTESES_7A, HIPOTESES_7B, alertasCoerencia, sugerir, type RotInput } from "@/lib/priva/rot";
+import { ALERTA_COERENCIA, HIPOTESES_7A, HIPOTESES_7B, alertasCoerencia, receptorSemEscolha, sugerir, type RotInput } from "@/lib/priva/rot";
 import { DEMO_MEMBROS, DEMO_ROT } from "@/lib/priva/demo";
 import { responsavelDaArea } from "@/components/priva/MembrosEmpresa";
 
@@ -101,7 +101,8 @@ describe("demonstração cenográfica", () => {
       expect(r.area_setor).toContain("›");
       expect(r.insumo).toBeTruthy();
       expect(r.meio_fornecimento).toBeTruthy();
-      expect(destinoDeclarado(r)).toBe(!r.origem_compartilhamento);
+      // Receptor com decisão registrada (Jurídico: ELIMINACAO) declara destino; só o receptor ainda sem escolha (Financeiro) não declara.
+      expect(destinoDeclarado(r)).toBe(!r.origem_compartilhamento || !receptorSemEscolha(r));
     }
   });
   it("o responsável (R) da área é encontrado no cadastro de membros", () => {

@@ -10,13 +10,15 @@ function linha(codigo: string) {
 }
 
 describe("cinco quebras de coerência do ROT", () => {
-  it("Financeiro e Jurídico sem escolha não declaram destino definitivo", () => {
-    for (const codigo of ["PRIVA-FIN-001", "PRIVA-JURIDICO-001"]) {
-      const r = linha(codigo);
-      expect(receptorSemEscolha(r)).toBe(true);
-      expect(cicloDaLinha(r).Eliminar).toBeUndefined();
-      expect(validateRot({ ...r, ciclo_vida: { ...cicloDaLinha(r), Eliminar: ["eliminar"] } })).not.toBeNull();
-    }
+  it("Financeiro sem escolha não declara destino definitivo; Jurídico decidiu ELIMINACAO de forma coerente", () => {
+    const fin = linha("PRIVA-FIN-001");
+    expect(receptorSemEscolha(fin)).toBe(true);
+    expect(cicloDaLinha(fin).Eliminar).toBeUndefined();
+    expect(validateRot({ ...fin, ciclo_vida: { ...cicloDaLinha(fin), Eliminar: ["eliminar"] } })).not.toBeNull();
+    const jur = linha("PRIVA-JURIDICO-001");
+    expect(receptorSemEscolha(jur)).toBe(false);
+    expect(jur.continuacao_receptor).toMatchObject({ tipo: "ELIMINACAO" });
+    expect(cicloDaLinha(jur).Eliminar).toContain("eliminar");
   });
   it("destino de PRT sem escolha é recusado; depois de NOVO_PRT registrado é aceito", () => {
     const r = { ...linha("PRIVA-FIN-001"), dados_sensiveis: ["N/A"], produtos_tratamento: [{ nome: "Comprovante de pagamento", destino: { tipo: "ELIMINACAO", prazo: "5 anos", fundamento: "Política interna" } }] };
