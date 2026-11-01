@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { BookOpen, ShieldQuestion } from "lucide-react";
 import { buscarNorma } from "@/lib/priva/pedagogia";
-import { citacaoVerificada, referenciaGenerica } from "@/lib/priva/bibliotecaNormativa";
+import { citacaoVerificada, referenciaGenerica, entradasDaCitacao } from "@/lib/priva/bibliotecaNormativa";
+import { CATEGORIAS_ROTULO, podeFundamentar, type PosicaoCitacao } from '@/lib/priva/incidenciaNormativa';
+import { Button } from '@/components/ui/button';
 import { usePriva } from "@/lib/priva/store";
 
 /**
@@ -13,17 +15,20 @@ import { usePriva } from "@/lib/priva/store";
  * renderiza o identificador específico — exibe apenas a referência genérica da
  * norma com a marca "em verificação" — e a pendência é registrada na trilha.
  */
-export function CitacaoNormativa({ citacao, className }: { citacao: string; className?: string }) {
+export function CitacaoNormativa({ citacao, className, posicao='FUNDAMENTO' }: { citacao: string; className?: string; posicao?: PosicaoCitacao }) {
   const [aberto, setAberto] = useState(false);
   const { log, demo } = usePriva();
   const pendenciaRegistrada = useRef(false);
   const verificada = citacaoVerificada(citacao);
+  const entrada=entradasDaCitacao(citacao).find(e=>e.status==='VERIFICADA');
 
   useEffect(() => {
     if (verificada || pendenciaRegistrada.current || demo) return;
     pendenciaRegistrada.current = true;
     log("SELECT", "biblioteca_normativa", `Pendência normativa: citação não verificada suprimida na interface (${citacao})`);
   }, [verificada, demo, citacao, log]);
+
+  if(entrada && !podeFundamentar(entrada,posicao)) return null;
 
   if (!verificada) {
     return (
@@ -37,17 +42,18 @@ export function CitacaoNormativa({ citacao, className }: { citacao: string; clas
   }
 
   const norma = buscarNorma(citacao);
-  if (!norma) return <span className={className}>{citacao}</span>;
+  if (!norma) return <span className={className}>{entrada && <span className="text-[10px] text-muted-foreground">{CATEGORIAS_ROTULO[entrada.categoria]} · </span>}{citacao}</span>;
   return (
     <span className={className}>
-      <button
+      {entrada && <span className="text-[10px] text-muted-foreground">{CATEGORIAS_ROTULO[entrada.categoria]} · </span>}
+      <Button variant="link" size="sm"
         type="button"
         onClick={() => setAberto((v) => !v)}
         aria-expanded={aberto}
         className="inline-flex items-center gap-1 underline decoration-dotted underline-offset-2 hover:text-primary"
       >
         <BookOpen className="h-3 w-3" /> {norma.citacao}
-      </button>
+      </Button>
       {aberto && (
         <span className="mt-1 block rounded-sm border bg-muted/40 p-2 text-xs leading-relaxed">
           <span className="block">{norma.resumo}</span>

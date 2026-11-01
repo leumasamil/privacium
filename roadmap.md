@@ -85,7 +85,7 @@
 - [x] Regra A.5: testes automatizados nunca criam dados na empresa real — só na empresa de teste ou com rollback.
 
 ## Direitos do titular e continuidade do receptor
-- [ ] Registrar sete dispositivos verificados; item 9.7 e incidência normativa com separação do fomento econômico.
-- [ ] Índice salgado por empresa e atendimento auditado com prazos, roteamento e negativa fundamentada.
-- [ ] Escolha expressa no receptor, duas declarações para uso exclusivo e cadeia de múltiplos saltos.
-- [ ] Testes de regras/isolamento, CT-1 a CT-5 e capturas renderizadas dos fluxos reais na empresa de teste.
+- [x] Registrar sete dispositivos verificados; item 9.7 e incidência normativa com separação do fomento econômico.
+- [x] Índice salgado por empresa e atendimento auditado com prazos, roteamento e negativa fundamentada.
+- [x] Escolha expressa no receptor, duas declarações para uso exclusivo e cadeia de múltiplos saltos.
+- [x] Testes de regras/isolamento, CT-1 a CT-5 e capturas renderizadas dos fluxos reais na empresa de teste.

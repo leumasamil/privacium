@@ -110,7 +110,7 @@ export function QualidadeNormativa() {
                 <Tag tone={TOM_STATUS[l.status]}>{ROTULO_STATUS[l.status]}</Tag>
               </div>
               {l.status === "VERIFICADA" && l.texto_literal && (
-                <p className="mt-1 text-xs text-muted-foreground">{l.texto_literal.length > 220 ? `${l.texto_literal.slice(0, 220)}…` : l.texto_literal}</p>
+                <details className="mt-1 text-xs text-muted-foreground"><summary className="cursor-pointer">Texto literal · {l.categoria}</summary><p className="mt-2 whitespace-pre-wrap">{l.texto_literal}</p></details>
               )}
               {l.observacao && <p className="mt-1 text-[11px] text-muted-foreground">{l.observacao}</p>}
               <p className="mt-1 text-[11px] text-muted-foreground">

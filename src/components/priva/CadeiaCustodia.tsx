@@ -35,9 +35,9 @@ function LinhaTrilha({ t }: { t: TrilhaPRT }) {
             {a.hash ? `hash ${a.hash.slice(0, 8)}…` : "sem hash"}
           </span>
           {a.para ? <Chip n={a.para} /> : <span className="rounded-sm border border-dashed px-2 py-1 text-[11px]">{a.destino}</span>}
-          {t.novoTratamento.length > 0 && <><ArrowRight className="h-3 w-3 text-muted-foreground" /><span className="text-[11px]">Novo tratamento: {t.novoTratamento.join("; ")}</span></>}
         </div>
       ))}
+      {t.novoTratamento.length > 0 && <p className="mt-2 text-[11px]">Continuidade: {t.novoTratamento.join("; ")}</p>}
       {t.arestas.map((a, i) => (
         <p key={`s${i}`} className="mt-1 text-[10px] text-muted-foreground">
           Data: {a.data ? new Date(a.data).toLocaleDateString("pt-BR") : "não registrada"} · Etapa 2 origem: {a.assinaturaOrigem ? `✓ ${a.assinaturaOrigem.assinante}` : "ausente"} · Etapa 1 receptor: {rotuloEtapa1Receptor(a)}

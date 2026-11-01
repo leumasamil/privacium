@@ -1,0 +1,8 @@
+CREATE OR REPLACE FUNCTION public.proteger_insercao_continuacao() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$ BEGIN IF NEW.continuacao_receptor IS NOT NULL THEN RAISE EXCEPTION 'Continuidade só muda pela declaração auditada'; END IF; RETURN NEW; END $$;
+CREATE TRIGGER proteger_insercao_continuacao BEFORE INSERT ON public.registro_operacoes FOR EACH ROW EXECUTE FUNCTION public.proteger_insercao_continuacao();
+CREATE OR REPLACE FUNCTION public.sincronizar_incidencia_biblioteca() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN
+IF NEW.status<>'VERIFICADA' AND EXISTS(SELECT 1 FROM public.incidencia_normativa WHERE biblioteca_normativa_id=NEW.id) THEN RAISE EXCEPTION 'Remova os vínculos antes de invalidar uma citação em uso'; END IF;
+IF NEW.categoria IN ('FOMENTO_ECONOMICO','REFERENCIA_TECNICA') AND EXISTS(SELECT 1 FROM public.incidencia_normativa WHERE biblioteca_normativa_id=NEW.id AND obrigatoria) THEN RAISE EXCEPTION 'Referência econômica ou técnica não é fundamento autônomo de obrigação'; END IF;
+UPDATE public.incidencia_normativa SET norma=NEW.norma,identificador=NEW.identificador,categoria=NEW.categoria WHERE biblioteca_normativa_id=NEW.id;
+RETURN NEW; END $$;
+CREATE TRIGGER biblioteca_sincronizar_incidencia AFTER UPDATE OF norma,identificador,categoria,status ON public.biblioteca_normativa FOR EACH ROW EXECUTE FUNCTION public.sincronizar_incidencia_biblioteca();
