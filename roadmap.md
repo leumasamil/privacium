@@ -95,3 +95,9 @@
 - [x] Aba `titulares` na demo pública com fixtures cenográficas
 - [x] Trava das duas declarações valendo também na demo
 - [x] Publicação e comprovação renderizada no link público (12 provas)
+
+## Cinco quebras de coerência do ROT
+- [ ] Corrigir cabeçalho, coluna 2 e terminologia explicativa, preservando os verbos e dados existentes.
+- [ ] Exibir destino pendente e impedir destino definitivo sem escolha registrada do receptor.
+- [ ] Corrigir Financeiro e Recepção cenográficos e sinalizar origem excluída no Jurídico.
+- [ ] Verificar regras, CT-1 a CT-5, publicar e capturar provas no link público versionado.
