@@ -522,7 +522,7 @@ function PRTCelula({ r, terceiros }: { r: RotRow; terceiros: Terceiro[] }) {
     <div className="space-y-1">
       {!prts.length && <p>—</p>}
       {prts.map((p, i) => {
-        const semDestino = r.papel_agente !== "OPERADOR" && !destinoPRTCompleto(p.destino);
+        const semDestino = prtSemDestino(r, p);
         return (
           <div key={i} data-testid={`prt-${r.codigo}-${i + 1}`}>
             <p><span className="font-mono font-semibold text-primary">{rotuloPRT(i)}</span> · {p.nome} <span className="text-muted-foreground">→ {r.papel_agente === "OPERADOR" ? NOTA_DESTINO_OPERADOR : receptorSemEscolha(r) ? DESTINO_RECEPTOR_PENDENTE : descreverDestinoPRT(p.destino)}</span></p>
@@ -585,7 +585,7 @@ function DestinoPRTEditor({ indice, prt, terceiros, onChange }: { indice: number
           <Input value={d.fundamento ?? ""} placeholder="Fundamento (LGPD art. 16)" onChange={(e) => onChange({ ...d, fundamento: e.target.value })} />
         </div>
       )}
-      {!destinoPRTCompleto(d) && <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-warning-foreground" data-testid={`alerta-prt-${indice + 1}`}><AlertTriangle className="h-3 w-3" /> {alertaPRTSemDestino(prt.nome || "sem nome")}</p>}
+      {prtSemDestino(linhaRef, prt) && <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-warning-foreground" data-testid={`alerta-prt-${indice + 1}`}><AlertTriangle className="h-3 w-3" /> {alertaPRTSemDestino(prt.nome || "sem nome")}</p>}
     </fieldset>
   );
 }
