@@ -344,6 +344,13 @@
       "when": 1793499399696,
       "tag": "0048_continuacao_receptor_rot",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1793499832895,
+      "tag": "0049_corrigir_retorno_localizacao_titular",
+      "breakpoints": true
     }
   ]
 }
