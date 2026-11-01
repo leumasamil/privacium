@@ -171,7 +171,7 @@ export function Bloco2() {
       <GrafoCadeiaCustodia rows={todas} />
 
       <Panel id="rot" title={`Planilha mestre · ${rows.length} processos · ${riskyCount} em alerta`} action={canEdit && (
-        <Button size="sm" onClick={() => demo ? avisarAcaoDemo() : setEdit({ id: null, form: empty(cnpj, papelPadrao) })}><Plus className="h-4 w-4" /> Novo processo</Button>
+        <Button size="sm" onClick={() => setEdit({ id: null, form: empty(cnpj, papelPadrao) })}><Plus className="h-4 w-4" /> Novo processo</Button>
       )}>
         <p className="mb-2 rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="nota-metodo-planilha">{NOTA_METODO_CICLO} {NOTA_RESPONSAVEL_ETAPAS}</p>
         <div className="overflow-x-auto">
@@ -226,7 +226,6 @@ export function Bloco2() {
                     <td className="whitespace-nowrap px-2 py-2">
                       {canEdit && <>
                         <button aria-label="Editar" className="mr-2" onClick={() => {
-                          if (demo) return avisarAcaoDemo();
                           const { id, codigo: _c, criado_por: _p, criado_em: _e, atualizado_em: _a, excluido_em: _x, excluido_por: _xp, motivo_exclusao: _xm, ...form } = r;
                           setEdit({ id, form: normalizeHipoteses(form) });
                         }}><Pencil className="h-3 w-3 text-muted-foreground" /></button>
