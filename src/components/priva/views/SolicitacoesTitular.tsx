@@ -8,6 +8,7 @@ import { usePriva } from '@/lib/priva/store';
 import { DIREITOS, estadoPrazo, NOTA_PRAZO_METODO, tipoPrazo } from '@/lib/priva/titulares';
 import { BIBLIOTECA_NORMATIVA } from '@/lib/priva/bibliotecaNormativa';
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
+import { OPCOES_PRT_DEMO, RESULTADO_BUSCA_DEMO, solicitacoesDemo } from '@/lib/priva/demoTitulares';
 import { CitacoesAgrupadas } from '../CitacoesAgrupadas';
 import { PageHeader, Panel, Tag } from '../ui';
 import { Button } from '@/components/ui/button';
@@ -57,11 +58,14 @@ export function SolicitacoesTitular() {
     if(demo) return avisarAcaoDemo(); setBusy(true); setErro('');
     try { await fn(); } catch(e) { setErro(e instanceof Error ? e.message : 'Não foi possível concluir.'); } finally { setBusy(false); }
   };
-  const buscar = () => executar(async () => {
-    if(!empresaId || !identificador.trim()) throw new Error('Informe o identificador.');
-    const r=await supabase.rpc('localizar_titular',{ _empresa_id:empresaId,_identificador:identificador,_tipo:tipo }); if(r.error) throw r.error;
-    setResultados(r.data ?? []);setConsultou(true);
-  });
+  const buscar = () => {
+    if(demo) { setResultados(identificador.trim() ? RESULTADO_BUSCA_DEMO : []); setConsultou(true); return; }
+    void executar(async () => {
+      if(!empresaId || !identificador.trim()) throw new Error('Informe o identificador.');
+      const r=await supabase.rpc('localizar_titular',{ _empresa_id:empresaId,_identificador:identificador,_tipo:tipo }); if(r.error) throw r.error;
+      setResultados(r.data ?? []);setConsultou(true);
+    });
+  };
   const vincular = () => executar(async () => {
     if(!empresaId || !produto) throw new Error('Selecione o PRT.');
     const [id,indice]=produto.split(':'); if(!id) return;
@@ -78,9 +82,12 @@ export function SolicitacoesTitular() {
     const r=await supabase.rpc('atualizar_solicitacao_titular',{_id:id,_status:status,...(status==='NEGADA' && fundamentoId ? {_fundamento_id:fundamentoId} : {}),_fundamento:fundamento});if(r.error) throw r.error;
     setNegando(null);await qc.invalidateQueries({queryKey:['solicitacoes_titular']});toast.success('Atendimento atualizado e auditado.');
   });
-  const pedidos: Pedido[] = pedidosQ.data ?? [];
+  const pedidos: Pedido[] = demo ? solicitacoesDemo() : (pedidosQ.data ?? []);
   const visiveis=pedidos.filter(p => (filtro==='TODAS'||p.status===filtro) && (prazoFiltro==='TODOS'||estadoPrazo(p.prazo_resposta).alerta===prazoFiltro));
-  const opcoes=(rotQ.data ?? []).flatMap(r => Array.isArray(r.produtos_tratamento) ? r.produtos_tratamento.map((p,i) => ({valor:`${r.id}:${i}`,texto:`${r.codigo} · PRT-${i+1} · ${(p as {nome?:string})?.nome ?? ''} · ${r.papel_agente}`})) : []);
+  const opcoes=demo ? OPCOES_PRT_DEMO : (rotQ.data ?? []).flatMap(r => Array.isArray(r.produtos_tratamento) ? r.produtos_tratamento.map((p,i) => ({valor:`${r.id}:${i}`,texto:`${r.codigo} · PRT-${i+1} · ${(p as {nome?:string})?.nome ?? ''} · ${r.papel_agente}`})) : []);
+  const dispositivos=demo
+    ? BIBLIOTECA_NORMATIVA.filter(e=>e.status==='VERIFICADA' && ['REGIME_GERAL','LEI_ESPECIAL_SETORIAL'].includes(e.categoria)).map(e=>({id:`${e.norma}|${e.identificador}`,norma:e.norma,identificador:e.identificador}))
+    : (bibliotecaQ.data ?? []);
   return <div className="space-y-6">
     <PageHeader eyebrow="Transversal" title="Solicitações de titulares" />
     {(erro || empresaQ.isError || pedidosQ.isError) && <p role="alert" className="text-sm text-destructive">{erro || 'Não foi possível carregar os registros desta empresa.'}</p>}
@@ -116,7 +123,7 @@ export function SolicitacoesTitular() {
         <p className="text-sm">{DIREITOS.find(d=>d[0]===p.direito_solicitado)?.[1]} · {p.tipo_prazo==='LEGAL'?'15 dias corridos — prazo legal (art. 19, II)':'Regra do método — 15 dias'} · até {p.prazo_resposta}</p>
         {p.status==='ENCAMINHADA_CONTROLADOR' && <p className="text-sm text-muted-foreground">Linha do ROT: Operador · encaminhada ao controlador.</p>}
         {aberto && <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={busy} onClick={()=>void atualizar(p.id,'EM_ANALISE')}>Em análise</Button><Button size="sm" variant="outline" disabled={busy} onClick={()=>void atualizar(p.id,'RESPONDIDA')}>Registrar resposta</Button><Button size="sm" variant="outline" onClick={()=>{setNegando(p.id);setFundamentoId('');setFundamento('');}}>Negar com fundamento</Button></div>}
-        {negando===p.id && <div className="space-y-2 border-l-2 border-destructive pl-3"><p role="alert" className="text-sm text-destructive">Negativa exige fundamento com dispositivo legal verificado.</p><select aria-label="Dispositivo legal da negativa" className={selectClass} value={fundamentoId} onChange={e=>setFundamentoId(e.target.value)}><option value="">Selecione o dispositivo…</option>{(bibliotecaQ.data??[]).map(e=><option key={e.id} value={e.id}>{e.norma} · {e.identificador}</option>)}</select><Textarea aria-label="Fundamento da negativa" value={fundamento} onChange={e=>setFundamento(e.target.value)} /><Button size="sm" disabled={!fundamentoId||!fundamento.trim()||busy} onClick={()=>void atualizar(p.id,'NEGADA')}>Confirmar negativa fundamentada</Button></div>}
+        {negando===p.id && <div className="space-y-2 border-l-2 border-destructive pl-3"><p role="alert" className="text-sm text-destructive">Negativa exige fundamento com dispositivo legal verificado.</p><select aria-label="Dispositivo legal da negativa" className={selectClass} value={fundamentoId} onChange={e=>setFundamentoId(e.target.value)}><option value="">Selecione o dispositivo…</option>{dispositivos.map(e=><option key={e.id} value={e.id}>{e.norma} · {e.identificador}</option>)}</select><Textarea aria-label="Fundamento da negativa" value={fundamento} onChange={e=>setFundamento(e.target.value)} /><Button size="sm" disabled={!fundamentoId||!fundamento.trim()||busy} onClick={()=>void atualizar(p.id,'NEGADA')}>Confirmar negativa fundamentada</Button></div>}
         {p.fundamento_negativa && <p className="text-sm">Fundamento: {p.fundamento_negativa}</p>}
         {p.fundamento_normativo_id && <CitacoesAgrupadas entradas={(bibliotecaQ.data??[]).filter(e=>e.id===p.fundamento_normativo_id).map(e=>({...e,url_oficial:e.url_oficial??''}))} />}
       </li>; })}</ul>

@@ -98,7 +98,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const allowed = (demo || canAccess(role, pathname));
 
   const item = (to: string, label: ReactNode, icon: ReactNode, extra?: ReactNode, locked = false) => {
-    if (demo && ['/membros', '/enterprise', '/solicitacoes-titular'].includes(to)) return null;
+    // Demo pública: /membros e /enterprise ficam fora — a primeira revela CPF/CNPJ real por RPC auditada
+    // e a segunda é o faturamento SaaS (ADMIN_SISTEMA); cenografia sem gravação não cobre esses fluxos.
+    if (demo && ['/membros', '/enterprise'].includes(to)) return null;
     if (!(demo || canAccess(role, to))) return null;
     const active = publicDemo ? (searchStr.includes(`aba=${to.slice(1)}`)) : pathname.startsWith(to);
     return (
