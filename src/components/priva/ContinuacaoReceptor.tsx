@@ -37,6 +37,6 @@ export function ContinuacaoReceptor({ row, rows, onSaved }: { row: RotRow; rows:
     {tipo==='INCORPORACAO' && <select aria-label={`Produto existente ${row.codigo}`} className="w-full rounded-sm border bg-background p-2 text-xs" value={alvo} onChange={e=>setAlvo(e.target.value)}><option value="">Selecione o código do produto…</option>{rows.filter(r=>r.id!==row.id).flatMap(r=>produtosDaLinha(r).map((p,i)=><option key={`${r.id}:${i}`} value={`${r.id}:${i}`}>{r.codigo} · PRT-{i+1} · {p.nome}</option>))}</select>}
     {(tipo==='USO_EXCLUSIVO'||tipo==='ELIMINACAO') && <CitacoesAgrupadas entradas={BIBLIOTECA_NORMATIVA.filter(e=>e.norma==='LGPD' && e.identificador===(tipo==='USO_EXCLUSIVO'?'art. 16, IV':'art. 16, caput'))} />}
     {erro && <p role="alert" className="text-xs text-destructive">{erro}</p>}
-    <Button size="sm" variant="outline" disabled={!demo && (busy||!tipo||(tipo==='USO_EXCLUSIVO'&&(!anon||!semTerceiro)))} onClick={()=>void salvar()}>Registrar escolha do receptor</Button>
+    <Button size="sm" variant="outline" disabled={busy||!tipo||(tipo==='USO_EXCLUSIVO'&&(!anon||!semTerceiro))} onClick={()=>void salvar()}>Registrar escolha do receptor</Button>
   </div>;
 }

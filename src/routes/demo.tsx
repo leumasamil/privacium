@@ -16,9 +16,10 @@ import { FormularioANPD } from '@/components/priva/FormularioANPD';
 import { EncarregadoDPO } from '@/components/priva/EncarregadoDPO';
 import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
 import { QualidadeNormativa } from '@/components/priva/views/QualidadeNormativa';
+import { SolicitacoesTitular } from '@/components/priva/views/SolicitacoesTitular';
 import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
 
-const ABAS = ['painel', 'bloco-1', 'bloco-2', 'bloco-3', 'bloco-4', 'bloco-5', 'anpd', 'kanban', 'pendencias', 'manual', 'glossario', 'auditoria', 'encarregado', 'qualidade-normativa'];
+const ABAS = ['painel', 'bloco-1', 'bloco-2', 'bloco-3', 'bloco-4', 'bloco-5', 'anpd', 'kanban', 'pendencias', 'manual', 'glossario', 'auditoria', 'encarregado', 'qualidade-normativa', 'titulares'];
 export const Route = createFileRoute('/demo')({
   validateSearch: (search: Record<string, unknown>): { aba?: string } => ({ aba: typeof search['aba'] === 'string' && ABAS.includes(search['aba']) ? search['aba'] : 'painel' }),
   head: () => ({ meta: [
@@ -53,6 +54,7 @@ function DemoConteudo({ aba }: { aba: string }) {
     case 'auditoria': return <Auditoria />;
     case 'encarregado': return <EncarregadoDPO />;
     case 'qualidade-normativa': return <QualidadeNormativa />;
+    case 'titulares': return <SolicitacoesTitular />;
     case 'anpd': return <DemoANPD />;
     default: return <Painel />;
   }
