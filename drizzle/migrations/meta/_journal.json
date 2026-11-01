@@ -330,6 +330,13 @@
       "when": 1793499334172,
       "tag": "0046_incidencia_normativa",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1793499376125,
+      "tag": "0047_titulares_indice_atendimento",
+      "breakpoints": true
     }
   ]
 }
