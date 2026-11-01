@@ -16,7 +16,7 @@ import { continuacaoConforme, lerContinuacao } from '@/lib/priva/continuacaoRece
 import { linhasAtivas, linhasExcluidas, receptoraExistente } from "@/lib/priva/cadeiaCustodia";
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { citacaoSimplificada } from '@/lib/priva/enquadramento';
-import { ALERTA_FINALIDADE_OPERADOR, ALERTA_PRODUTO_AUSENTE, DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, LITERAL_ART5_VI, LITERAL_ART5_VII, MEIOS, NOTA_DESTINO_OPERADOR, NOTA_PRT, PAPEIS_AGENTE, ROTULO_PRT, alertasPRTSemDestino, descreverDestinoPRT, prtExternosBloqueados, produtosDaLinha, rotuloPRT, alertaPRTSemDestino, destinoPRTCompleto, type ProdutoTratamento, ROTULO_PAPEL, SALVAGUARDAS, SENSIVEIS, TITULARES, alertaFinalidadeOperador, alertaProdutoAusente, alertasCoerencia, finalidadeDoContrato, hasSensivel, isRisky, montarLinhaReceptora, normalizeHipoteses, sugerir, sugerirProduto, sugestaoFinalidade, finalidadeEquivalente, contadorPadronizadas, FONTE_LGPD, DESTINO_RECEPTOR_PENDENTE, receptorSemEscolha, alertaProduzirSemPRT, alertaOrigemExcluida, validateRot, type DestinoProduto, type OrigemCompartilhamento, type PapelAgente, type RotInput, type RotRow } from "@/lib/priva/rot";
+import { ALERTA_FINALIDADE_OPERADOR, ALERTA_PRODUTO_AUSENTE, DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, LITERAL_ART5_VI, LITERAL_ART5_VII, MEIOS, NOTA_DESTINO_OPERADOR, NOTA_PRT, PAPEIS_AGENTE, ROTULO_PRT, alertasPRTSemDestino, descreverDestinoPRT, prtExternosBloqueados, produtosDaLinha, rotuloPRT, alertaPRTSemDestino, prtSemDestino, type ProdutoTratamento, ROTULO_PAPEL, SALVAGUARDAS, SENSIVEIS, TITULARES, alertaFinalidadeOperador, alertaProdutoAusente, alertasCoerencia, finalidadeDoContrato, hasSensivel, isRisky, montarLinhaReceptora, normalizeHipoteses, sugerir, sugerirProduto, sugestaoFinalidade, finalidadeEquivalente, contadorPadronizadas, FONTE_LGPD, DESTINO_RECEPTOR_PENDENTE, receptorSemEscolha, alertaProduzirSemPRT, alertaOrigemExcluida, validateRot, type DestinoProduto, type OrigemCompartilhamento, type PapelAgente, type RotInput, type RotRow } from "@/lib/priva/rot";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ROT } from "@/lib/priva/demo";
 import { alertaRetencaoLinha, pendenciasPI02 } from "@/lib/priva/rot";
@@ -396,7 +396,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
           {!pendente && !operador && (prts.length > 0 || temEtapa2(cicloDaLinha(f))) && (
             <Field label={ROTULO_ETAPA2} wide>
               <div className="space-y-2" data-testid="etapa2-lista">
-                {prts.map((p, i) => <DestinoPRTEditor key={i} indice={i} prt={p} terceiros={terceiros} onChange={(d) => upPrt(i, { destino: d })} />)}
+                {prts.map((p, i) => <DestinoPRTEditor key={i} indice={i} prt={p} linha={f} terceiros={terceiros} onChange={(d) => upPrt(i, { destino: d })} />)}
                 <div className="rounded-sm border border-dashed p-2 text-xs" data-testid="insumo-residual">
                   <b>(insumo residual)</b> → {f.tempo_retencao.trim() ? `Eliminar em ${f.tempo_retencao} (${f.base_prazo || "fundamento a definir"})` : "preencha os campos 8 e 9 (prazo e fundamento do insumo original — LGPD art. 16)"}
                 </div>
@@ -522,7 +522,7 @@ function PRTCelula({ r, terceiros }: { r: RotRow; terceiros: Terceiro[] }) {
     <div className="space-y-1">
       {!prts.length && <p>—</p>}
       {prts.map((p, i) => {
-        const semDestino = r.papel_agente !== "OPERADOR" && !destinoPRTCompleto(p.destino);
+        const semDestino = prtSemDestino(r, p);
         return (
           <div key={i} data-testid={`prt-${r.codigo}-${i + 1}`}>
             <p><span className="font-mono font-semibold text-primary">{rotuloPRT(i)}</span> · {p.nome} <span className="text-muted-foreground">→ {r.papel_agente === "OPERADOR" ? NOTA_DESTINO_OPERADOR : receptorSemEscolha(r) ? DESTINO_RECEPTOR_PENDENTE : descreverDestinoPRT(p.destino)}</span></p>
@@ -539,7 +539,8 @@ function PRTCelula({ r, terceiros }: { r: RotRow; terceiros: Terceiro[] }) {
 }
 
 /** Destino individual de um PRT (Etapa 2): interno, externo (terceiro do cadastro) ou eliminação. */
-function DestinoPRTEditor({ indice, prt, terceiros, onChange }: { indice: number; prt: ProdutoTratamento; terceiros: Terceiro[]; onChange: (d: DestinoProduto | null) => void }) {
+function DestinoPRTEditor({ indice, prt, linha, terceiros, onChange }: { indice: number; prt: ProdutoTratamento; linha: RotInput & { papel_agente?: RotRow["papel_agente"] }; terceiros: Terceiro[]; onChange: (d: DestinoProduto | null) => void }) {
+  const linhaRef = { ...linha, papel_agente: linha.papel_agente ?? "CONTROLADOR" } as RotRow;
   const d = prt.destino ?? null;
   const area = (d?.area_setor_destino ?? "").split("›")[0]?.trim() ?? "";
   const setor = (d?.area_setor_destino ?? "").split("›")[1]?.trim() ?? "";
@@ -585,7 +586,7 @@ function DestinoPRTEditor({ indice, prt, terceiros, onChange }: { indice: number
           <Input value={d.fundamento ?? ""} placeholder="Fundamento (LGPD art. 16)" onChange={(e) => onChange({ ...d, fundamento: e.target.value })} />
         </div>
       )}
-      {!destinoPRTCompleto(d) && <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-warning-foreground" data-testid={`alerta-prt-${indice + 1}`}><AlertTriangle className="h-3 w-3" /> {alertaPRTSemDestino(prt.nome || "sem nome")}</p>}
+      {prtSemDestino(linhaRef, prt) && <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-warning-foreground" data-testid={`alerta-prt-${indice + 1}`}><AlertTriangle className="h-3 w-3" /> {alertaPRTSemDestino(prt.nome || "sem nome")}</p>}
     </fieldset>
   );
 }

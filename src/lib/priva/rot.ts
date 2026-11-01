@@ -90,10 +90,18 @@ export function destinoPRTCompleto(d: DestinoProduto | null | undefined): boolea
   return !!(d.prazo ?? "").trim() && !!(d.fundamento ?? "").trim();
 }
 
+/**
+ * Regra única: um PRT está "sem destino" apenas quando a linha não é de operador
+ * (destino definido pelo controlador) e não é receptora aguardando decisão.
+ * TODA verificação de destino de PRT passa por aqui — nunca por lógica inline.
+ */
+export function prtSemDestino(r: ComReceptor & Pick<RotRow, "papel_agente">, p: ProdutoTratamento): boolean {
+  return r.papel_agente !== "OPERADOR" && !receptorSemEscolha(r) && !destinoPRTCompleto(p.destino);
+}
+
 /** Alertas por PRT sem destino (bloqueiam a chancela do PI-02). Linhas de operador: destino definido pelo controlador. */
 export function alertasPRTSemDestino(r: ComReceptor & Pick<RotRow, "papel_agente">): string[] {
-  if (r.papel_agente === "OPERADOR" || receptorSemEscolha(r)) return [];
-  return produtosDaLinha(r).filter((p) => !destinoPRTCompleto(p.destino)).map((p) => alertaPRTSemDestino(p.nome || "sem nome"));
+  return produtosDaLinha(r).filter((p) => prtSemDestino(r, p)).map((p) => alertaPRTSemDestino(p.nome || "sem nome"));
 }
 
 /** PRT com destino externo para terceiro sem contrato vigente e checklist do art. 39 completo (alerta bloqueante). */
