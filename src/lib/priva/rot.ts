@@ -1,5 +1,5 @@
 import type { Database } from "@/integrations/supabase/types";
-import { cicloDaLinha, temEtapa2, temProcessar, validarCiclo } from "./cicloVida";
+import { alertaRetencao, cicloDaLinha, destinoDeclarado, temEtapa2, temProcessar, validarCiclo } from "./cicloVida";
 import { continuacaoConforme, lerContinuacao } from "./continuacaoReceptor";
 
 export type RotRow = Database["public"]["Tables"]["registro_operacoes"]["Row"];
@@ -73,7 +73,10 @@ export function alertaProduzirSemPRT(r: Pick<RotInput, "ciclo_vida" | "genero_ve
 
 export function alertaOrigemExcluida(r: { origem_compartilhamento?: unknown }, todas: Pick<RotRow, "id" | "excluido_em">[]): string | null {
   const origem = r.origem_compartilhamento as OrigemCompartilhamento | null;
-  const data = todas.find(linha => linha.id === origem?.linha_origem_id)?.excluido_em;
+  if (!origem?.linha_origem_id) return null;
+  const linha = todas.find(linha => linha.id === origem.linha_origem_id);
+  if (!linha) return `Insumo originado de operação não localizada (código ${origem.codigo_origem}) — verificar se o tratamento receptor deve ser mantido.`;
+  const data = linha.excluido_em;
   if (!data) return null;
   const dia = new Date(data).toLocaleDateString("pt-BR", { timeZone: "UTC" });
   return `Insumo originado de operação excluída logicamente em ${dia} — verificar se o tratamento receptor deve ser mantido.`;
@@ -88,8 +91,8 @@ export function destinoPRTCompleto(d: DestinoProduto | null | undefined): boolea
 }
 
 /** Alertas por PRT sem destino (bloqueiam a chancela do PI-02). Linhas de operador: destino definido pelo controlador. */
-export function alertasPRTSemDestino(r: ComPRT & Pick<RotRow, "papel_agente">): string[] {
-  if (r.papel_agente === "OPERADOR") return [];
+export function alertasPRTSemDestino(r: ComReceptor & Pick<RotRow, "papel_agente">): string[] {
+  if (r.papel_agente === "OPERADOR" || receptorSemEscolha(r)) return [];
   return produtosDaLinha(r).filter((p) => !destinoPRTCompleto(p.destino)).map((p) => alertaPRTSemDestino(p.nome || "sem nome"));
 }
 
@@ -194,6 +197,24 @@ export function validateRot(r: RotInput & { continuacao_receptor?: unknown }): s
 /** Processar na Etapa 1 sem produto interno declarado: alerta exibido e chancela do PI-02 bloqueada (LGPD art. 6º, I). */
 export function alertaProdutoAusente(r: Pick<RotInput, "ciclo_vida" | "genero_verbo"> & ComPRT): string | null {
   return temProcessar(cicloDaLinha(r)) && !produtosDaLinha(r).some((p) => p.nome.trim()) ? ALERTA_PRODUTO_AUSENTE : null;
+}
+
+export function alertaRetencaoLinha(r: Pick<RotInput, "ciclo_vida" | "genero_verbo"> & ComReceptor): string | null {
+  return receptorSemEscolha(r) ? null : alertaRetencao(cicloDaLinha(r));
+}
+
+/** Pendência de decisão é um estado documental, não uma falha impeditiva. */
+export function pendenciasPI02(rows: RotRow[], terceiros: { id: string; contrato_vigente: boolean; clausulas_art39: boolean }[]) {
+  const terminal = (r: RotRow) => {
+    const c = lerContinuacao(r.continuacao_receptor);
+    return !!r.origem_compartilhamento && !!c && c.tipo !== "NOVO_PRT" && continuacaoConforme(c, false);
+  };
+  const semDestino = rows.filter(r => !receptorSemEscolha(r) && !terminal(r) && !destinoDeclarado(r)).length;
+  const semProduto = rows.filter(r => !terminal(r) && !!(alertaProdutoAusente(r) || alertaProduzirSemPRT(r))).length;
+  const semDestinoPRT = rows.filter(r => !terminal(r) && alertasPRTSemDestino(r).length > 0).length;
+  const externosBloqueados = rows.filter(r => !receptorSemEscolha(r) && prtExternosBloqueados(r, terceiros).length > 0).length;
+  const receptoresPendentes = rows.filter(receptorSemEscolha).length;
+  return { semDestino, semProduto, semDestinoPRT, externosBloqueados, receptoresPendentes, ready: rows.length > 0 && semDestino === 0 && semProduto === 0 && semDestinoPRT === 0 && externosBloqueados === 0 };
 }
 
 /** Operador com texto de finalidade que não referencia o contrato com o controlador (alerta não bloqueante, LGPD art. 39). */

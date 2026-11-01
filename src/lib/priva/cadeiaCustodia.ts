@@ -3,7 +3,7 @@
  * Nó = linha do ROT (Área › Setor + código). Aresta = compartilhamento de um PRT (data, assinaturas, hash).
  * Funções puras e determinísticas: a mesma entrada produz sempre a mesma trilha.
  */
-import { produtosDaLinha, descreverDestinoPRT, destinoPRTCompleto, rotuloPRT, type DestinoProduto, type OrigemCompartilhamento, type RotRow } from "./rot";
+import { produtosDaLinha, receptorSemEscolha, descreverDestinoPRT, destinoPRTCompleto, rotuloPRT, type DestinoProduto, type OrigemCompartilhamento, type RotRow } from "./rot";
 import { continuacaoConforme, lerContinuacao, rotuloContinuacao } from './continuacaoReceptor';
 
 export type AssinaturaRot = { assinante: string; email?: string; etapa: number; em: string; sha256: string };
@@ -15,7 +15,7 @@ export type ArestaCadeia = {
   de: NoCadeia; para: NoCadeia | null; destino: string; tipoDestino: "INTERNO" | "EXTERNO" | "ELIMINACAO" | null;
   data: string | null; assinaturaOrigem: AssinaturaRot | null; assinaturaDestino: AssinaturaRot | null; hash: string | null;
 };
-export type StatusPRT = { tipo: "COMPLETA" } | { tipo: "ROMPE"; no: NoCadeia; motivo: string };
+export type StatusPRT = { tipo: "COMPLETA" } | { tipo: "PENDENTE"; no: NoCadeia } | { tipo: "ROMPE"; no: NoCadeia; motivo: string };
 export type TrilhaPRT = {
   chave: string; origem: NoCadeia; prt: string; nomePRT: string;
   arestas: ArestaCadeia[]; novoTratamento: string[]; status: StatusPRT;
@@ -46,7 +46,7 @@ export function rotuloEtapa1Receptor(a: Pick<ArestaCadeia, "para" | "assinaturaD
 }
 
 export const NOTA_HASH_ASSINATURA = "O hash exibido é da assinatura da Etapa 2 (ato do DPO), não do conteúdo individual de cada PRT. Produtos distintos compartilham o mesmo hash porque derivam do mesmo ato de assinatura.";
-export const rotuloStatus = (s: StatusPRT) => (s.tipo === "COMPLETA" ? "Completa" : `Rompe em: ${s.no.rotulo}`);
+export const rotuloStatus = (s: StatusPRT) => (s.tipo === "COMPLETA" ? "Completa" : s.tipo === "PENDENTE" ? "Aguardando decisão do receptor" : `Rompe em: ${s.no.rotulo}`);
 
 /**
  * B.4 — antes de criar uma linha receptora, procura a já existente para o mesmo PRT,
@@ -78,11 +78,12 @@ export function montarCadeia(linhas: Linha[]): TrilhaPRT[] {
       };
       let status: StatusPRT = { tipo: "COMPLETA" };
       if (l.excluido_em) status = { tipo: "ROMPE", no: origem, motivo: descreverRemocao(origem) };
+      else if (receptorSemEscolha(l)) status = { tipo: "PENDENTE", no: origem };
       else if (!destinoPRTCompleto(d)) status = { tipo: "ROMPE", no: origem, motivo: "destino não declarado" };
       else if (!a2) status = { tipo: "ROMPE", no: origem, motivo: "assinatura da Etapa 2 (DPO) ausente" };
       else if (d?.tipo === "INTERNO" && !receptor) status = { tipo: "ROMPE", no: origem, motivo: "linha receptora não registrada no setor de destino" };
       else if (receptor && !a1r) status = { tipo: "ROMPE", no: no(receptor), motivo: "assinatura da Etapa 1 (gestor) ausente no receptor" };
-      else if (receptor && !continuacaoConforme(lerContinuacao(receptor.continuacao_receptor), produtosDaLinha(receptor).some(x=>!!x.nome.trim()))) status = { tipo: 'ROMPE', no: no(receptor), motivo: rotuloContinuacao(lerContinuacao(receptor.continuacao_receptor)) };
+      else if (receptor && receptorSemEscolha(receptor)) status = { tipo: 'PENDENTE', no: no(receptor) };
       const novoTratamento = receptor ? [rotuloContinuacao(lerContinuacao(receptor.continuacao_receptor)), ...produtosDaLinha(receptor).map((x, j) => `${rotuloPRT(j)} ${x.nome}`)] : [];
       trilhas.push({ chave: `${l.id}:${i}`, origem, prt: rotuloPRT(i), nomePRT: p.nome, arestas: [aresta], novoTratamento, status });
     });
@@ -103,14 +104,15 @@ export function montarCadeia(linhas: Linha[]): TrilhaPRT[] {
     const caminho=new Set(vistos);caminho.add(t.chave);
     const receptorId=t.arestas[0]?.para?.id;
     const receptor=receptorId ? porId.get(receptorId) : undefined;
-    if(!receptor || t.status.tipo==='ROMPE') return t;
+    if(!receptor || t.status.tipo!=='COMPLETA') return t;
     const c=lerContinuacao(receptor.continuacao_receptor);
     if(c?.tipo==='ELIMINACAO'||c?.tipo==='USO_EXCLUSIVO') return t;
     const filhos = c?.tipo==='INCORPORACAO' ? [porChave.get(`${c.linha_id}:${c.produto_indice}`)].filter((x): x is TrilhaPRT=>!!x) : trilhas.filter(x=>x.origem.id===receptor.id && !x.chave.endsWith(':origem'));
     if(!filhos.length) return {...t,status:{tipo:'ROMPE',no:no(receptor),motivo:'produto da continuidade não localizado'}};
     const expandidos=filhos.map(f=>expandir(f,caminho));
     const ruptura=expandidos.find(f=>f.status.tipo==='ROMPE');
-    return {...t,arestas:[...t.arestas,...expandidos.flatMap(f=>f.arestas)],novoTratamento:[...t.novoTratamento,...expandidos.flatMap(f=>f.novoTratamento)],status:ruptura?.status ?? t.status};
+    const pendente=expandidos.find(f=>f.status.tipo==='PENDENTE');
+    return {...t,arestas:[...t.arestas,...expandidos.flatMap(f=>f.arestas)],novoTratamento:[...t.novoTratamento,...expandidos.flatMap(f=>f.novoTratamento)],status:ruptura?.status ?? pendente?.status ?? t.status};
   };
   return trilhas.map(t=>expandir(t,new Set()));
 }
@@ -125,6 +127,7 @@ export function incisoSustentado(trilhas: TrilhaPRT[]): string {
   if (!trilhas.length) return "Nenhum: não há PRT registrado neste nó.";
   const rupturas = trilhas.filter((t) => t.status.tipo === "ROMPE");
   if (rupturas.length) return `Nenhum inciso é sustentado pela trilha documental: há ruptura (${rupturas.map((t) => rotuloStatus(t.status)).join("; ")}).`;
+  if (trilhas.some(t => t.status.tipo === "PENDENTE")) return "Nenhum inciso é sustentado: a trilha aguarda decisão do receptor; não está completa nem rompida.";
   return "Inciso II — a trilha documenta registro, destino e assinaturas de cada compartilhamento, servindo de prova documental de que o tratamento atribuído seguiu as obrigações de registro (art. 37).";
 }
 
