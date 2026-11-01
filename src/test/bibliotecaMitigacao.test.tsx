@@ -5,6 +5,11 @@ import { derivarRisco, sugestaoMitigacao, type RiscoId } from '@/lib/privacium/b
 import { DEMO_SIGNATURES, DEMO_PUBLIC_SIGNATURES } from '@/lib/priva/demo';
 import { isUnlocked } from '@/lib/priva/store';
 
+/** Fixture local: PI-01 a PI-04 chancelados no teste, com SHA-256 de 64 hex (a demonstração pública nasce sem chancelas). */
+const CHANCELADOS: Record<string, { by: string; ts: string; hash: string }> = Object.fromEntries(
+  ['PI-01', 'PI-02', 'PI-03', 'PI-04'].map((k, i) => [k, { by: `Teste · ${k}`, ts: '2026-10-01T12:00:00.000Z', hash: `${'abcdef0123456789'.repeat(4).slice(i)}${'0'.repeat(i)}`.padEnd(64, 'f').slice(0, 64) }]),
+);
+
 const IDS: RiscoId[] = ['vazamento', 'vies', 'injecao'];
 const database = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn(), channel: vi.fn(), auth: { getUser: vi.fn() } }));
 vi.mock('@/integrations/supabase/client', () => ({ supabase: database }));
