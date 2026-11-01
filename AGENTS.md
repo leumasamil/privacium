@@ -9,7 +9,7 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Brand: Privacium (privacium.com.br), never "PRIVA 2EC".
+- Brand: Privacium (privacium.com.br), never "PRIVA 2EC". Demo embeds a build-time source fingerprint, not a claimed deployment commit; why: delivery verification.
 - Titular lookup/requests use isolated tables and tenant-authorized audited RPCs, never workspace JSON; why: protect identifiers.
 - Subdirectories have their own AGENTS.md (e.g. src/lib/priva); read it before changing files there.
 
@@ -30,7 +30,7 @@
 - External DTOs are authenticated, RLS-scoped, read-only and cached; comparisons stay outside PIOutput, audit and progress. ANPD catalogs use DB-canonicalized JSON pairs and shared PI-04 formatters; legacy submissions stay intact. Categories come from linked ROT, with closed fallback for empty fields; stage evidence is required. Suggestions respect DPO deselection.
 - Supplier references persist only in isolated monitor tables; server-only matching follows authenticated tenant/role authorization and a DB cooldown. Decision RPCs audit internal IDs/states only; explicit own-impact confirmation creates a clean incident. Monitor never feeds PI documents, blockers or progress.
 - ANPD has a standalone authenticated incident-ID route (un-nested from Block 4) and shared pending links; risk selections are DB-canonicalized with required case details, while vector suggestions never prove completed actions. Why: reliable crisis navigation, normative traceability and no false evidence.
-- AppShell mounts sticky AvisoModoDemo above content; navigation wraps and missing paths share a 404. Why: explain inert controls and preserve routing failures.
+- AppShell has sticky AvisoModoDemo, wrapping navigation and a shared 404. Why: clarity and routing integrity.
 - Tenant tables require restrictive company policies beyond role checks; only admins change company linkage and audit writes use RPCs. Why: prevent cross-company access.
 - Glossary terms and dashboard indicators come from one shared glossary module. Why: no bare acronyms; every metric shows definition, formula and action.
 - PI-05 uses static mitigation; dosimetria.ts owns the fine simulator, which stays disabled (notice + literal Res. 4/2023 art. 13) until percentages are verified. Why: no unverified legal percentage may reach users; never AI.

@@ -54,7 +54,7 @@ export function Bloco2({ origemAusente = false }: { origemAusente?: boolean } = 
   const canEdit = (roles.includes("DPO_OPERACIONAL") || roles.includes("ADMIN_SISTEMA"));
   const key = ["registro_operacoes", cnpj] as const;
   const { data: todas = [] } = useQuery({
-    queryKey: [...key, demo],
+    queryKey: [...key, demo, origemAusente],
     enabled: !!cnpj,
     queryFn: async (): Promise<RotRow[]> => {
       if (demo) return origemAusente ? DEMO_ROT.filter(r => r.id !== "demo-rot-removida") : DEMO_ROT;
@@ -186,6 +186,7 @@ export function Bloco2({ origemAusente = false }: { origemAusente?: boolean } = 
                   <tr id={`rot-${r.id}`} key={r.id} className={cn("scroll-mt-6 border-b align-top", risk && "border-l-4 border-l-destructive bg-destructive/15")}>
                     <td className="px-2 py-2 font-mono font-semibold text-primary">
                       {r.codigo}
+                      {origemExcluida && <Button variant="ghost" size="sm" className="mt-2 h-auto whitespace-normal text-warning-foreground" onClick={() => document.querySelector(`[data-testid="origem-${origemNaoLocalizada ? "nao-localizada" : "excluida"}-${r.codigo}"]`)?.scrollIntoView({ block: "center", inline: "center" })}><AlertTriangle className="h-3 w-3" />Ver alerta do insumo</Button>}
                       {risk && <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold uppercase text-destructive"><AlertTriangle className="h-3 w-3" /> Alerta crítico</p>}
                     </td>
                     <td className="px-2 py-2">{exibirAreaSetor(r)}</td>
