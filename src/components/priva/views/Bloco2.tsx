@@ -19,6 +19,7 @@ import { citacaoSimplificada } from '@/lib/priva/enquadramento';
 import { ALERTA_FINALIDADE_OPERADOR, ALERTA_PRODUTO_AUSENTE, DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, LITERAL_ART5_VI, LITERAL_ART5_VII, MEIOS, NOTA_DESTINO_OPERADOR, NOTA_PRT, PAPEIS_AGENTE, ROTULO_PRT, alertasPRTSemDestino, descreverDestinoPRT, prtExternosBloqueados, produtosDaLinha, rotuloPRT, alertaPRTSemDestino, destinoPRTCompleto, type ProdutoTratamento, ROTULO_PAPEL, SALVAGUARDAS, SENSIVEIS, TITULARES, alertaFinalidadeOperador, alertaProdutoAusente, alertasCoerencia, finalidadeDoContrato, hasSensivel, isRisky, montarLinhaReceptora, normalizeHipoteses, sugerir, sugerirProduto, sugestaoFinalidade, finalidadeEquivalente, contadorPadronizadas, FONTE_LGPD, DESTINO_RECEPTOR_PENDENTE, receptorSemEscolha, alertaProduzirSemPRT, alertaOrigemExcluida, validateRot, type DestinoProduto, type OrigemCompartilhamento, type PapelAgente, type RotInput, type RotRow } from "@/lib/priva/rot";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ROT } from "@/lib/priva/demo";
+import { alertaRetencaoLinha, pendenciasPI02 } from "@/lib/priva/rot";
 import { responsavelDaArea, useMembros } from "@/components/priva/MembrosEmpresa";
 import { useTerceiros, type Terceiro } from "@/components/priva/TerceirosEmpresa";
 import { ALERTA_TERCEIRO_SEM_CONTRATO, LITERAL_ART6_I, terceiroBloqueado } from "@/lib/priva/terceiros";
@@ -148,15 +149,7 @@ export function Bloco2() {
   };
 
   const riskyCount = rows.filter(isRisky).length;
-  const terminalConforme = (r: RotRow) => {
-    const c=lerContinuacao(r.continuacao_receptor);
-    return !!r.origem_compartilhamento && !!c && c.tipo!=='NOVO_PRT' && continuacaoConforme(c,false);
-  };
-  const semDestino = rows.filter((r) => !terminalConforme(r) && !destinoDeclarado(r)).length;
-  const semProduto = rows.filter((r) => !terminalConforme(r) && (alertaProdutoAusente(r) || alertaProduzirSemPRT(r))).length;
-  const receptoresPendentes=rows.filter(r=>r.origem_compartilhamento && !continuacaoConforme(lerContinuacao(r.continuacao_receptor),produtosDaLinha(r).some(p=>!!p.nome.trim()))).length;
-  const semDestinoPRT = rows.filter((r) => alertasPRTSemDestino(r).length > 0).length;
-  const externosBloqueados = rows.filter((r) => prtExternosBloqueados(r, terceiros).length > 0).length;
+  const { semDestino, semProduto, receptoresPendentes, semDestinoPRT, externosBloqueados, ready } = pendenciasPI02(rows, terceiros);
   const NUMS = ["", "1. ", "1A. ", "2. ", "3. ", "4. ", "5. ", "6. ", "", "", "8. ", "9. ", "10. ", "10A. ", "10C. ", "10B. ", "11. ", "12. "];
 
   return (
@@ -167,6 +160,7 @@ export function Bloco2() {
       </PageHeader>
       {AJUDA[2] && <AjudaTarefa {...AJUDA[2]} />}
       <CicloResumo />
+      <p data-testid="pi02-contagens" className="text-xs text-muted-foreground">Sem produto: {semProduto} · Sem destino de PRT: {semDestinoPRT} · Aguardando receptor: {receptoresPendentes} · Chancela PI-02: {ready ? "liberada para assinatura" : "bloqueada por pendências impeditivas"}</p>
 
       <GrafoCadeiaCustodia rows={todas} />
 
@@ -185,8 +179,9 @@ export function Bloco2() {
             <tbody>
               {rows.map((r) => {
                 const risk = isRisky(r);
-                const retencao = alertaRetencao(cicloDaLinha(r));
+                const retencao = alertaRetencaoLinha(r);
                 const origemExcluida = alertaOrigemExcluida(r, todas);
+                const origemNaoLocalizada = origemExcluida?.includes("não localizada");
                 return (
                   <tr id={`rot-${r.id}`} key={r.id} className={cn("scroll-mt-6 border-b align-top", risk && "border-l-4 border-l-destructive bg-destructive/15")}>
                     <td className="px-2 py-2 font-mono font-semibold text-primary">
@@ -214,7 +209,7 @@ export function Bloco2() {
                     <td className="px-2 py-2">
                       {r.insumo ?? "—"}
                       {(r.origem_compartilhamento as OrigemCompartilhamento | null) && <p className="mt-1 rounded-sm border border-dashed px-1 py-0.5 text-[10px] text-muted-foreground" data-testid={`origem-${r.codigo}`}>Insumo recebido de {(r.origem_compartilhamento as OrigemCompartilhamento).codigo_origem} ({(r.origem_compartilhamento as OrigemCompartilhamento).area_setor_origem})</p>}
-                      {origemExcluida && <p role="alert" data-testid={`origem-excluida-${r.codigo}`} className="mt-2 border-l-4 border-warning bg-warning/10 p-2 text-xs font-semibold text-warning-foreground"><AlertTriangle className="mb-1 h-4 w-4" />{origemExcluida}</p>}
+                      {origemExcluida && <p role="alert" data-testid={`origem-${origemNaoLocalizada ? "nao-localizada" : "excluida"}-${r.codigo}`} className={cn("mt-2 border-warning bg-warning/10 p-2 text-xs font-semibold text-warning-foreground", origemNaoLocalizada ? "border-2 border-dashed" : "border-l-4")}><AlertTriangle className="mb-1 h-4 w-4" />{origemExcluida}</p>}
                       {r.origem_compartilhamento && canEdit && <ContinuacaoReceptor row={r} rows={rows} onSaved={()=>void qc.invalidateQueries({queryKey:key})} />}
                     </td>
                     <td className="max-w-80 px-2 py-2" data-testid={`produto-${r.codigo}`}>
@@ -244,8 +239,7 @@ export function Bloco2() {
 
       {edit && <RotDialog edit={edit} setEdit={setEdit} onSave={save} />}
 
-      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={rows.length > 0 && semDestino === 0 && semProduto === 0 && semDestinoPRT === 0 && externosBloqueados === 0 && receptoresPendentes===0} readyHint={rows.length === 0 ? "Cadastre ao menos um processo na planilha mestre." : [
-        receptoresPendentes>0 ? `${receptoresPendentes} receptor(es) aguardando escolha expressa de continuidade.` : '',
+      <PIOutput dual pi="PI-02: Registro de Operações de Tratamento (ROT)" ready={ready} readyHint={rows.length === 0 ? "Cadastre ao menos um processo na planilha mestre." : [
         semDestino > 0 ? `${semDestino} processo(s) sem destino declarado: a Etapa 2 (compartilhamento com destinatário identificado ou eliminação com prazo e fundamento — LGPD art. 16) é obrigatória para chancelar o PI-02.` : "",
         semProduto > 0 ? `${semProduto} processo(s) com Processar sem PRT declarado — art. 6º, I não comprovado; a chancela do PI-02 fica bloqueada neste estado.` : "",
         semDestinoPRT > 0 ? `${semDestinoPRT} processo(s) com PRT sem destino declarado — art. 16 não comprovado; todo PRT precisa de destino individual na Etapa 2.` : "",
@@ -312,7 +306,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
   const pendente = receptorSemEscolha(f);
   const dicas = [...sugerir(f), ...sugerirProduto(f)].filter((d) => !d.patch.finalidade_especifica);
   const coerencia = alertasCoerencia(f);
-  const retencao = alertaRetencao(cicloDaLinha(f));
+  const retencao = alertaRetencaoLinha(f);
   const erro = validateRot(f);
   const prts = produtosDaLinha(f);
   const setPrts = (l: ProdutoTratamento[]) => up({ produtos_tratamento: l, produto_interno: l[0]?.nome || null });
