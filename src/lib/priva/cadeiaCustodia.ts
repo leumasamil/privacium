@@ -3,7 +3,7 @@
  * Nó = linha do ROT (Área › Setor + código). Aresta = compartilhamento de um PRT (data, assinaturas, hash).
  * Funções puras e determinísticas: a mesma entrada produz sempre a mesma trilha.
  */
-import { produtosDaLinha, receptorSemEscolha, descreverDestinoPRT, destinoPRTCompleto, rotuloPRT, type DestinoProduto, type OrigemCompartilhamento, type RotRow } from "./rot";
+import { produtosDaLinha, receptorSemEscolha, descreverDestinoPRT, prtSemDestino, rotuloPRT, type DestinoProduto, type OrigemCompartilhamento, type RotRow } from "./rot";
 import { continuacaoConforme, lerContinuacao, rotuloContinuacao } from './continuacaoReceptor';
 
 export type AssinaturaRot = { assinante: string; email?: string; etapa: number; em: string; sha256: string };
@@ -79,7 +79,7 @@ export function montarCadeia(linhas: Linha[]): TrilhaPRT[] {
       let status: StatusPRT = { tipo: "COMPLETA" };
       if (l.excluido_em) status = { tipo: "ROMPE", no: origem, motivo: descreverRemocao(origem) };
       else if (receptorSemEscolha(l)) status = { tipo: "PENDENTE", no: origem };
-      else if (!destinoPRTCompleto(d)) status = { tipo: "ROMPE", no: origem, motivo: "destino não declarado" };
+      else if (prtSemDestino(l, p)) status = { tipo: "ROMPE", no: origem, motivo: "destino não declarado" };
       else if (!a2) status = { tipo: "ROMPE", no: origem, motivo: "assinatura da Etapa 2 (DPO) ausente" };
       else if (d?.tipo === "INTERNO" && !receptor) status = { tipo: "ROMPE", no: origem, motivo: "linha receptora não registrada no setor de destino" };
       else if (receptor && !a1r) status = { tipo: "ROMPE", no: no(receptor), motivo: "assinatura da Etapa 1 (gestor) ausente no receptor" };

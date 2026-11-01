@@ -396,7 +396,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
           {!pendente && !operador && (prts.length > 0 || temEtapa2(cicloDaLinha(f))) && (
             <Field label={ROTULO_ETAPA2} wide>
               <div className="space-y-2" data-testid="etapa2-lista">
-                {prts.map((p, i) => <DestinoPRTEditor key={i} indice={i} prt={p} terceiros={terceiros} onChange={(d) => upPrt(i, { destino: d })} />)}
+                {prts.map((p, i) => <DestinoPRTEditor key={i} indice={i} prt={p} linha={f} terceiros={terceiros} onChange={(d) => upPrt(i, { destino: d })} />)}
                 <div className="rounded-sm border border-dashed p-2 text-xs" data-testid="insumo-residual">
                   <b>(insumo residual)</b> → {f.tempo_retencao.trim() ? `Eliminar em ${f.tempo_retencao} (${f.base_prazo || "fundamento a definir"})` : "preencha os campos 8 e 9 (prazo e fundamento do insumo original — LGPD art. 16)"}
                 </div>
@@ -539,7 +539,8 @@ function PRTCelula({ r, terceiros }: { r: RotRow; terceiros: Terceiro[] }) {
 }
 
 /** Destino individual de um PRT (Etapa 2): interno, externo (terceiro do cadastro) ou eliminação. */
-function DestinoPRTEditor({ indice, prt, terceiros, onChange }: { indice: number; prt: ProdutoTratamento; terceiros: Terceiro[]; onChange: (d: DestinoProduto | null) => void }) {
+function DestinoPRTEditor({ indice, prt, linha, terceiros, onChange }: { indice: number; prt: ProdutoTratamento; linha: RotInput & { papel_agente?: RotRow["papel_agente"] }; terceiros: Terceiro[]; onChange: (d: DestinoProduto | null) => void }) {
+  const linhaRef = { ...linha, papel_agente: linha.papel_agente ?? "CONTROLADOR" } as RotRow;
   const d = prt.destino ?? null;
   const area = (d?.area_setor_destino ?? "").split("›")[0]?.trim() ?? "";
   const setor = (d?.area_setor_destino ?? "").split("›")[1]?.trim() ?? "";
