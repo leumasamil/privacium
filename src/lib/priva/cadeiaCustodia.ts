@@ -7,7 +7,7 @@ import { produtosDaLinha, receptorSemEscolha, descreverDestinoPRT, prtSemDestino
 import { continuacaoConforme, lerContinuacao, rotuloContinuacao } from './continuacaoReceptor';
 
 export type AssinaturaRot = { assinante: string; email?: string; etapa: number; em: string; sha256: string };
-type Linha = Pick<RotRow, "id" | "codigo" | "area_setor" | "setor" | "produtos_tratamento" | "produto_interno" | "destino_produto" | "prazo_produto" | "fundamento_produto" | "origem_compartilhamento" | "assinatura_etapa1" | "assinatura_etapa2" | "salvaguardas" | "justificativa_mitigacao" | "insumo"> & Partial<Pick<RotRow, "excluido_em" | "excluido_por" | "motivo_exclusao" | "origem" | "removida_do_dossie" | "continuacao_receptor">>;
+type Linha = Pick<RotRow, "id" | "codigo" | "area_setor" | "setor" | "produtos_tratamento" | "produto_interno" | "destino_produto" | "prazo_produto" | "fundamento_produto" | "origem_compartilhamento" | "assinatura_etapa1" | "assinatura_etapa2" | "salvaguardas" | "justificativa_mitigacao" | "insumo" | "papel_agente"> & Partial<Pick<RotRow, "excluido_em" | "excluido_por" | "motivo_exclusao" | "origem" | "removida_do_dossie" | "continuacao_receptor">>;
 
 export type NoCadeia = { id: string; codigo: string; rotulo: string; removido: boolean; excluidoEm?: string | null; excluidoPor?: string | null; motivoExclusao?: string | null };
 export type ArestaCadeia = {

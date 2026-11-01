@@ -30,13 +30,14 @@ export const DEMO_QUESTIONS: Question[] = Array.from({ length: 166 }, (_, index)
 });
 
 const ts = "2026-10-01T12:00:00.000Z";
-/** PI-01 a PI-04 chancelados; PI-05 aguarda as assinaturas atribuídas por papel. */
-export const DEMO_SIGNATURES = Object.fromEntries(
-  ["PI-01", "PI-02", "PI-02-DPO", "PI-02-DIR", "PI-03", "PI-03-DPO", "PI-03-DIR", "PI-04", "PI-04-DPO", "PI-04-DIR"].map((k, i) => [
-    k,
-    { by: `Assinatura digital Gov.br · ${k} · CHANCELADO (demonstração)`, ts, hash: `d3m0${String(i).padStart(2, "0")}`.padEnd(64, "a") },
-  ]),
-);
+/**
+ * Estado inicial da demonstração: NENHUM artefato chancelado.
+ * Hashes sintéticos (padEnd) foram proibidos: toda chancela visível nasce do clique do
+ * visitante e recebe SHA-256 real calculado por `sha256()` no momento da assinatura
+ * (ver `demoAssinar` no store). A validação `scripts/verificar-demo-sem-chancela.mjs`
+ * falha o build se qualquer hash pré-existente voltar a aparecer aqui.
+ */
+export const DEMO_SIGNATURES: Record<string, { by: string; ts: string; hash: string }> = {};
 
 /** TI e RH ~85% atendidos; demais setores completam até exatamente DEMO_SCORE pontos. */
 export function demoAnswers(questions: Question[], target = DEMO_SCORE): Record<string, boolean> {
