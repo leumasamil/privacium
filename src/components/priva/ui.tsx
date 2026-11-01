@@ -24,12 +24,12 @@ export function PageHeader({ eyebrow, title, children }: { eyebrow: string; titl
   );
 }
 
-export function Panel({ title, children, className, action, id }: { title?: string; children: ReactNode; className?: string; action?: ReactNode; id?: string }) {
+export function Panel({ title, children, className, action, id, titleTestId }: { title?: string; children: ReactNode; className?: string; action?: ReactNode; id?: string; titleTestId?: string }) {
   return (
     <section id={id} className={cn("scroll-mt-6 rounded-md border bg-card p-5", className)}>
       {title && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="min-w-0 text-sm font-semibold uppercase tracking-wider text-primary">{title}</h2>
+          <h2 className="min-w-0 text-sm font-semibold uppercase tracking-wider text-primary" data-testid={titleTestId}>{title}</h2>
           {action}
         </div>
       )}

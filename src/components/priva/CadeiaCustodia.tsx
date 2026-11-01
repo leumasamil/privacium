@@ -67,7 +67,7 @@ export function GrafoCadeiaCustodia({ rows }: { rows: RotRow[] }) {
       : "Nenhuma linha receptora existente: uma nova seria criada.");
   };
   return (
-    <Panel id="cadeia-custodia" title={`Cadeia de custódia · ${trilhas.length} trilhas de PRT · ${completas} completas · ${pendentes} pendentes · ${rompidas} rompidas`}>
+    <Panel id="cadeia-custodia" titleTestId="painel-cadeia-custodia-titulo" title={`Cadeia de custódia · ${trilhas.length} trilhas de PRT · ${completas} completas · ${pendentes} pendentes · ${rompidas} rompidas`}>
       <p className="mb-2 text-[11px] text-muted-foreground">
         Nó = linha do ROT (Área › Setor + código). Aresta = compartilhamento do PRT, com data, assinaturas e hash. Registro das operações: <CitacaoNormativa citacao="LGPD art. 37" />. Prova documental para fins de <CitacaoNormativa citacao="LGPD art. 43" />.
       </p>

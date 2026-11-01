@@ -46,9 +46,11 @@ describe('PI-05 · biblioteca determinística', () => {
   it('sem PIs o risco é 5×5', () => {
     expect(derivarRisco('vies', {})).toMatchObject({ prob: 5, imp: 5 });
   });
-  it('h) demonstração pública sem PI-04: Bloco 5 continua bloqueado', () => {
+  it('h) demonstração pública nasce sem chancelas: Bloco 5 bloqueado e nenhum hash sintético', () => {
     expect(isUnlocked(DEMO_PUBLIC_SIGNATURES, 5)).toBe(false);
-    expect(isUnlocked(DEMO_SIGNATURES, 5)).toBe(true);
+    expect(isUnlocked(DEMO_SIGNATURES, 5)).toBe(false);
+    expect(Object.keys(DEMO_SIGNATURES)).toEqual([]);
+    for (const s of Object.values(DEMO_PUBLIC_SIGNATURES)) expect(s.hash).toMatch(/^[0-9a-f]{64}$/);
   });
 });
 
