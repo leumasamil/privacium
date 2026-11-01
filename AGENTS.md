@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 - Brand: Privacium (privacium.com.br), never "PRIVA 2EC".
+- Titular lookup/requests use isolated tables and tenant-authorized audited RPCs, never workspace JSON; why: protect identifiers.
 - Subdirectories have their own AGENTS.md (e.g. src/lib/priva); read it before changing files there.
 
 - BLLOCO: realtime `workspace_empresa` JSON per CNPJ; localStorage holds active CNPJ/role to preserve company-bound progress.
