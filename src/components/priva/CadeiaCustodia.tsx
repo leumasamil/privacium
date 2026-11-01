@@ -24,7 +24,7 @@ function LinhaTrilha({ t }: { t: TrilhaPRT }) {
     <li className="rounded-sm border p-2" data-testid={`trilha-${t.chave}`}>
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <span className="font-semibold">{t.prt} · {t.nomePRT}</span>
-        <Tag tone={t.status.tipo === "COMPLETA" ? "success" : "destructive"}>{rotuloStatus(t.status)}</Tag>
+        <Tag tone={t.status.tipo === "COMPLETA" ? "success" : t.status.tipo === "PENDENTE" ? "warning" : "destructive"}>{rotuloStatus(t.status)}</Tag>
         {t.status.tipo === "ROMPE" && <span className="text-[11px] text-muted-foreground">({t.status.motivo})</span>}
       </div>
       {t.arestas.map((a, i) => (
@@ -53,6 +53,8 @@ export function GrafoCadeiaCustodia({ rows }: { rows: RotRow[] }) {
   const trilhas = useMemo(() => montarCadeia(rows), [rows]);
   const [simulacao, setSimulacao] = useState<string | null>(null);
   const completas = trilhas.filter((t) => t.status.tipo === "COMPLETA").length;
+  const pendentes = trilhas.filter((t) => t.status.tipo === "PENDENTE").length;
+  const rompidas = trilhas.filter((t) => t.status.tipo === "ROMPE").length;
   const simular = () => {
     // Demonstração de B.4: recompartilha um PRT já vinculado com o mesmo setor.
     const base = rows.find((r) => (r.produtos_tratamento as { destino?: { linha_receptor_id?: string } }[] | null)?.some((p) => p.destino?.linha_receptor_id));
@@ -65,7 +67,7 @@ export function GrafoCadeiaCustodia({ rows }: { rows: RotRow[] }) {
       : "Nenhuma linha receptora existente: uma nova seria criada.");
   };
   return (
-    <Panel id="cadeia-custodia" title={`Cadeia de custódia · ${trilhas.length} trilhas de PRT · ${completas} completas`}>
+    <Panel id="cadeia-custodia" title={`Cadeia de custódia · ${trilhas.length} trilhas de PRT · ${completas} completas · ${pendentes} pendentes · ${rompidas} rompidas`}>
       <p className="mb-2 text-[11px] text-muted-foreground">
         Nó = linha do ROT (Área › Setor + código). Aresta = compartilhamento do PRT, com data, assinaturas e hash. Registro das operações: <CitacaoNormativa citacao="LGPD art. 37" />. Prova documental para fins de <CitacaoNormativa citacao="LGPD art. 43" />.
       </p>

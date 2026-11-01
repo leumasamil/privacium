@@ -11,7 +11,7 @@ const achar = (nome: string) => trilhas.find((t) => t.nomePRT === nome)!;
 describe("cadeia de custódia", () => {
   it("PRT com duas assinaturas sem escolha do receptor aguarda tratamento", () => {
     const t=achar('Relatório de folha consolidado');
-    expect(t.status.tipo === 'ROMPE' && t.status.motivo).toBe('Aguardando tratamento pelo receptor');
+    expect(t.status.tipo).toBe('PENDENTE');
   });
   it('eliminação expressa no receptor é cadeia completa',()=>{
     const linhas=DEMO_ROT.map(r=>r.id==='demo-rot-4'?{...r,continuacao_receptor:{tipo:'ELIMINACAO',em:'2026-11-01',hash:'hash-auditado'}}:r);

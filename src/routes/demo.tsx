@@ -18,10 +18,11 @@ import { EncerrarIncidente } from '@/components/priva/EncerrarIncidente';
 import { QualidadeNormativa } from '@/components/priva/views/QualidadeNormativa';
 import { SolicitacoesTitular } from '@/components/priva/views/SolicitacoesTitular';
 import { useEstadoBloco4 } from '@/lib/priva/useEstadoBloco4';
+import { BUILD_INFO } from '@/lib/priva/buildInfo';
 
 const ABAS = ['painel', 'bloco-1', 'bloco-2', 'bloco-3', 'bloco-4', 'bloco-5', 'anpd', 'kanban', 'pendencias', 'manual', 'glossario', 'auditoria', 'encarregado', 'qualidade-normativa', 'titulares'];
 export const Route = createFileRoute('/demo')({
-  validateSearch: (search: Record<string, unknown>): { aba?: string } => ({ aba: typeof search['aba'] === 'string' && ABAS.includes(search['aba']) ? search['aba'] : 'painel' }),
+  validateSearch: (search: Record<string, unknown>): { aba?: string; cenario?: string | undefined } => ({ aba: typeof search['aba'] === 'string' && ABAS.includes(search['aba']) ? search['aba'] : 'painel', cenario: search['cenario'] === 'origem-ausente' ? 'origem-ausente' : undefined }),
   head: () => ({ meta: [
     { title: 'Demonstração — Privacium' },
     { name: 'description', content: 'Demonstração cenográfica do Método BLLOCO, isolada dos dados de clientes.' },
@@ -35,15 +36,15 @@ export const Route = createFileRoute('/demo')({
 });
 
 function DemoPage() {
-  const { aba } = Route.useSearch();
+  const { aba, cenario } = Route.useSearch();
   const hydrated = useHydrated();
   if (!hydrated) return <p role="status" className="p-8 text-muted-foreground">Carregando demonstração…</p>;
-  return <PrivaProvider initialDemo><AppShell><DemoConteudo aba={aba ?? "painel"} /></AppShell></PrivaProvider>;
+  return <PrivaProvider initialDemo><AppShell><DemoConteudo aba={aba ?? "painel"} cenario={cenario} /><footer data-testid="build-publico" className="mt-8 border-t pt-3 text-xs text-muted-foreground break-all">Identificador da entrega (SHA-256 do código): {BUILD_INFO.id}<br />Preparação: {BUILD_INFO.builtAt} · Commit de base: {BUILD_INFO.baseCommit}</footer></AppShell></PrivaProvider>;
 }
-function DemoConteudo({ aba }: { aba: string }) {
+function DemoConteudo({ aba, cenario }: { aba: string; cenario?: string | undefined }) {
   switch (aba) {
     case 'bloco-1': return <Bloco1 />;
-    case 'bloco-2': return <Bloco2 />;
+    case 'bloco-2': return <Bloco2 origemAusente={cenario === 'origem-ausente'} />;
     case 'bloco-3': return <Bloco3 />;
     case 'bloco-4': return <Bloco4 />;
     case 'bloco-5': return <Bloco5 />;

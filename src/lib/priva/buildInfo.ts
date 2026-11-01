@@ -1,0 +1,2 @@
+declare const __PRIVACIUM_BUILD__: { id: string; builtAt: string; baseCommit: string };
+export const BUILD_INFO = typeof __PRIVACIUM_BUILD__ === "undefined" ? { id: "teste", builtAt: "", baseCommit: "teste" } : __PRIVACIUM_BUILD__;
