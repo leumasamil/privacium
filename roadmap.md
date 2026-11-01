@@ -89,3 +89,9 @@
 - [x] Índice salgado por empresa e atendimento auditado com prazos, roteamento e negativa fundamentada.
 - [x] Escolha expressa no receptor, duas declarações para uso exclusivo e cadeia de múltiplos saltos.
 - [x] Testes de regras/isolamento, CT-1 a CT-5 e capturas renderizadas dos fluxos reais na empresa de teste.
+
+## Demonstração pública — titulares (concluído 2026-11-01)
+- [x] Auditoria de supressão (AppShell:101 e demais `demo &&`)
+- [x] Aba `titulares` na demo pública com fixtures cenográficas
+- [x] Trava das duas declarações valendo também na demo
+- [x] Publicação e comprovação renderizada no link público (12 provas)
