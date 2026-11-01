@@ -337,6 +337,13 @@
       "when": 1793499376125,
       "tag": "0047_titulares_indice_atendimento",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1793499399696,
+      "tag": "0048_continuacao_receptor_rot",
+      "breakpoints": true
     }
   ]
 }

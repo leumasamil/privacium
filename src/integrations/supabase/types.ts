@@ -844,6 +844,7 @@ export type Database = {
           ciclo_vida: Json
           codigo: string
           compartilhamento: string
+          continuacao_receptor: Json | null
           contrato_controlador: string | null
           criado_em: string
           criado_por: string | null
@@ -885,6 +886,7 @@ export type Database = {
           ciclo_vida?: Json
           codigo?: string
           compartilhamento?: string
+          continuacao_receptor?: Json | null
           contrato_controlador?: string | null
           criado_em?: string
           criado_por?: string | null
@@ -926,6 +928,7 @@ export type Database = {
           ciclo_vida?: Json
           codigo?: string
           compartilhamento?: string
+          continuacao_receptor?: Json | null
           contrato_controlador?: string | null
           criado_em?: string
           criado_por?: string | null
@@ -1590,6 +1593,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      declarar_continuacao_receptor: {
+        Args: { _declaracao: Json; _rot_id: string }
+        Returns: Json
       }
       empresa_ativa: { Args: { _cnpj: string }; Returns: boolean }
       encerrar_incidente: { Args: { _incidente: string }; Returns: Json }
