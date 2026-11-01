@@ -1,5 +1,6 @@
 import type { Database } from "@/integrations/supabase/types";
-import { cicloDaLinha, temProcessar, validarCiclo } from "./cicloVida";
+import { cicloDaLinha, temEtapa2, temProcessar, validarCiclo } from "./cicloVida";
+import { continuacaoConforme, lerContinuacao } from "./continuacaoReceptor";
 
 export type RotRow = Database["public"]["Tables"]["registro_operacoes"]["Row"];
 export type RotInput = Omit<RotRow, "id" | "codigo" | "criado_por" | "criado_em" | "atualizado_em" | "assinatura_etapa1" | "assinatura_etapa2" | "excluido_em" | "excluido_por" | "motivo_exclusao" | "origem" | "removida_do_dossie" | "continuacao_receptor">;
@@ -57,6 +58,26 @@ export function produtosDaLinha(r: ComPRT): ProdutoTratamento[] {
 }
 export const rotuloPRT = (i: number) => `PRT-${i + 1}`;
 export const alertaPRTSemDestino = (nome: string) => `PRT '${nome}' sem destino declarado — art. 16 não comprovado.`;
+
+type ComReceptor = { origem_compartilhamento?: unknown; continuacao_receptor?: unknown } & ComPRT;
+export const DESTINO_RECEPTOR_PENDENTE = "Pendente — aguardando decisão do receptor";
+export const ALERTA_PRODUZIR_SEM_PRT = 'Etapa 1 com "produzir" sem PRT na coluna 10C — registre o produto gerado ou remova o tipo de tratamento.';
+
+export function receptorSemEscolha(r: ComReceptor): boolean {
+  return !!r.origem_compartilhamento && !continuacaoConforme(lerContinuacao(r.continuacao_receptor), produtosDaLinha(r).some(p => !!p.nome.trim()));
+}
+
+export function alertaProduzirSemPRT(r: Pick<RotInput, "ciclo_vida" | "genero_verbo"> & ComPRT): string | null {
+  return (cicloDaLinha(r).Coletar ?? []).includes("produzir") && !produtosDaLinha(r).some(p => !!p.nome.trim()) ? ALERTA_PRODUZIR_SEM_PRT : null;
+}
+
+export function alertaOrigemExcluida(r: { origem_compartilhamento?: unknown }, todas: Pick<RotRow, "id" | "excluido_em">[]): string | null {
+  const origem = r.origem_compartilhamento as OrigemCompartilhamento | null;
+  const data = todas.find(linha => linha.id === origem?.linha_origem_id)?.excluido_em;
+  if (!data) return null;
+  const dia = new Date(data).toLocaleDateString("pt-BR", { timeZone: "UTC" });
+  return `Insumo originado de operação excluída logicamente em ${dia} — verificar se o tratamento receptor deve ser mantido.`;
+}
 
 /** Destino individual completo: interno com Área › Setor; externo com terceiro do cadastro; eliminação com prazo e fundamento. */
 export function destinoPRTCompleto(d: DestinoProduto | null | undefined): boolean {
@@ -146,12 +167,15 @@ export function normalizeHipoteses(r: RotInput): RotInput {
 const PROIBIDOS = /(base legal|hip[oó]tese legal)/i;
 
 /** Retorna a mensagem de erro de validação (bloqueante), ou null se a linha pode ser salva. */
-export function validateRot(r: RotInput): string | null {
+export function validateRot(r: RotInput & { continuacao_receptor?: unknown }): string | null {
   const texto = [r.finalidade_especifica, r.hipotese_tratamento, r.hipotese_sensivel ?? "", r.tempo_retencao, r.base_prazo, r.compartilhamento, r.justificativa_mitigacao ?? "",
     ...r.categoria_titulares, ...r.dados_pessoais, ...r.dados_sensiveis, ...r.salvaguardas].join(" ");
   if (PROIBIDOS.test(texto)) return 'Termo proibido: use "Hipótese de Tratamento" (terminologia da LGPD).';
   const erroCiclo = validarCiclo(cicloDaLinha(r));
   if (erroCiclo) return erroCiclo;
+  if (receptorSemEscolha(r) && (temEtapa2(cicloDaLinha(r)) || produtosDaLinha(r).some(p => !!p.destino))) return `${DESTINO_RECEPTOR_PENDENTE}. Registre a escolha antes de salvar destino definitivo.`;
+  const erroProducao = alertaProduzirSemPRT(r);
+  if (erroProducao) return erroProducao;
   if (!r.categoria_titulares.length) return "Preencha o campo 3 (Categoria de Titulares) para salvar — marque ao menos um grupo de pessoas.";
   if (!r.dados_pessoais.length) return "Preencha o campo 4 (Dados Pessoais) para salvar — marque ao menos um dado pessoal tratado.";
   if (!r.dados_sensiveis.length) return 'Preencha o campo 5 (Dado Pessoal Sensível) para salvar — marque o dado ou "N/A" se não houver.';

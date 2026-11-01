@@ -53,7 +53,7 @@ export const BIBLIOTECA_TEXTOS: Record<TextoId, TextoModelo> = {
     corpo: `ENTRADA DE ROT — USO DE LLM EXTERNO COM HIGIENIZAÇÃO
 
 Setor: <SETOR>
-Ciclo de vida (gênero × espécie): Processar › utilizar
+Ciclo do dado pessoal (tipo de tratamento): Etapa 1 — Processar › utilizar
 Categoria de titulares: <CATEGORIA DOS TITULARES>
 Dados pessoais: <DADOS PESSOAIS TRATADOS> (sempre tokenizados antes do envio)
 Finalidade específica: <FINALIDADE>

@@ -16,7 +16,7 @@ import { continuacaoConforme, lerContinuacao } from '@/lib/priva/continuacaoRece
 import { linhasAtivas, linhasExcluidas, receptoraExistente } from "@/lib/priva/cadeiaCustodia";
 import { useEnquadramento } from '@/lib/priva/useEnquadramento';
 import { citacaoSimplificada } from '@/lib/priva/enquadramento';
-import { ALERTA_FINALIDADE_OPERADOR, ALERTA_PRODUTO_AUSENTE, DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, LITERAL_ART5_VI, LITERAL_ART5_VII, MEIOS, NOTA_DESTINO_OPERADOR, NOTA_PRT, PAPEIS_AGENTE, ROTULO_PRT, alertasPRTSemDestino, descreverDestinoPRT, prtExternosBloqueados, produtosDaLinha, rotuloPRT, alertaPRTSemDestino, destinoPRTCompleto, type ProdutoTratamento, ROTULO_PAPEL, SALVAGUARDAS, SENSIVEIS, TITULARES, alertaFinalidadeOperador, alertaProdutoAusente, alertasCoerencia, finalidadeDoContrato, hasSensivel, isRisky, montarLinhaReceptora, normalizeHipoteses, sugerir, sugerirProduto, sugestaoFinalidade, finalidadeEquivalente, contadorPadronizadas, FONTE_LGPD, validateRot, type DestinoProduto, type OrigemCompartilhamento, type PapelAgente, type RotInput, type RotRow } from "@/lib/priva/rot";
+import { ALERTA_FINALIDADE_OPERADOR, ALERTA_PRODUTO_AUSENTE, DADOS, HIPOTESES_7A, HIPOTESES_7B, INFRA, INSUMOS, LITERAL_ART5_VI, LITERAL_ART5_VII, MEIOS, NOTA_DESTINO_OPERADOR, NOTA_PRT, PAPEIS_AGENTE, ROTULO_PRT, alertasPRTSemDestino, descreverDestinoPRT, prtExternosBloqueados, produtosDaLinha, rotuloPRT, alertaPRTSemDestino, destinoPRTCompleto, type ProdutoTratamento, ROTULO_PAPEL, SALVAGUARDAS, SENSIVEIS, TITULARES, alertaFinalidadeOperador, alertaProdutoAusente, alertasCoerencia, finalidadeDoContrato, hasSensivel, isRisky, montarLinhaReceptora, normalizeHipoteses, sugerir, sugerirProduto, sugestaoFinalidade, finalidadeEquivalente, contadorPadronizadas, FONTE_LGPD, DESTINO_RECEPTOR_PENDENTE, receptorSemEscolha, alertaProduzirSemPRT, alertaOrigemExcluida, validateRot, type DestinoProduto, type OrigemCompartilhamento, type PapelAgente, type RotInput, type RotRow } from "@/lib/priva/rot";
 import { usePriva } from "@/lib/priva/store";
 import { DEMO_ROT } from "@/lib/priva/demo";
 import { responsavelDaArea, useMembros } from "@/components/priva/MembrosEmpresa";
@@ -33,7 +33,7 @@ import { BadgeFornecedorROT } from '@/components/priva/AlertaFornecedorVazado';
 
 
 
-const HEADS = ["ID Processo", "Área › Setor", "Papel do agente", "Ciclo de vida (gênero × espécie)", "Categoria de Titulares", "Dado pessoal", "Dado pessoal sensível", "Finalidade Específica",
+const HEADS = ["ID Processo", "Área › Setor", "Papel do agente", "Ciclo do dado pessoal (tipo de tratamento)", "Categoria de Titulares", "Dado pessoal", "Dado pessoal sensível", "Finalidade Específica",
   "7A. Hipótese art. 7º (dado pessoal)", "7B. Hipótese art. 11 (dado pessoal sensível)", "Tempo de Retenção", "Base do Prazo", "Comunicação e transferência / Destinatários",
   "Insumo (documento de entrada)", ROTULO_PRT, "Meio de fornecimento", "Salvaguardas de Segurança", "Infraestrutura / Mídia"];
 
@@ -83,7 +83,7 @@ export function Bloco2() {
     if (!edit) return;
     // Operador: a finalidade é sempre a do contrato com o controlador (LGPD art. 39), nunca própria.
     const form = edit.form.papel_agente === "OPERADOR" ? { ...edit.form, finalidade_especifica: finalidadeDoContrato(edit.form.contrato_controlador ?? "") } : edit.form;
-    const err = validateRot(normalizeHipoteses(form));
+    const err = validateRot({ ...normalizeHipoteses(form), continuacao_receptor: todas.find(r => r.id === edit.id)?.continuacao_receptor });
     if (err) { toast.error(err); return; }
     const ciclo = cicloDaLinha(form);
     const prts = produtosDaLinha(form).filter((p) => p.nome.trim());
@@ -153,7 +153,7 @@ export function Bloco2() {
     return !!r.origem_compartilhamento && !!c && c.tipo!=='NOVO_PRT' && continuacaoConforme(c,false);
   };
   const semDestino = rows.filter((r) => !terminalConforme(r) && !destinoDeclarado(r)).length;
-  const semProduto = rows.filter((r) => !terminalConforme(r) && alertaProdutoAusente(r)).length;
+  const semProduto = rows.filter((r) => !terminalConforme(r) && (alertaProdutoAusente(r) || alertaProduzirSemPRT(r))).length;
   const receptoresPendentes=rows.filter(r=>r.origem_compartilhamento && !continuacaoConforme(lerContinuacao(r.continuacao_receptor),produtosDaLinha(r).some(p=>!!p.nome.trim()))).length;
   const semDestinoPRT = rows.filter((r) => alertasPRTSemDestino(r).length > 0).length;
   const externosBloqueados = rows.filter((r) => prtExternosBloqueados(r, terceiros).length > 0).length;
@@ -171,7 +171,7 @@ export function Bloco2() {
       <GrafoCadeiaCustodia rows={todas} />
 
       <Panel id="rot" title={`Planilha mestre · ${rows.length} processos · ${riskyCount} em alerta`} action={canEdit && (
-        <Button size="sm" onClick={() => demo ? avisarAcaoDemo() : setEdit({ id: null, form: empty(cnpj, papelPadrao) })}><Plus className="h-4 w-4" /> Novo processo</Button>
+        <Button size="sm" onClick={() => setEdit({ id: null, form: empty(cnpj, papelPadrao) })}><Plus className="h-4 w-4" /> Novo processo</Button>
       )}>
         <p className="mb-2 rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="nota-metodo-planilha">{NOTA_METODO_CICLO} {NOTA_RESPONSAVEL_ETAPAS}</p>
         <div className="overflow-x-auto">
@@ -186,6 +186,7 @@ export function Bloco2() {
               {rows.map((r) => {
                 const risk = isRisky(r);
                 const retencao = alertaRetencao(cicloDaLinha(r));
+                const origemExcluida = alertaOrigemExcluida(r, todas);
                 return (
                   <tr id={`rot-${r.id}`} key={r.id} className={cn("scroll-mt-6 border-b align-top", risk && "border-l-4 border-l-destructive bg-destructive/15")}>
                     <td className="px-2 py-2 font-mono font-semibold text-primary">
@@ -213,6 +214,7 @@ export function Bloco2() {
                     <td className="px-2 py-2">
                       {r.insumo ?? "—"}
                       {(r.origem_compartilhamento as OrigemCompartilhamento | null) && <p className="mt-1 rounded-sm border border-dashed px-1 py-0.5 text-[10px] text-muted-foreground" data-testid={`origem-${r.codigo}`}>Insumo recebido de {(r.origem_compartilhamento as OrigemCompartilhamento).codigo_origem} ({(r.origem_compartilhamento as OrigemCompartilhamento).area_setor_origem})</p>}
+                      {origemExcluida && <p role="alert" data-testid={`origem-excluida-${r.codigo}`} className="mt-2 border-l-4 border-warning bg-warning/10 p-2 text-xs font-semibold text-warning-foreground"><AlertTriangle className="mb-1 h-4 w-4" />{origemExcluida}</p>}
                       {r.origem_compartilhamento && canEdit && <ContinuacaoReceptor row={r} rows={rows} onSaved={()=>void qc.invalidateQueries({queryKey:key})} />}
                     </td>
                     <td className="max-w-80 px-2 py-2" data-testid={`produto-${r.codigo}`}>
@@ -224,7 +226,6 @@ export function Bloco2() {
                     <td className="whitespace-nowrap px-2 py-2">
                       {canEdit && <>
                         <button aria-label="Editar" className="mr-2" onClick={() => {
-                          if (demo) return avisarAcaoDemo();
                           const { id, codigo: _c, criado_por: _p, criado_em: _e, atualizado_em: _a, excluido_em: _x, excluido_por: _xp, motivo_exclusao: _xm, ...form } = r;
                           setEdit({ id, form: normalizeHipoteses(form) });
                         }}><Pencil className="h-3 w-3 text-muted-foreground" /></button>
@@ -251,10 +252,10 @@ export function Bloco2() {
         externosBloqueados > 0 ? `${externosBloqueados} processo(s) com PRT destinado a terceiro sem contrato vigente com o checklist de cláusulas contratuais do método — compartilhamento externo não pode ser chancelado.` : "",
       ].filter(Boolean).join(" ")}>
         <p>Registro conforme Art. 37 da LGPD. {rows.length} operações inventariadas, {riskyCount} com tarja de alerta crítico{semDestino > 0 ? `, ${semDestino} sem destino declarado (Etapa 2)` : ""}{semProduto > 0 ? `, ${semProduto} sem PRT declarado (art. 6º, I)` : ""}{semDestinoPRT > 0 ? `, ${semDestinoPRT} com PRT sem destino` : ""}.</p>
-        <p className="mt-2"><b>Ciclo de vida do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO} {NOTA_METODO_CICLO}</p>
+        <p className="mt-2"><b>Ciclo do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO} {NOTA_METODO_CICLO}</p>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           {rows.map((r) => (
-            <li key={r.id}><b>{r.codigo}</b> — {exibirAreaSetor(r)}. Papel do agente: {ROTULO_PAPEL[(r.papel_agente as PapelAgente) ?? "CONTROLADOR"]}. Ciclo de vida: {formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção do insumo: {r.tempo_retencao} ({r.base_prazo}).{r.insumo && <> Insumo: {r.insumo}.</>}{produtosDaLinha(r).map((p, i) => <span key={i}> {rotuloPRT(i)} · {p.nome} → {descreverDestinoPRT(p.destino)}.</span>)}{r.meio_fornecimento && <> Meio de fornecimento: {r.meio_fornecimento}.</>}{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
+            <li key={r.id}><b>{r.codigo}</b> — {exibirAreaSetor(r)}. Papel do agente: {ROTULO_PAPEL[(r.papel_agente as PapelAgente) ?? "CONTROLADOR"]}. Ciclo do dado pessoal: {receptorSemEscolha(r) ? `${formatarCicloEtapas(cicloDaLinha(r)).e1}; Etapa 2: ${DESTINO_RECEPTOR_PENDENTE}` : formatarCiclo(cicloDaLinha(r))}. Dados pessoais: {r.dados_pessoais.join(", ")} de {r.categoria_titulares.join(", ")} para {r.finalidade_especifica}. Hipótese de Tratamento (7A): {r.hipotese_tratamento}.{(r.hipotese_sensivel) && <> Dado pessoal sensível (7B): {r.hipotese_sensivel}.</>} Retenção do insumo: {r.tempo_retencao} ({r.base_prazo}).{r.insumo && <> Insumo: {r.insumo}.</>}{alertaOrigemExcluida(r, todas) && <p className="text-warning-foreground">{alertaOrigemExcluida(r, todas)}</p>}{produtosDaLinha(r).map((p, i) => <span key={i}> {rotuloPRT(i)} · {p.nome} → {receptorSemEscolha(r) ? DESTINO_RECEPTOR_PENDENTE : descreverDestinoPRT(p.destino)}.</span>)}{r.meio_fornecimento && <> Meio de fornecimento: {r.meio_fornecimento}.</>}{r.justificativa_mitigacao && <> Medidas mitigadoras: {r.justificativa_mitigacao}</>}<CitacoesCiclo ciclo={cicloDaLinha(r)} /></li>
           ))}
         </ul>
         <section className="mt-4 border-t pt-3" data-testid="pi02-excluidas">
@@ -308,6 +309,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
   const risk = isRisky(f);
   const sensitive = hasSensivel(f);
   const operador = f.papel_agente === "OPERADOR";
+  const pendente = receptorSemEscolha(f);
   const dicas = [...sugerir(f), ...sugerirProduto(f)].filter((d) => !d.patch.finalidade_especifica);
   const coerencia = alertasCoerencia(f);
   const retencao = alertaRetencao(cicloDaLinha(f));
@@ -361,7 +363,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
             </select>
             <p className="text-[11px] text-muted-foreground">Padrão herdado do enquadramento (Bloco 1), editável por linha. Art. 5º, VI: "{LITERAL_ART5_VI}". Art. 5º, VII: "{LITERAL_ART5_VII}".</p>
           </Field>
-          <Field label="2. Ciclo de vida do dado pessoal (gênero × espécie)" wide>
+          <Field label="2. Ciclo do dado pessoal (tipo de tratamento)" wide>
             <p className="text-[11px] text-muted-foreground">{AJUDA_CICLO}</p>
             <p className="rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="nota-prt-campo2">{NOTA_PRT}</p>
             <p className="rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="nota-metodo-ciclo">{NOTA_METODO_CICLO} {NOTA_RESPONSAVEL_ETAPAS}</p>
@@ -372,7 +374,7 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
               </div>
               <div>
                 <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">{ROTULO_ETAPA2}</p>
-                {operador ? (
+                {pendente ? <p className="text-xs font-semibold text-warning-foreground">{DESTINO_RECEPTOR_PENDENTE}</p> : operador ? (
                   <p className="rounded-sm border border-dashed bg-muted/40 p-2 text-[11px] text-muted-foreground" data-testid="destino-operador">{NOTA_DESTINO_OPERADOR} — o destino (Etapa 2) é definido pelo controlador e exibido como somente leitura.</p>
                 ) : (
                   <div className="grid gap-2 sm:grid-cols-2">{ETAPA2.map(generoBtns)}</div>
@@ -393,9 +395,10 @@ function RotDialog({ edit, setEdit, onSave }: { edit: { id: string | null; form:
               ))}
               <Button type="button" size="sm" variant="outline" onClick={() => setPrts([...prts, { nome: "" }])}><Plus className="h-3 w-3" /> Adicionar PRT</Button>
             </div>
+            {alertaProduzirSemPRT(f) && <p role="alert" data-testid="alerta-produzir-sem-prt" className="text-xs font-semibold text-warning-foreground">{alertaProduzirSemPRT(f)}</p>}
             {alertaProdutoAusente(f) && <p role="alert" data-testid="alerta-produto" className="flex items-center gap-1 text-xs font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> {ALERTA_PRODUTO_AUSENTE} A chancela do PI-02 fica bloqueada neste estado.</p>}
           </Field>
-          {!operador && (prts.length > 0 || temEtapa2(cicloDaLinha(f))) && (
+          {!pendente && !operador && (prts.length > 0 || temEtapa2(cicloDaLinha(f))) && (
             <Field label={ROTULO_ETAPA2} wide>
               <div className="space-y-2" data-testid="etapa2-lista">
                 {prts.map((p, i) => <DestinoPRTEditor key={i} indice={i} prt={p} terceiros={terceiros} onChange={(d) => upPrt(i, { destino: d })} />)}
@@ -495,7 +498,7 @@ function Field({ label, wide, children }: { label: string; wide?: boolean; child
 function CicloResumo() {
   return (
     <div className="rounded-sm border bg-muted/40 p-3 text-sm" data-testid="ciclo-resumo">
-      <p className="font-semibold text-primary">Ciclo de vida do dado pessoal: {DESCRICAO_CICLO}</p>
+      <p className="font-semibold text-primary">Ciclo do dado pessoal: {DESCRICAO_CICLO}</p>
       <p className="text-xs text-muted-foreground">{NOTA_CICLO}</p>
     </div>
   );
@@ -503,7 +506,8 @@ function CicloResumo() {
 
 function CicloCelula({ r }: { r: RotRow }) {
   const c: CicloVida = cicloDaLinha(r);
-  const { e1, e2 } = formatarCicloEtapas(c);
+  const { e1, e2: destino } = formatarCicloEtapas(c);
+  const e2 = receptorSemEscolha(r) ? DESTINO_RECEPTOR_PENDENTE : destino;
   if (!e1 && !e2) return <p className="px-2 py-2">—</p>;
   return (
     <div className="space-y-1" data-testid={`ciclo-${r.codigo}`}>
@@ -526,13 +530,14 @@ function PRTCelula({ r, terceiros }: { r: RotRow; terceiros: Terceiro[] }) {
         const semDestino = r.papel_agente !== "OPERADOR" && !destinoPRTCompleto(p.destino);
         return (
           <div key={i} data-testid={`prt-${r.codigo}-${i + 1}`}>
-            <p><span className="font-mono font-semibold text-primary">{rotuloPRT(i)}</span> · {p.nome} <span className="text-muted-foreground">→ {r.papel_agente === "OPERADOR" ? NOTA_DESTINO_OPERADOR : descreverDestinoPRT(p.destino)}</span></p>
+            <p><span className="font-mono font-semibold text-primary">{rotuloPRT(i)}</span> · {p.nome} <span className="text-muted-foreground">→ {r.papel_agente === "OPERADOR" ? NOTA_DESTINO_OPERADOR : receptorSemEscolha(r) ? DESTINO_RECEPTOR_PENDENTE : descreverDestinoPRT(p.destino)}</span></p>
             {semDestino && <p className="flex items-center gap-1 text-[10px] font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> {alertaPRTSemDestino(p.nome)}</p>}
             {bloqueados.includes(p) && <p className="flex items-center gap-1 text-[10px] font-semibold text-destructive"><AlertTriangle className="h-3 w-3" /> {ALERTA_TERCEIRO_SEM_CONTRATO}</p>}
           </div>
         );
       })}
-      {prts.length > 0 && <p className="text-muted-foreground">(insumo residual) → {r.tempo_retencao ? `Eliminar em ${r.tempo_retencao} (${r.base_prazo})` : "prazo a definir"}</p>}
+      {prts.length > 0 && !receptorSemEscolha(r) && <p className="text-muted-foreground">(insumo residual) → {r.tempo_retencao ? `Eliminar em ${r.tempo_retencao} (${r.base_prazo})` : "prazo a definir"}</p>}
+      {alertaProduzirSemPRT(r) && <p role="alert" data-testid={`produzir-sem-prt-${r.codigo}`} className="text-xs font-semibold text-warning-foreground">{alertaProduzirSemPRT(r)}</p>}
       {alertaProdutoAusente(r) && <p className="flex items-center gap-1 text-[10px] font-semibold text-warning-foreground"><AlertTriangle className="h-3 w-3" /> {ALERTA_PRODUTO_AUSENTE}</p>}
     </div>
   );

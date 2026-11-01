@@ -365,6 +365,13 @@
       "when": 1793500183924,
       "tag": "0051_integridade_incidencia_e_continuacao",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1793511338144,
+      "tag": "0052_rot_coerencia_destino_receptor",
+      "breakpoints": true
     }
   ]
 }

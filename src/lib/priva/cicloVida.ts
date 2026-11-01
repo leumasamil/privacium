@@ -1,6 +1,6 @@
 /**
- * Ciclo de vida do dado pessoal (gênero × espécie).
- * Espécies = verbos literais do art. 5º, X da LGPD; gêneros = agrupamento didático do método.
+ * Ciclo do dado pessoal (tipo de tratamento).
+ * Tipos de tratamento = verbos da LGPD; estados do dado = agrupamento didático do método.
  */
 export const VERBOS_ART5_X = [
   "coleta", "produção", "recepção", "classificação", "utilização", "acesso", "reprodução", "transmissão", "distribuição", "processamento",
@@ -25,9 +25,9 @@ export const ESPECIES: Record<Genero, string[]> = {
   Eliminar: ["eliminar"],
 };
 
-export const AJUDA_CICLO = "Agrupamento didático dos 20 verbos do art. 5º, X da LGPD. As espécies são os verbos literais da lei; os gêneros são agrupamento do método.";
-export const DESCRICAO_CICLO = "Coletar → Reter → Processar → Compartilhar → Eliminar";
-export const NOTA_CICLO = "Cada gênero corresponde a um estado do dado pessoal; as espécies são os verbos do art. 5º, X da LGPD.";
+export const AJUDA_CICLO = "Agrupamento didático dos 20 verbos do art. 5º, X da LGPD. Os tipos de tratamento correspondem aos verbos da lei; os estados do dado são agrupamento do método.";
+export const DESCRICAO_CICLO = "Etapa 1 — Perímetro (Coletar → Reter → Processar) → PRT gerado → Etapa 2 — Destino (Compartilhar ou Eliminar)";
+export const NOTA_CICLO = "Os estados do dado pessoal agrupam os tipos de tratamento do art. 5º, X da LGPD; a divisão em duas etapas é organizacional.";
 
 /** Apresentação em duas etapas (organizacional, sem criar categoria legal). */
 export const ETAPA1: readonly Genero[] = ["Coletar", "Reter", "Processar"];
@@ -100,7 +100,7 @@ export function cicloDaLinha(r: { ciclo_vida?: unknown; genero_verbo: string }):
 
 /** "Coletar › receber, classificar | Reter › arquivar" */
 export function formatarCiclo(c: CicloVida): string {
-  return GENEROS.filter((g) => g in c).map((g) => (c[g]!.length ? `${g} › ${c[g]!.join(", ")}` : g)).join(" | ");
+  return GENEROS.filter((g) => g in c).map((g) => ((c[g] ?? []).length ? `${g} › ${(c[g] ?? []).join(", ")}` : g)).join(" | ");
 }
 
 export function citacoesISO(c: CicloVida): string[] {
@@ -118,7 +118,7 @@ export function alternar(c: CicloVida, g: Genero, especie: string): CicloVida {
 /** Erro se alguma espécie não está no elenco do gênero; null se válido. */
 export function validarCiclo(c: CicloVida): string | null {
   const gs = generosMarcados(c);
-  if (!gs.length) return "Marque ao menos uma espécie no campo 2 (Ciclo de vida do dado pessoal).";
-  for (const g of gs) for (const e of c[g]!) if (!ESPECIES[g].includes(e)) return `Espécie "${e}" fora do elenco do art. 5º, X para o gênero ${g}.`;
+  if (!gs.length) return "Marque ao menos um tipo de tratamento no campo 2 (Ciclo do dado pessoal).";
+  for (const g of gs) for (const e of c[g] ?? []) if (!ESPECIES[g].includes(e)) return `Tipo de tratamento "${e}" fora do elenco do art. 5º, X para o estado do dado ${g}.`;
   return null;
 }

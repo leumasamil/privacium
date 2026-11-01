@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { BLOCKS } from "@/lib/priva/data";
 import { HIPOTESES_7A, HIPOTESES_7B } from "@/lib/priva/rot";
+import { DESCRICAO_CICLO, NOTA_CICLO, NOTA_METODO_CICLO } from "@/lib/priva/cicloVida";
 
 const T = "Manual de Uso — Privacium";
 const D = "Guias 5W2H por bloco do Método BLLOCO, quadro art. 7º × art. 11, classificação de dados, glossário LGPD e FAQ.";
@@ -65,6 +66,7 @@ export function Manual({ aba }: { aba?: string | undefined }) {
                 ))}
               </tbody></table>
               <p className="mt-3 text-xs text-muted-foreground">Saída: {b.pi}</p>
+              {b.n === 2 && <p className="mt-3 text-sm"><b>Ciclo do dado pessoal:</b> {DESCRICAO_CICLO}. {NOTA_CICLO} {NOTA_METODO_CICLO}</p>}
             </Panel>
           ))}
         </TabsContent>
