@@ -364,6 +364,47 @@ export type Database = {
           },
         ]
       }
+      incidencia_normativa: {
+        Row: {
+          biblioteca_normativa_id: string
+          campo: string
+          categoria: Database["public"]["Enums"]["categoria_normativa"]
+          condicao: string
+          id: string
+          identificador: string
+          norma: string
+          obrigatoria: boolean
+        }
+        Insert: {
+          biblioteca_normativa_id: string
+          campo: string
+          categoria: Database["public"]["Enums"]["categoria_normativa"]
+          condicao?: string
+          id?: string
+          identificador: string
+          norma: string
+          obrigatoria?: boolean
+        }
+        Update: {
+          biblioteca_normativa_id?: string
+          campo?: string
+          categoria?: Database["public"]["Enums"]["categoria_normativa"]
+          condicao?: string
+          id?: string
+          identificador?: string
+          norma?: string
+          obrigatoria?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidencia_normativa_biblioteca_normativa_id_fkey"
+            columns: ["biblioteca_normativa_id"]
+            isOneToOne: false
+            referencedRelation: "biblioteca_normativa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incidentes_seguranca: {
         Row: {
           comunicacao: Json
