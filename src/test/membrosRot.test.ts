@@ -101,7 +101,8 @@ describe("demonstração cenográfica", () => {
       expect(r.area_setor).toContain("›");
       expect(r.insumo).toBeTruthy();
       expect(r.meio_fornecimento).toBeTruthy();
-      expect(destinoDeclarado(r)).toBe(!r.origem_compartilhamento);
+      // Receptor com decisão registrada (Jurídico: ELIMINACAO) declara destino; só o receptor ainda sem escolha (Financeiro) não declara.
+      expect(destinoDeclarado(r)).toBe(!r.origem_compartilhamento || !receptorSemEscolha(r));
     }
   });
   it("o responsável (R) da área é encontrado no cadastro de membros", () => {
