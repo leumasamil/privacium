@@ -30,15 +30,15 @@ describe.skipIf(!sessionText || !url || !key)('dosimetria NULL e biblioteca_norm
     expect(nulos.error).toBeNull();
   });
 
-  it('biblioteca_normativa populada: 51 verificadas + 8 não verificáveis, legível por autenticado', async () => {
+  it('biblioteca_normativa populada: 58 verificadas + 8 não verificáveis, legível por autenticado', async () => {
     if (!sessionText) throw new Error('Sessão ausente');
     const session = JSON.parse(sessionText) as { access_token: string };
     const db = createClient(url!, key!, { auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${session.access_token}` } } });
 
     const todas = await db.from('biblioteca_normativa').select('norma, identificador, status');
     expect(todas.error).toBeNull();
-    expect(todas.data!.length).toBe(59);
-    expect(todas.data!.filter((r) => r.status === 'VERIFICADA').length).toBe(51);
+    expect(todas.data?.length).toBe(66);
+    expect(todas.data?.filter((r) => r.status === 'VERIFICADA').length).toBe(58);
     expect(todas.data!.filter((r) => r.status === 'NAO_VERIFICAVEL').length).toBe(8);
 
     // O seed do código e o banco têm exatamente as mesmas chaves
