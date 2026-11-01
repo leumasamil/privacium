@@ -49,7 +49,7 @@ describe('PI-05 · biblioteca determinística', () => {
   it('h) demonstração pública nasce sem chancelas: Bloco 5 bloqueado e nenhum hash sintético', () => {
     expect(isUnlocked(DEMO_PUBLIC_SIGNATURES, 5)).toBe(false);
     expect(isUnlocked(DEMO_SIGNATURES, 5)).toBe(false);
-    expect(Object.keys(CHANCELADOS)).toEqual([]);
+    expect(Object.keys(DEMO_SIGNATURES)).toEqual([]);
     for (const s of Object.values(DEMO_PUBLIC_SIGNATURES)) expect(s.hash).toMatch(/^[0-9a-f]{64}$/);
   });
 });
