@@ -106,4 +106,4 @@
 - [x] Registrar a versão servida e diagnosticar o alerta público antes de alterações.
 - [x] Identificar a entrega na interface, distinguir origem ausente e excluída e corrigir estados pendentes.
 - [x] Verificar contagens, chancela e alcance real da migração 0052 sem alterar dados reais.
-- [ ] Testar, publicar e entregar provas públicas com limites explícitos.
+- [x] Testar, publicar e entregar provas públicas com limites explícitos (PI-02 global mantém falhas impeditivas de Marketing).
