@@ -45,7 +45,7 @@ const empty = (cnpj: string, papel: PapelAgente = "CONTROLADOR"): RotInput => ({
   papel_agente: papel, contrato_controlador: null, produto_interno: null, destino_produto: null, prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null, produtos_tratamento: [],
 });
 
-export function Bloco2() {
+export function Bloco2({ origemAusente = false }: { origemAusente?: boolean } = {}) {
   const { cnpj, log, roles, demo } = usePriva();
   const enq = useEnquadramento();
   const papelPadrao = ((enq.declaracao?.criterios as { papelAgente?: PapelAgente } | null)?.papelAgente) ?? "CONTROLADOR";
@@ -57,7 +57,7 @@ export function Bloco2() {
     queryKey: [...key, demo],
     enabled: !!cnpj,
     queryFn: async (): Promise<RotRow[]> => {
-      if (demo) return DEMO_ROT;
+      if (demo) return origemAusente ? DEMO_ROT.filter(r => r.id !== "demo-rot-removida") : DEMO_ROT;
       const { data, error } = await supabase.from("registro_operacoes").select("*").eq("empresa_cnpj", cnpj ?? "").order("codigo");
       if (error) throw error;
       return data;
