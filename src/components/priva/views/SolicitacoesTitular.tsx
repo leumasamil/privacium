@@ -8,6 +8,7 @@ import { usePriva } from '@/lib/priva/store';
 import { DIREITOS, estadoPrazo, NOTA_PRAZO_METODO, tipoPrazo } from '@/lib/priva/titulares';
 import { BIBLIOTECA_NORMATIVA } from '@/lib/priva/bibliotecaNormativa';
 import { avisarAcaoDemo } from '@/lib/priva/demoAction';
+import { OPCOES_PRT_DEMO, RESULTADO_BUSCA_DEMO, solicitacoesDemo } from '@/lib/priva/demoTitulares';
 import { CitacoesAgrupadas } from '../CitacoesAgrupadas';
 import { PageHeader, Panel, Tag } from '../ui';
 import { Button } from '@/components/ui/button';
@@ -57,11 +58,14 @@ export function SolicitacoesTitular() {
     if(demo) return avisarAcaoDemo(); setBusy(true); setErro('');
     try { await fn(); } catch(e) { setErro(e instanceof Error ? e.message : 'Não foi possível concluir.'); } finally { setBusy(false); }
   };
-  const buscar = () => executar(async () => {
-    if(!empresaId || !identificador.trim()) throw new Error('Informe o identificador.');
-    const r=await supabase.rpc('localizar_titular',{ _empresa_id:empresaId,_identificador:identificador,_tipo:tipo }); if(r.error) throw r.error;
-    setResultados(r.data ?? []);setConsultou(true);
-  });
+  const buscar = () => {
+    if(demo) { setResultados(identificador.trim() ? RESULTADO_BUSCA_DEMO : []); setConsultou(true); return; }
+    void executar(async () => {
+      if(!empresaId || !identificador.trim()) throw new Error('Informe o identificador.');
+      const r=await supabase.rpc('localizar_titular',{ _empresa_id:empresaId,_identificador:identificador,_tipo:tipo }); if(r.error) throw r.error;
+      setResultados(r.data ?? []);setConsultou(true);
+    });
+  };
   const vincular = () => executar(async () => {
     if(!empresaId || !produto) throw new Error('Selecione o PRT.');
     const [id,indice]=produto.split(':'); if(!id) return;
@@ -78,9 +82,12 @@ export function SolicitacoesTitular() {
     const r=await supabase.rpc('atualizar_solicitacao_titular',{_id:id,_status:status,...(status==='NEGADA' && fundamentoId ? {_fundamento_id:fundamentoId} : {}),_fundamento:fundamento});if(r.error) throw r.error;
     setNegando(null);await qc.invalidateQueries({queryKey:['solicitacoes_titular']});toast.success('Atendimento atualizado e auditado.');
   });
-  const pedidos: Pedido[] = pedidosQ.data ?? [];
+  const pedidos: Pedido[] = demo ? solicitacoesDemo() : (pedidosQ.data ?? []);
   const visiveis=pedidos.filter(p => (filtro==='TODAS'||p.status===filtro) && (prazoFiltro==='TODOS'||estadoPrazo(p.prazo_resposta).alerta===prazoFiltro));
-  const opcoes=(rotQ.data ?? []).flatMap(r => Array.isArray(r.produtos_tratamento) ? r.produtos_tratamento.map((p,i) => ({valor:`${r.id}:${i}`,texto:`${r.codigo} · PRT-${i+1} · ${(p as {nome?:string})?.nome ?? ''} · ${r.papel_agente}`})) : []);
+  const opcoes=demo ? OPCOES_PRT_DEMO : (rotQ.data ?? []).flatMap(r => Array.isArray(r.produtos_tratamento) ? r.produtos_tratamento.map((p,i) => ({valor:`${r.id}:${i}`,texto:`${r.codigo} · PRT-${i+1} · ${(p as {nome?:string})?.nome ?? ''} · ${r.papel_agente}`})) : []);
+  const dispositivos=demo
+    ? BIBLIOTECA_NORMATIVA.filter(e=>e.status==='VERIFICADA' && ['REGIME_GERAL','LEI_ESPECIAL_SETORIAL'].includes(e.categoria)).map(e=>({id:`${e.norma}|${e.identificador}`,norma:e.norma,identificador:e.identificador}))
+    : (bibliotecaQ.data ?? []);
   return <div className="space-y-6">
     <PageHeader eyebrow="Transversal" title="Solicitações de titulares" />
     {(erro || empresaQ.isError || pedidosQ.isError) && <p role="alert" className="text-sm text-destructive">{erro || 'Não foi possível carregar os registros desta empresa.'}</p>}
