@@ -45,7 +45,7 @@ describe.skipIf(!sessionText || !url || !key)("ROT: coerência no banco, somente
       expect(lido.data?.produtos_tratamento).toEqual([{ nome: "Relatório receptor", destino }]);
     } finally {
       for (const id of ids.reverse()) {
-        const limpeza = await db.rpc("excluir_linha_rot", { _rot_id: id, _motivo: "Fim de teste automatizado de coerência, exclusivamente na empresa de teste" });
+        const limpeza = await db.rpc("remover_registro_de_teste", { _rot_id: id, _justificativa: "Fim de teste automatizado de coerência, exclusivamente na empresa de teste" });
         expect(limpeza.error).toBeNull();
       }
     }
