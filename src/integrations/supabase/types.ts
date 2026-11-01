@@ -364,6 +364,47 @@ export type Database = {
           },
         ]
       }
+      incidencia_normativa: {
+        Row: {
+          biblioteca_normativa_id: string
+          campo: string
+          categoria: Database["public"]["Enums"]["categoria_normativa"]
+          condicao: string
+          id: string
+          identificador: string
+          norma: string
+          obrigatoria: boolean
+        }
+        Insert: {
+          biblioteca_normativa_id: string
+          campo: string
+          categoria: Database["public"]["Enums"]["categoria_normativa"]
+          condicao?: string
+          id?: string
+          identificador: string
+          norma: string
+          obrigatoria?: boolean
+        }
+        Update: {
+          biblioteca_normativa_id?: string
+          campo?: string
+          categoria?: Database["public"]["Enums"]["categoria_normativa"]
+          condicao?: string
+          id?: string
+          identificador?: string
+          norma?: string
+          obrigatoria?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidencia_normativa_biblioteca_normativa_id_fkey"
+            columns: ["biblioteca_normativa_id"]
+            isOneToOne: false
+            referencedRelation: "biblioteca_normativa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incidentes_seguranca: {
         Row: {
           comunicacao: Json
@@ -411,6 +452,64 @@ export type Database = {
           {
             foreignKeyName: "incidentes_seguranca_processo_id_fkey"
             columns: ["processo_id"]
+            isOneToOne: false
+            referencedRelation: "registro_operacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      indice_titulares: {
+        Row: {
+          criado_em: string
+          criado_por: string
+          empresa_id: string
+          id: string
+          identificador_hash: string
+          localizacao_tecnica: string
+          produto_id: string
+          produto_indice: number
+          tipo_identificador: string
+        }
+        Insert: {
+          criado_em?: string
+          criado_por: string
+          empresa_id: string
+          id?: string
+          identificador_hash: string
+          localizacao_tecnica: string
+          produto_id: string
+          produto_indice?: number
+          tipo_identificador: string
+        }
+        Update: {
+          criado_em?: string
+          criado_por?: string
+          empresa_id?: string
+          id?: string
+          identificador_hash?: string
+          localizacao_tecnica?: string
+          produto_id?: string
+          produto_indice?: number
+          tipo_identificador?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "indice_titulares_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "indice_titulares_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "indice_titulares_produto_id_fkey"
+            columns: ["produto_id"]
             isOneToOne: false
             referencedRelation: "registro_operacoes"
             referencedColumns: ["id"]
@@ -745,6 +844,7 @@ export type Database = {
           ciclo_vida: Json
           codigo: string
           compartilhamento: string
+          continuacao_receptor: Json | null
           contrato_controlador: string | null
           criado_em: string
           criado_por: string | null
@@ -786,6 +886,7 @@ export type Database = {
           ciclo_vida?: Json
           codigo?: string
           compartilhamento?: string
+          continuacao_receptor?: Json | null
           contrato_controlador?: string | null
           criado_em?: string
           criado_por?: string | null
@@ -827,6 +928,7 @@ export type Database = {
           ciclo_vida?: Json
           codigo?: string
           compartilhamento?: string
+          continuacao_receptor?: Json | null
           contrato_controlador?: string | null
           criado_em?: string
           criado_por?: string | null
@@ -946,6 +1048,121 @@ export type Database = {
           sistema_avaliado?: string
         }
         Relationships: []
+      }
+      salt_empresa: {
+        Row: {
+          criado_em: string
+          empresa_id: string
+          salt: string
+        }
+        Insert: {
+          criado_em?: string
+          empresa_id: string
+          salt?: string
+        }
+        Update: {
+          criado_em?: string
+          empresa_id?: string
+          salt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salt_empresa_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: true
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solicitacoes_titular: {
+        Row: {
+          canal: string
+          criado_em: string
+          data_recebimento: string
+          descricao: string
+          direito_solicitado: string
+          empresa_id: string
+          fundamento_negativa: string | null
+          fundamento_normativo_id: string | null
+          id: string
+          identificador_hash: string
+          prazo_resposta: string
+          produto_id: string | null
+          protocolo: string
+          respondido_em: string | null
+          responsavel_id: string
+          status: string
+          tipo_prazo: string
+        }
+        Insert: {
+          canal: string
+          criado_em?: string
+          data_recebimento: string
+          descricao?: string
+          direito_solicitado: string
+          empresa_id: string
+          fundamento_negativa?: string | null
+          fundamento_normativo_id?: string | null
+          id?: string
+          identificador_hash: string
+          prazo_resposta: string
+          produto_id?: string | null
+          protocolo?: string
+          respondido_em?: string | null
+          responsavel_id: string
+          status: string
+          tipo_prazo: string
+        }
+        Update: {
+          canal?: string
+          criado_em?: string
+          data_recebimento?: string
+          descricao?: string
+          direito_solicitado?: string
+          empresa_id?: string
+          fundamento_negativa?: string | null
+          fundamento_normativo_id?: string | null
+          id?: string
+          identificador_hash?: string
+          prazo_resposta?: string
+          produto_id?: string | null
+          protocolo?: string
+          respondido_em?: string | null
+          responsavel_id?: string
+          status?: string
+          tipo_prazo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_titular_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solicitacoes_titular_fundamento_normativo_id_fkey"
+            columns: ["fundamento_normativo_id"]
+            isOneToOne: false
+            referencedRelation: "biblioteca_normativa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solicitacoes_titular_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "registro_operacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solicitacoes_titular_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       terceiros_empresa: {
         Row: {
@@ -1267,6 +1484,40 @@ export type Database = {
         Args: { _etapa: number; _rot_id: string }
         Returns: Json
       }
+      atualizar_solicitacao_titular: {
+        Args: {
+          _fundamento?: string
+          _fundamento_id?: string
+          _id: string
+          _status: string
+        }
+        Returns: {
+          canal: string
+          criado_em: string
+          data_recebimento: string
+          descricao: string
+          direito_solicitado: string
+          empresa_id: string
+          fundamento_negativa: string | null
+          fundamento_normativo_id: string | null
+          id: string
+          identificador_hash: string
+          prazo_resposta: string
+          produto_id: string | null
+          protocolo: string
+          respondido_em: string | null
+          responsavel_id: string
+          status: string
+          tipo_prazo: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "solicitacoes_titular"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      autorizar_titulares: { Args: { _empresa: string }; Returns: string }
       avaliar_fornecedor: {
         Args: {
           _estado: string
@@ -1306,6 +1557,47 @@ export type Database = {
       cnpj_liberado: { Args: { _cnpj: string }; Returns: boolean }
       cnpj_valido: { Args: { _c: string }; Returns: boolean }
       cpf_valido: { Args: { _c: string }; Returns: boolean }
+      criar_solicitacao_titular: {
+        Args: {
+          _canal: string
+          _descricao: string
+          _direito: string
+          _empresa_id: string
+          _identificador: string
+          _produto_id?: string
+          _recebimento: string
+          _tipo: string
+        }
+        Returns: {
+          canal: string
+          criado_em: string
+          data_recebimento: string
+          descricao: string
+          direito_solicitado: string
+          empresa_id: string
+          fundamento_negativa: string | null
+          fundamento_normativo_id: string | null
+          id: string
+          identificador_hash: string
+          prazo_resposta: string
+          produto_id: string | null
+          protocolo: string
+          respondido_em: string | null
+          responsavel_id: string
+          status: string
+          tipo_prazo: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "solicitacoes_titular"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      declarar_continuacao_receptor: {
+        Args: { _declaracao: Json; _rot_id: string }
+        Returns: Json
+      }
       empresa_ativa: { Args: { _cnpj: string }; Returns: boolean }
       encerrar_incidente: { Args: { _incidente: string }; Returns: Json }
       enquadramento_vigente: { Args: { _cnpj: string }; Returns: boolean }
@@ -1326,6 +1618,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      hash_titular_interno: {
+        Args: { _empresa: string; _identificador: string; _tipo: string }
+        Returns: string
+      }
+      indexar_titular: {
+        Args: {
+          _empresa_id: string
+          _identificador: string
+          _localizacao: string
+          _produto_id: string
+          _produto_indice: number
+          _tipo: string
+        }
+        Returns: string
+      }
       iniciar_verificacao_fornecedores: {
         Args: { _cnpj: string }
         Returns: boolean
@@ -1341,6 +1648,17 @@ export type Database = {
           email: string
           id: string
           roles: Database["public"]["Enums"]["app_role"][]
+        }[]
+      }
+      localizar_titular: {
+        Args: { _empresa_id: string; _identificador: string; _tipo?: string }
+        Returns: {
+          codigo: string
+          indice_id: string
+          localizacao_tecnica: string
+          papel_agente: string
+          produto_id: string
+          prt: string
         }[]
       }
       meu_cpf: { Args: never; Returns: string }

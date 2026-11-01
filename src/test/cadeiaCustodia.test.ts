@@ -9,8 +9,19 @@ const trilhas = montarCadeia(DEMO_ROT);
 const achar = (nome: string) => trilhas.find((t) => t.nomePRT === nome)!;
 
 describe("cadeia de custódia", () => {
-  it("PRT com destino interno assinado nas duas pontas é Completa", () => {
-    expect(rotuloStatus(achar("Relatório de folha consolidado").status)).toBe("Completa");
+  it("PRT com duas assinaturas sem escolha do receptor aguarda tratamento", () => {
+    const t=achar('Relatório de folha consolidado');
+    expect(t.status.tipo === 'ROMPE' && t.status.motivo).toBe('Aguardando tratamento pelo receptor');
+  });
+  it('eliminação expressa no receptor é cadeia completa',()=>{
+    const linhas=DEMO_ROT.map(r=>r.id==='demo-rot-4'?{...r,continuacao_receptor:{tipo:'ELIMINACAO',em:'2026-11-01',hash:'hash-auditado'}}:r);
+    expect(montarCadeia(linhas).find(t=>t.nomePRT==='Relatório de folha consolidado')?.status.tipo).toBe('COMPLETA');
+  });
+  it('novo PRT continua até o segundo salto',()=>{
+    const assinatura={assinante:'DPO de teste',etapa:2,em:'2026-11-01',sha256:'hash'};
+    const linhas=DEMO_ROT.map(r=>r.id==='demo-rot-4'?{...r,continuacao_receptor:{tipo:'NOVO_PRT'},assinatura_etapa2:assinatura,produtos_tratamento:[{nome:'Produto receptor',destino:{tipo:'INTERNO',area_setor_destino:'Jurídico › Contencioso',linha_receptor_id:'demo-rot-5'}}]}:r.id==='demo-rot-5'?{...r,assinatura_etapa1:assinatura,continuacao_receptor:{tipo:'USO_EXCLUSIVO',anonimizados:true,sem_acesso_terceiro:true}}:r);
+    const t=montarCadeia(linhas).find(t=>t.nomePRT==='Relatório de folha consolidado');
+    expect(t?.arestas.length).toBe(2);expect(t?.status.tipo).toBe('COMPLETA');
   });
   it("PRT sem destino rompe no nó de origem", () => {
     expect(rotuloStatus(achar("Relatório de campanha").status)).toBe("Rompe em: Marketing › Relacionamento · PRIVA-MARKETING-001");
@@ -48,7 +59,7 @@ describe("cadeia de custódia", () => {
     const txt = relatorioProvaCadeia({ noSelecionado: no, trilhas: doNo, linhas: DEMO_ROT, incidenteId: "x", art43Literal: art43.texto_literal!, art43Url: art43.url_oficial, geradoEm: "2026-10-30" });
     expect(txt).toContain("III - que o dano é decorrente de culpa exclusiva");
     expect(txt).toContain("Não afirma que a excludente");
-    expect(incisoSustentado(doNo)).toMatch(/^Inciso II/);
+    expect(incisoSustentado(doNo)).toMatch(/^Nenhum inciso/);
     expect(txt).toContain(NOTA_HASH_ASSINATURA);
   });
   it("relatório do nó receptor exibe data e motivo da origem removida e a seleção registrada", () => {

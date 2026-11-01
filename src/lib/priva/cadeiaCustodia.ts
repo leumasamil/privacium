@@ -4,9 +4,10 @@
  * Funções puras e determinísticas: a mesma entrada produz sempre a mesma trilha.
  */
 import { produtosDaLinha, descreverDestinoPRT, destinoPRTCompleto, rotuloPRT, type DestinoProduto, type OrigemCompartilhamento, type RotRow } from "./rot";
+import { continuacaoConforme, lerContinuacao, rotuloContinuacao } from './continuacaoReceptor';
 
 export type AssinaturaRot = { assinante: string; email?: string; etapa: number; em: string; sha256: string };
-type Linha = Pick<RotRow, "id" | "codigo" | "area_setor" | "setor" | "produtos_tratamento" | "produto_interno" | "destino_produto" | "prazo_produto" | "fundamento_produto" | "origem_compartilhamento" | "assinatura_etapa1" | "assinatura_etapa2" | "salvaguardas" | "justificativa_mitigacao" | "insumo"> & Partial<Pick<RotRow, "excluido_em" | "excluido_por" | "motivo_exclusao" | "origem" | "removida_do_dossie">>;
+type Linha = Pick<RotRow, "id" | "codigo" | "area_setor" | "setor" | "produtos_tratamento" | "produto_interno" | "destino_produto" | "prazo_produto" | "fundamento_produto" | "origem_compartilhamento" | "assinatura_etapa1" | "assinatura_etapa2" | "salvaguardas" | "justificativa_mitigacao" | "insumo"> & Partial<Pick<RotRow, "excluido_em" | "excluido_por" | "motivo_exclusao" | "origem" | "removida_do_dossie" | "continuacao_receptor">>;
 
 export type NoCadeia = { id: string; codigo: string; rotulo: string; removido: boolean; excluidoEm?: string | null; excluidoPor?: string | null; motivoExclusao?: string | null };
 export type ArestaCadeia = {
@@ -81,7 +82,8 @@ export function montarCadeia(linhas: Linha[]): TrilhaPRT[] {
       else if (!a2) status = { tipo: "ROMPE", no: origem, motivo: "assinatura da Etapa 2 (DPO) ausente" };
       else if (d?.tipo === "INTERNO" && !receptor) status = { tipo: "ROMPE", no: origem, motivo: "linha receptora não registrada no setor de destino" };
       else if (receptor && !a1r) status = { tipo: "ROMPE", no: no(receptor), motivo: "assinatura da Etapa 1 (gestor) ausente no receptor" };
-      const novoTratamento = receptor ? produtosDaLinha(receptor).map((x, j) => `${rotuloPRT(j)} ${x.nome}`) : [];
+      else if (receptor && !continuacaoConforme(lerContinuacao(receptor.continuacao_receptor), produtosDaLinha(receptor).some(x=>!!x.nome.trim()))) status = { tipo: 'ROMPE', no: no(receptor), motivo: rotuloContinuacao(lerContinuacao(receptor.continuacao_receptor)) };
+      const novoTratamento = receptor ? [rotuloContinuacao(lerContinuacao(receptor.continuacao_receptor)), ...produtosDaLinha(receptor).map((x, j) => `${rotuloPRT(j)} ${x.nome}`)] : [];
       trilhas.push({ chave: `${l.id}:${i}`, origem, prt: rotuloPRT(i), nomePRT: p.nome, arestas: [aresta], novoTratamento, status });
     });
     const o = l.origem_compartilhamento as OrigemCompartilhamento | null;
@@ -95,7 +97,22 @@ export function montarCadeia(linhas: Linha[]): TrilhaPRT[] {
       });
     }
   }
-  return trilhas;
+  const porChave = new Map(trilhas.map(t=>[t.chave,t]));
+  const expandir = (t: TrilhaPRT, vistos: Set<string>): TrilhaPRT => {
+    if(vistos.has(t.chave)) return {...t,status:{tipo:'ROMPE',no:t.origem,motivo:'ciclo de encaminhamento: revisão necessária'}};
+    const caminho=new Set(vistos);caminho.add(t.chave);
+    const receptorId=t.arestas[0]?.para?.id;
+    const receptor=receptorId ? porId.get(receptorId) : undefined;
+    if(!receptor || t.status.tipo==='ROMPE') return t;
+    const c=lerContinuacao(receptor.continuacao_receptor);
+    if(c?.tipo==='ELIMINACAO'||c?.tipo==='USO_EXCLUSIVO') return t;
+    const filhos = c?.tipo==='INCORPORACAO' ? [porChave.get(`${c.linha_id}:${c.produto_indice}`)].filter((x): x is TrilhaPRT=>!!x) : trilhas.filter(x=>x.origem.id===receptor.id && !x.chave.endsWith(':origem'));
+    if(!filhos.length) return {...t,status:{tipo:'ROMPE',no:no(receptor),motivo:'produto da continuidade não localizado'}};
+    const expandidos=filhos.map(f=>expandir(f,caminho));
+    const ruptura=expandidos.find(f=>f.status.tipo==='ROMPE');
+    return {...t,arestas:[...t.arestas,...expandidos.flatMap(f=>f.arestas)],novoTratamento:[...t.novoTratamento,...expandidos.flatMap(f=>f.novoTratamento)],status:ruptura?.status ?? t.status};
+  };
+  return trilhas.map(t=>expandir(t,new Set()));
 }
 
 /** Trilhas que passam pelo nó (como origem ou receptor). */

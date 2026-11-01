@@ -18,8 +18,8 @@ import { rotuloPorte } from '@/lib/priva/enquadramento';
 import { Tag } from './ui';
 
 const ROLE_ACCESS: Record<Role, string[]> = {
-  ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/pendencias", "/membros", "/manual", "/glossario", "/qualidade-normativa"],
-  DPO_OPERACIONAL: ["/painel", "/bloco", "/kanban", "/pendencias", "/auditoria", "/enterprise", "/manual", "/membros", "/glossario", "/qualidade-normativa"],
+  ADMIN_SISTEMA: ["/painel", "/auditoria", "/kanban", "/pendencias", "/membros", "/manual", "/glossario", "/qualidade-normativa", "/solicitacoes-titular"],
+  DPO_OPERACIONAL: ["/painel", "/bloco", "/kanban", "/pendencias", "/auditoria", "/enterprise", "/manual", "/membros", "/glossario", "/qualidade-normativa", "/solicitacoes-titular"],
   C_SUITE: ["/painel", "/enterprise", "/kanban", "/pendencias", "/auditoria", "/manual", "/membros", "/glossario", "/qualidade-normativa"],
 };
 const SENSITIVE = [
@@ -98,7 +98,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const allowed = (demo || canAccess(role, pathname));
 
   const item = (to: string, label: ReactNode, icon: ReactNode, extra?: ReactNode, locked = false) => {
-    if (demo && ['/membros', '/enterprise'].includes(to)) return null;
+    if (demo && ['/membros', '/enterprise', '/solicitacoes-titular'].includes(to)) return null;
     if (!(demo || canAccess(role, to))) return null;
     const active = publicDemo ? (searchStr.includes(`aba=${to.slice(1)}`)) : pathname.startsWith(to);
     return (
@@ -180,6 +180,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {item("/kanban", "Kanban 5W2H · Plano de ação", <KanbanSquare className="h-4 w-4" />)}
           {item("/auditoria", "Trilha de Auditoria (Trilho Core)", <ScrollText className="h-4 w-4" />)}
           {item("/qualidade-normativa", "Qualidade normativa", <ShieldCheck className="h-4 w-4" />)}
+          {item("/solicitacoes-titular", "Solicitações de titulares", <Users className="h-4 w-4" />)}
           {item("/manual", "Manual de Uso", <BookOpen className="h-4 w-4" />)}
           {item("/glossario", "Glossário", <BookA className="h-4 w-4" />)}
           {publicDemo && item('/encarregado', 'Encarregado (DPO)', <Users className="h-4 w-4" />)}

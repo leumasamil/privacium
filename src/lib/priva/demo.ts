@@ -77,7 +77,7 @@ const rot = (p: Partial<Rot> & Pick<Rot, "id" | "setor" | "codigo">): Rot => ({
   finalidade_especifica: "", hipotese_tratamento: "Art. 7º, II – Cumprimento de obrigação legal ou regulatória",
   tempo_retencao: "5 anos", base_prazo: "CTN art. 173", compartilhamento: "Não há", salvaguardas: ["Criptografia em repouso"],
   infraestrutura: "Nuvem", justificativa_mitigacao: null, hipotese_sensivel: null, criado_por: null, criado_em: ts, atualizado_em: ts,
-  area_setor: null, insumo: null, meio_fornecimento: null, assinatura_etapa1: null, assinatura_etapa2: null,
+  area_setor: null, insumo: null, meio_fornecimento: null, assinatura_etapa1: null, assinatura_etapa2: null, continuacao_receptor: null,
   papel_agente: "CONTROLADOR", contrato_controlador: null, produto_interno: null, destino_produto: null,
   prazo_produto: null, fundamento_produto: null, origem_compartilhamento: null, produtos_tratamento: [], excluido_em: null, excluido_por: null, motivo_exclusao: null, origem: "REAL", removida_do_dossie: false, ...p,
 });

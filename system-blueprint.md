@@ -124,3 +124,28 @@ Normas técnicas cujo texto integral é protegido por direitos autorais e vendid
 (c) a fonte pública de onde o título foi obtido (catálogo oficial da ISO, página do controle, ou publicação que reproduza a estrutura de controles).
 O produto NUNCA reproduz o texto integral do controle — apenas referencia número e título. Isso constitui referência bibliográfica, não reprodução de obra protegida.
 A regra 1.2 (texto literal + URL) permanece integralmente aplicável a LEIS e RESOLUÇÕES.
+
+### 9.7. ESCOPO NORMATIVO E INCIDÊNCIA
+(a) A LGPD e as resoluções da ANPD definem o regime geral e prevalecem sobre qualquer outra
+fonte naquilo que regulam.
+(b) Leis especiais setoriais incidem cumulativamente quando o tratamento ocorre no âmbito
+que elas regulam, prevalecendo no ponto específico em que dispuserem de forma diversa:
+Marco Civil da Internet (Lei 12.965/2014, arts. 10, 15 e 16); ECA Digital (Lei
+15.211/2025); CDC (Lei 8.078/1990); CTN art. 173 e legislação fiscal/trabalhista.
+(c) Normas de fomento econômico (LC 123/2006, LC 182/2021) NÃO regulam tratamento de dados
+pessoais. Servem apenas como referência de enquadramento econômico e nunca como
+fundamento de obrigação de proteção de dados.
+(d) Normas técnicas (ISO/IEC, NIST, CIS) são referência de método, não fonte de obrigação
+legal.
+(e) Toda citação no produto deve declarar a categoria: REGIME_GERAL, LEI_ESPECIAL_SETORIAL,
+FOMENTO_ECONOMICO ou REFERENCIA_TECNICA.
+(f) Nenhuma citação normativa pode ser inserida no produto sem verificação na fonte oficial
+e registro na biblioteca_normativa com status VERIFICADA.
+
+Esclarecimento autorizado: a Res. CD/ANPD nº 2/2022, art. 3º, II, incorpora os limites
+econômicos da LC 123/2006 e, para startups, da LC 182/2021 por remissão expressa. O fundamento
+do regime diferenciado é a resolução; a LC 182/2021 não é fundamento autônomo de obrigação
+de proteção de dados. Fonte: https://www.in.gov.br/en/web/dou/-/resolucao-cd/anpd-n-2-de-27-de-janeiro-de-2022-376562019
+Texto literal: “II - aufiram receita bruta superior ao limite estabelecido no art. 3º, II,
+da Lei Complementar nº 123, de 2006 ou, no caso de startups, no art. 4º, § 1º, I, da Lei
+Complementar nº 182, de 2021; ou”.

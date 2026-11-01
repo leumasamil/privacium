@@ -23,16 +23,16 @@ function* arquivosProduto(dir: string): Generator<string> {
 }
 
 describe("Biblioteca normativa versionada", () => {
-  it("seed tem 51 verificadas e 8 não verificáveis, com URL e motivo", () => {
-    expect(BIBLIOTECA_NORMATIVA.length).toBe(59);
+  it("seed inclui os sete dispositivos de direitos do titular, com URL e motivo", () => {
+    expect(BIBLIOTECA_NORMATIVA.length).toBe(66);
     const ver = BIBLIOTECA_NORMATIVA.filter((e) => e.status === "VERIFICADA");
     const nv = BIBLIOTECA_NORMATIVA.filter((e) => e.status === "NAO_VERIFICAVEL");
-    expect(ver.length).toBe(51);
+    expect(ver.length).toBe(58);
     expect(nv.length).toBe(8);
     for (const e of ver) {
       expect(e.texto_literal?.length).toBeGreaterThan(20);
       expect(e.url_oficial).toMatch(/^https:\/\//);
-      expect(e.verificado_em).toBe("2026-10-30");
+      expect(['2026-10-30','2026-11-01']).toContain(e.verificado_em);
     }
     for (const e of nv) {
       expect(e.texto_literal).toBeNull();
