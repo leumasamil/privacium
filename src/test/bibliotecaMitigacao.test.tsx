@@ -29,18 +29,18 @@ async function renderBloco5() {
 
 describe('PI-05 · biblioteca determinística', () => {
   it('a) PIs 01-04 concluídos: três sugestões rotuladas', () => {
-    for (const id of IDS) expect(sugestaoMitigacao(id, DEMO_SIGNATURES)).toMatchObject({ texto: expect.stringMatching(/^Sugerido a partir do PI-0\d .*Fonte: /) });
+    for (const id of IDS) expect(sugestaoMitigacao(id, CHANCELADOS)).toMatchObject({ texto: expect.stringMatching(/^Sugerido a partir do PI-0\d .*Fonte: /) });
   });
   it('b) mesmo texto em três cargas', () => {
-    const c = () => IDS.map((id) => JSON.stringify(sugestaoMitigacao(id, DEMO_SIGNATURES)));
+    const c = () => IDS.map((id) => JSON.stringify(sugestaoMitigacao(id, CHANCELADOS)));
     expect(c()).toEqual(c()); expect(c()).toEqual(c());
   });
   it('c) sem PI-03 o vazamento fica vazio com aviso', () => {
-    const { 'PI-03': _x, ...sem } = DEMO_SIGNATURES;
+    const { 'PI-03': _x, ...sem } = CHANCELADOS;
     expect(sugestaoMitigacao('vazamento', sem)).toEqual({ aviso: 'Conclua o PI-03 para receber a sugestão.' });
   });
   it('e) riscos do seed derivados dos PIs', () => {
-    const r = IDS.map((id) => derivarRisco(id, DEMO_SIGNATURES));
+    const r = IDS.map((id) => derivarRisco(id, CHANCELADOS));
     expect(r.map((x) => [x.prob, x.imp])).toEqual([[2, 4], [3, 4], [3, 3]]);
   });
   it('sem PIs o risco é 5×5', () => {
@@ -49,14 +49,14 @@ describe('PI-05 · biblioteca determinística', () => {
   it('h) demonstração pública nasce sem chancelas: Bloco 5 bloqueado e nenhum hash sintético', () => {
     expect(isUnlocked(DEMO_PUBLIC_SIGNATURES, 5)).toBe(false);
     expect(isUnlocked(DEMO_SIGNATURES, 5)).toBe(false);
-    expect(Object.keys(DEMO_SIGNATURES)).toEqual([]);
+    expect(Object.keys(CHANCELADOS)).toEqual([]);
     for (const s of Object.values(DEMO_PUBLIC_SIGNATURES)) expect(s.hash).toMatch(/^[0-9a-f]{64}$/);
   });
 });
 
 describe('PI-05 · tela', () => {
   it('a, d, f, g, j) sugestões, revisão manual, sobrescrita e responsáveis sem banco', async () => {
-    ctx.signatures = DEMO_SIGNATURES; ctx.log.mockClear();
+    ctx.signatures = CHANCELADOS; ctx.log.mockClear();
     await renderBloco5();
     for (const id of IDS) expect(screen.getByTestId(`rotulo-${id}`).textContent).toMatch(/^Sugerido a partir do PI-0/);
     expect(screen.getByTestId('simulador-em-revisao').textContent).toBe('Simulador em revisão — percentuais em conferência com a Res. CD/ANPD nº 4/2023'); expect(screen.queryByTestId('reducao')).toBeNull();
@@ -71,7 +71,7 @@ describe('PI-05 · tela', () => {
     expect(database.from).not.toHaveBeenCalled(); expect(database.rpc).not.toHaveBeenCalled();
   });
   it('c) tela sem PI-03: campo vazio com aviso', async () => {
-    const { 'PI-03': _x, ...sem } = DEMO_SIGNATURES; ctx.signatures = sem;
+    const { 'PI-03': _x, ...sem } = CHANCELADOS; ctx.signatures = sem;
     await renderBloco5();
     expect(screen.getByTestId('rotulo-vazamento').textContent).toBe('Conclua o PI-03 para receber a sugestão.');
     expect((screen.getByLabelText('Medidas de mitigação · Vazamento por prompts') as HTMLTextAreaElement).value).toBe('');
@@ -81,8 +81,8 @@ describe('PI-05 · tela', () => {
 describe('Biblioteca A1-A4 · extensões determinísticas', () => {
   it('A1) descrição contextual sugerida com rótulo e aviso sem PI de origem', async () => {
     const { sugestaoDescricao } = await import('@/lib/privacium/bibliotecaMitigacao');
-    for (const id of IDS) expect(sugestaoDescricao(id, DEMO_SIGNATURES)).toMatchObject({ rotulo: expect.stringMatching(/^Sugerido a partir do PI-0/), texto: expect.any(String) });
-    const { 'PI-03': _x, ...sem } = DEMO_SIGNATURES;
+    for (const id of IDS) expect(sugestaoDescricao(id, CHANCELADOS)).toMatchObject({ rotulo: expect.stringMatching(/^Sugerido a partir do PI-0/), texto: expect.any(String) });
+    const { 'PI-03': _x, ...sem } = CHANCELADOS;
     expect(sugestaoDescricao('vazamento', sem)).toEqual({ aviso: 'Conclua o PI-03 para receber a sugestão.' });
   });
   it('A2) estrutura de cofre sugerida a partir dos setores do ROT, determinística', async () => {
