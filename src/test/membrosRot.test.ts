@@ -96,12 +96,12 @@ describe("coerência dado × hipótese (item 6)", () => {
 });
 
 describe("demonstração cenográfica", () => {
-  it("as linhas do ROT demo têm Área › Setor, insumo e meio; todas com destino declarado", () => {
+  it("as linhas demo têm Área › Setor, insumo e meio; receptores sem escolha não têm destino declarado", () => {
     for (const r of DEMO_ROT) {
       expect(r.area_setor).toContain("›");
       expect(r.insumo).toBeTruthy();
       expect(r.meio_fornecimento).toBeTruthy();
-      expect(destinoDeclarado(r)).toBe(true);
+      expect(destinoDeclarado(r)).toBe(!r.origem_compartilhamento);
     }
   });
   it("o responsável (R) da área é encontrado no cadastro de membros", () => {

@@ -20,7 +20,7 @@ describe("ciclo de vida do dado pessoal (art. 5º, X)", () => {
   });
   it("rejeita espécie fora do elenco e ciclo vazio", () => {
     expect(validarCiclo({ Coletar: ["vender"] })).toMatch(/fora do elenco/);
-    expect(validarCiclo({})).toMatch(/ao menos uma espécie/);
+    expect(validarCiclo({})).toMatch(/ao menos um tipo de tratamento/);
   });
   it("ISO/IEC 27002 determinística por gênero (referência genérica enquanto o controle não é verificado)", () => {
     expect(ISO_27002.Processar).toEqual(["ISO/IEC 27002:2022 (controle em verificação)"]);
