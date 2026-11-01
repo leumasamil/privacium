@@ -70,11 +70,12 @@ export function SolicitacoesTitular() {
   });
   const criar = () => executar(async () => {
     if(!empresaId || !identificador.trim()) throw new Error('Informe o identificador.');
-    const r=await supabase.rpc('criar_solicitacao_titular',{_empresa_id:empresaId,_identificador:identificador,_tipo:tipo,_direito:direito,_canal:canal,_descricao:descricao,_recebimento:recebimento,_produto_id:produto.split(':')[0] || undefined});if(r.error) throw r.error;
+    const processoId=produto.split(':')[0];
+    const r=await supabase.rpc('criar_solicitacao_titular',{_empresa_id:empresaId,_identificador:identificador,_tipo:tipo,_direito:direito,_canal:canal,_descricao:descricao,_recebimento:recebimento,...(processoId ? {_produto_id:processoId} : {})});if(r.error) throw r.error;
     setIdentificador('');setDescricao('');await qc.invalidateQueries({queryKey:['solicitacoes_titular']});toast.success(`Protocolo ${r.data.protocolo} registrado.`);
   });
   const atualizar = (id: string, status: string) => executar(async () => {
-    const r=await supabase.rpc('atualizar_solicitacao_titular',{_id:id,_status:status,_fundamento_id:status==='NEGADA' ? fundamentoId || undefined : undefined,_fundamento:fundamento});if(r.error) throw r.error;
+    const r=await supabase.rpc('atualizar_solicitacao_titular',{_id:id,_status:status,...(status==='NEGADA' && fundamentoId ? {_fundamento_id:fundamentoId} : {}),_fundamento:fundamento});if(r.error) throw r.error;
     setNegando(null);await qc.invalidateQueries({queryKey:['solicitacoes_titular']});toast.success('Atendimento atualizado e auditado.');
   });
   const pedidos: Pedido[] = pedidosQ.data ?? [];
