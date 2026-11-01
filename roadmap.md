@@ -101,3 +101,9 @@
 - [x] Exibir destino pendente e impedir destino definitivo sem escolha registrada do receptor.
 - [x] Corrigir Financeiro e Recepção cenográficos e sinalizar origem excluída no Jurídico.
 - [x] Verificar regras, CT-1 a CT-5, publicar e capturar provas no link público versionado.
+
+## Identidade pública e estados pendentes do ROT
+- [ ] Registrar a versão servida e diagnosticar o alerta público antes de alterações.
+- [ ] Identificar a entrega na interface, distinguir origem ausente e excluída e corrigir estados pendentes.
+- [ ] Verificar contagens, chancela e alcance real da migração 0052 sem alterar dados reais.
+- [ ] Testar, publicar e entregar provas públicas com limites explícitos.
