@@ -83,3 +83,9 @@
 - [x] PRIVA-TI-001 da empresa real marcada TESTE e fora do dossiê (justificativa registrada); PI-02 e grafo não a exibem mais.
 - [x] Prova real na empresa de teste: incidente criado, seleção do nó gravada na trilha com hash (sem simulação) e relatório com o mesmo hash.
 - [x] Regra A.5: testes automatizados nunca criam dados na empresa real — só na empresa de teste ou com rollback.
+
+## Direitos do titular e continuidade do receptor
+- [ ] Registrar sete dispositivos verificados; item 9.7 e incidência normativa com separação do fomento econômico.
+- [ ] Índice salgado por empresa e atendimento auditado com prazos, roteamento e negativa fundamentada.
+- [ ] Escolha expressa no receptor, duas declarações para uso exclusivo e cadeia de múltiplos saltos.
+- [ ] Testes de regras/isolamento, CT-1 a CT-5 e capturas renderizadas dos fluxos reais na empresa de teste.
