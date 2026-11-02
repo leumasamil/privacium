@@ -379,6 +379,13 @@
       "when": 1793578761216,
       "tag": "0053_blindagem_registrar_uso_ia",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1793579609892,
+      "tag": "0054_0054_blindagem_revelar_documento_e_assinatura_rot",
+      "breakpoints": true
     }
   ]
 }
