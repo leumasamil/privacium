@@ -372,6 +372,13 @@
       "when": 1793511338144,
       "tag": "0052_rot_coerencia_destino_receptor",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1793578761216,
+      "tag": "0053_blindagem_registrar_uso_ia",
+      "breakpoints": true
     }
   ]
 }
